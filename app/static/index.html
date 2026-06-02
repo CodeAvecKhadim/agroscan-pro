@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7a2e1e">
+<title>AgroScan Pro — Social Technologie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--laterite:#9e3b21;--laterite-dk:#7a2e1e;--laterite-deep:#5a2114;--gold:#d99125;--millet:#e8b84b;--baobab:#3f6b3a;--baobab-dk:#2c4e29;--paper:#f7f0e3;--paper-2:#fbf6ec;--card:#fffdf8;--ink:#2a2018;--ink-soft:#5b4d3e;--line:#e4d7c0;--ok:#3f7d3a;--ok-bg:#e6f0df;--bas:#b0431f;--bas-bg:#fbe6dc;--haut:#9a5b12;--haut-bg:#f8ecd1;--wait:#9b9182;--wait-bg:#efe9dd;--shadow:0 1px 2px rgba(60,40,20,.06),0 8px 24px -12px rgba(90,50,20,.25);--shadow-lg:0 30px 60px -25px rgba(90,50,20,.45);--r:18px;--r-sm:12px;--sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 12% 8%,rgba(217,145,37,.06),transparent 40%),radial-gradient(circle at 88% 92%,rgba(63,107,58,.06),transparent 42%);min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:inherit;font-size:1rem;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,145,37,.18)}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239e3b21' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--laterite-deep),var(--laterite) 60%,var(--laterite-dk));color:#fff;box-shadow:0 6px 22px -10px rgba(90,33,20,.7)}
+.topbar-in{max-width:1100px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:42px;height:42px;border-radius:11px;background:linear-gradient(150deg,var(--gold),var(--millet));display:grid;place-items:center;font-size:23px;box-shadow:inset 0 -2px 6px rgba(0,0,0,.18)}
+.brand h1{font-family:var(--serif);font-weight:900;font-size:1.18rem;line-height:1}
+.brand p{font-size:.7rem;opacity:.85}.brand p b{color:var(--millet)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.plan-badge{font-size:.74rem;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.16);text-transform:uppercase;letter-spacing:.04em}
+.plan-badge.premium{background:var(--millet);color:var(--laterite-deep)}
+.plan-badge.cooperative{background:var(--baobab);color:#fff}
+.lk{color:#fff;font-size:.85rem;opacity:.9;cursor:pointer}.lk:hover{opacity:1;text-decoration:underline}
+main{max-width:1100px;margin:0 auto;padding:26px 18px 80px}
+.view{display:none;animation:fade .4s}.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:22px}
+h2.sec{font-family:var(--serif);font-weight:900;font-size:1.7rem;color:var(--laterite-dk);margin-bottom:4px}
+.sub{color:var(--ink-soft);font-size:.95rem;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-weight:600;font-size:.95rem;transition:transform .14s}
+.btn-primary{background:var(--laterite);color:#fff;box-shadow:0 6px 16px -6px rgba(158,59,33,.6)}.btn-primary:hover{transform:translateY(-2px)}
+.btn-gold{background:var(--gold);color:var(--laterite-deep)}.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}
+.btn-block{width:100%;justify-content:center}
+.field{margin-bottom:14px}.field label{display:block;font-weight:600;font-size:.82rem;color:var(--ink-soft);margin-bottom:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;font-size:.9rem;z-index:200;box-shadow:var(--shadow-lg);animation:pop .3s;max-width:90%}
+.toast.err{background:var(--bas)}.toast.ok{background:var(--baobab-dk)}
+/* AUTH */
+.auth-wrap{min-height:78vh;display:grid;place-items:center}
+.auth-card{width:100%;max-width:430px}
+.auth-hero{text-align:center;margin-bottom:22px}
+.auth-hero .mark{width:64px;height:64px;border-radius:16px;background:linear-gradient(150deg,var(--gold),var(--millet));display:inline-grid;place-items:center;font-size:34px;box-shadow:var(--shadow);margin-bottom:12px}
+.auth-hero h1{font-family:var(--serif);font-weight:900;font-size:1.9rem;color:var(--laterite-dk)}
+.auth-hero p{color:var(--ink-soft);font-size:.92rem}
+.tabs2{display:flex;gap:6px;background:var(--paper-2);padding:5px;border-radius:12px;margin-bottom:18px}
+.tabs2 button{flex:1;padding:10px;border-radius:9px;font-weight:600;color:var(--ink-soft);font-size:.9rem}
+.tabs2 button.on{background:var(--laterite);color:#fff}
+.check{display:flex;align-items:center;gap:9px;font-size:.9rem;color:var(--ink-soft);margin-bottom:14px;cursor:pointer}
+.check input{width:auto}
+/* NAV */
+.appnav{display:flex;gap:4px;overflow-x:auto;margin-bottom:22px;padding-bottom:4px;scrollbar-width:none}.appnav::-webkit-scrollbar{display:none}
+.appnav button{flex:0 0 auto;padding:9px 16px;border-radius:11px;font-weight:600;font-size:.88rem;color:var(--ink-soft);white-space:nowrap}
+.appnav button.on{background:var(--laterite);color:#fff}.appnav button:hover:not(.on){background:rgba(158,59,33,.07)}
+/* USAGE */
+.usage-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.usage-track{flex:1;min-width:160px;height:12px;background:var(--paper-2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.usage-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--laterite));border-radius:8px;transition:width .5s}
+/* MEASURE */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;margin:16px 0}
+.mp{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:14px}
+.mp label{font-weight:600;font-size:.88rem;display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.mp .rg{font-size:.72rem;color:var(--ink-soft);margin-top:5px}
+.result{margin-top:18px}
+.score-head{padding:20px 22px;border-radius:var(--r);color:#fff;display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:linear-gradient(120deg,var(--baobab-dk),var(--baobab))}
+.score-head.bad{background:linear-gradient(120deg,#7a2e1e,#a8421f)}.score-head.mid{background:linear-gradient(120deg,#9a6712,#c99020)}
+.score-ring{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);border:3px solid rgba(255,255,255,.4)}
+.score-ring .big{font-family:var(--serif);font-weight:900;font-size:1.8rem}
+.detail-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.pill{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.bas{background:var(--bas-bg);color:var(--bas)}.pill.haut{background:var(--haut-bg);color:var(--haut)}.pill.wait{background:var(--wait-bg);color:var(--wait)}
+.lock{background:var(--haut-bg);border:1px dashed var(--gold);border-radius:var(--r-sm);padding:14px 16px;font-size:.88rem;color:#6a4a10;margin-top:12px}
+/* PLANS */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative}
+.plan.feat{border:2px solid var(--gold);box-shadow:var(--shadow-lg)}
+.plan .pop{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:.7rem;font-weight:700;padding:3px 12px;border-radius:20px;text-transform:uppercase}
+.plan h3{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--laterite-dk)}
+.plan .price{font-family:var(--serif);font-weight:900;font-size:2rem;color:var(--laterite);margin:8px 0}
+.plan .price small{font-size:.8rem;color:var(--ink-soft);font-weight:400}
+.plan ul{list-style:none;margin:14px 0;flex:1}
+.plan li{font-size:.88rem;padding:6px 0;color:var(--ink-soft);display:flex;gap:8px}
+.plan li::before{content:"✓";color:var(--baobab);font-weight:800}
+.plan li.no{opacity:.5}.plan li.no::before{content:"✕";color:var(--bas)}
+/* DASH */
+.dstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.dstat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.dstat .n{font-family:var(--serif);font-weight:900;font-size:1.9rem;color:var(--laterite-dk);line-height:1}
+.dstat .l{font-size:.78rem;color:var(--ink-soft);margin-top:3px}
+.histrow{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.histrow .hs{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-family:var(--serif);font-weight:900;color:#fff;flex-shrink:0}
+footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;border-top:1px solid var(--line)}footer b{color:var(--laterite-dk)}
+@media(max-width:560px){.brand p{display:none}h2.sec{font-size:1.4rem}.auth-hero h1{font-size:1.6rem}}
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar" style="display:none">
+  <div class="topbar-in">
+    <div class="brand"><div class="mark">🌾</div><div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div></div>
+    <div class="right">
+      <span class="plan-badge" id="planBadge">gratuit</span>
+      <span class="lk" id="userName"></span>
+      <span class="lk" onclick="logout()">Déconnexion</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- AUTH -->
+  <section class="view on" id="v-auth">
+    <div class="auth-wrap"><div class="auth-card">
+      <div class="auth-hero">
+        <div class="mark">🌾</div>
+        <h1>AgroScan Pro</h1>
+        <p>Analyse de sol & cultures · Sénégal — une solution Social Technologie</p>
+      </div>
+      <div class="card pad">
+        <div class="tabs2"><button class="on" id="tabLogin" onclick="authTab('login')">Connexion</button><button id="tabReg" onclick="authTab('register')">Créer un compte</button></div>
+        <div id="formLogin">
+          <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="vous@exemple.sn"></div>
+          <div class="field"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
+          <button class="btn btn-primary btn-block" onclick="doLogin()">Se connecter →</button>
+        </div>
+        <div id="formReg" style="display:none">
+          <div class="field"><label>Nom complet</label><input type="text" id="rName" placeholder="Modou Diop"></div>
+          <div class="field"><label>Email</label><input type="email" id="rEmail" placeholder="vous@exemple.sn"></div>
+          <div class="field"><label>Téléphone / WhatsApp</label><input type="text" id="rPhone" placeholder="78 000 00 00"></div>
+          <div class="field"><label>Mot de passe</label><input type="password" id="rPass" placeholder="6 caractères minimum"></div>
+          <label class="check"><input type="checkbox" id="rCoop" onchange="document.getElementById('coopName').style.display=this.checked?'block':'none'"> Je représente une coopérative</label>
+          <div class="field" id="coopName" style="display:none"><label>Nom de la coopérative</label><input type="text" id="rOrg" placeholder="Coopérative des Niayes"></div>
+          <button class="btn btn-primary btn-block" onclick="doRegister()">Créer mon compte →</button>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:16px">📞 Social Technologie · +221 78 491 90 11</p>
+    </div></div>
+  </section>
+
+  <!-- APP -->
+  <section class="view" id="v-app">
+    <div class="appnav" id="appnav">
+      <button class="on" data-v="diag" onclick="appTab('diag')">🔬 Diagnostic</button>
+      <button data-v="hist" onclick="appTab('hist')">📋 Historique</button>
+      <button data-v="coop" onclick="appTab('coop')">📊 Coopérative</button>
+      <button data-v="plans" onclick="appTab('plans')">💳 Abonnement</button>
+    </div>
+
+    <!-- DIAG -->
+    <div class="app-view" id="a-diag">
+      <h2 class="sec">🔬 Nouveau diagnostic</h2>
+      <p class="sub">Choisissez la culture, saisissez vos mesures et obtenez le diagnostic.</p>
+      <div class="usage-bar card pad">
+        <div style="font-weight:600">📊 Ce mois :</div>
+        <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:0%"></div></div>
+        <div id="usageTxt" style="font-size:.88rem;color:var(--ink-soft)">—</div>
+      </div>
+      <div class="card pad" style="margin-top:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field" style="margin:0"><label>🌱 Culture</label><select id="dCulture"></select></div>
+          <div class="field" style="margin:0"><label>🗺️ Région</label><input type="text" id="dRegion" placeholder="Ex : Thiès"></div>
+        </div>
+        <div class="mgrid" id="mgrid"></div>
+        <button class="btn btn-primary" onclick="runDiagnostic()">Lancer le diagnostic →</button>
+      </div>
+      <div class="result" id="diagResult"></div>
+
+      <!-- Accès aux modules avancés (OAD) -->
+      <h2 class="sec" style="margin-top:26px">🧰 Outils avancés</h2>
+      <p class="sub">Cartographier une parcelle, analyser un capteur, diagnostiquer une maladie par photo.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <a href="/carte" class="card pad" style="text-decoration:none;color:inherit">
+          <div style="font-size:1.6rem">🗺️</div>
+          <div style="font-weight:700;margin-top:4px">Cartographier ma parcelle</div>
+          <div style="font-size:.82rem;color:var(--ink-soft)">Surface en hectares (GPS)</div>
+        </a>
+        <a href="/saisie" class="card pad" style="text-decoration:none;color:inherit">
+          <div style="font-size:1.6rem">📝</div>
+          <div style="font-weight:700;margin-top:4px">Saisir mes mesures</div>
+          <div style="font-size:.82rem;color:var(--ink-soft)">7 capteurs + météo</div>
+        </a>
+        <a href="/oad" class="card pad" style="text-decoration:none;color:inherit">
+          <div style="font-size:1.6rem">🔬</div>
+          <div style="font-weight:700;margin-top:4px">Analyse capteur</div>
+          <div style="font-size:.82rem;color:var(--ink-soft)">29 cultures · lecture vocale</div>
+        </a>
+        <a href="/scan" class="card pad" style="text-decoration:none;color:inherit">
+          <div style="font-size:1.6rem">📷</div>
+          <div style="font-weight:700;margin-top:4px">Maladie par photo</div>
+          <div style="font-size:.82rem;color:var(--ink-soft)">Diagnostic visuel</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- HIST -->
+    <div class="app-view" id="a-hist" style="display:none">
+      <h2 class="sec">📋 Historique</h2>
+      <p class="sub" id="histSub">Vos analyses enregistrées.</p>
+      <div class="card pad" id="histList"></div>
+    </div>
+
+    <!-- COOP -->
+    <div class="app-view" id="a-coop" style="display:none">
+      <h2 class="sec">📊 Tableau de bord coopérative</h2>
+      <p class="sub">Suivi multi-exploitations et multi-membres.</p>
+      <div id="coopBody"></div>
+    </div>
+
+    <!-- PLANS -->
+    <div class="app-view" id="a-plans" style="display:none">
+      <h2 class="sec">💳 Choisir un abonnement</h2>
+      <p class="sub">Prix en FCFA, TVA 18 % incluse. Paiement Wave / Orange Money / PayDunya.</p>
+      <div class="plans" id="plansBox"></div>
+    </div>
+  </section>
+
+  <footer>
+    <b>AgroScan Pro</b> — Social Technologie · 📞 +221 78 491 90 11<br>
+    Caméras de surveillance & équipements agricoles · Sénégal
+  </footer>
+</main>
+
+<!-- Bouton WhatsApp flottant : ouvre une conversation directe avec Social Technologie -->
+<a id="waBtn"
+   href="https://wa.me/221784919011?text=Bonjour%20AgroScan%20Pro%2C%20j'ai%20une%20question%20sur%20vos%20services."
+   target="_blank" rel="noopener"
+   aria-label="Nous contacter sur WhatsApp"
+   style="position:fixed;bottom:20px;right:20px;z-index:999;width:60px;height:60px;border-radius:50%;
+          background:#25D366;display:flex;align-items:center;justify-content:center;
+          box-shadow:0 6px 18px -4px rgba(37,211,102,.6);text-decoration:none;transition:transform .15s">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+    <path d="M17.5 14.4c-.3-.15-1.8-.9-2.05-1-.27-.1-.47-.15-.67.15s-.77.97-.95 1.17c-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.07-.12-.27-.2-.57-.35zM12.05 21.5h-.01a9.42 9.42 0 0 1-4.8-1.32l-.34-.2-3.57.94.95-3.48-.22-.36a9.45 9.45 0 0 1-1.45-5.03c0-5.22 4.25-9.47 9.48-9.47 2.53 0 4.9.99 6.69 2.78a9.4 9.4 0 0 1 2.77 6.7c0 5.22-4.25 9.47-9.47 9.47zm8.06-17.54A11.36 11.36 0 0 0 12.05.62C5.8.62.72 5.7.72 11.94c0 2.1.55 4.16 1.6 5.97L.62 24l6.24-1.64a11.33 11.33 0 0 0 5.18 1.32h.01c6.25 0 11.33-5.08 11.33-11.32a11.26 11.26 0 0 0-3.32-8.02z"/>
+  </svg>
+</a>
+
+<script>
+const API="";   // même origine
+let TOKEN=localStorage.getItem("agro_token")||"";
+let ME=null, SUB=null, PLANS=null;
+const PARAMS=[["Température","🌡️","°C"],["Humidité","💧","%HR"],["CE","⚡","µS/cm"],["pH","🧪","pH"],["Azote","🌿","mg/kg"],["Phosphore","🌿","mg/kg"],["Potassium","🌿","mg/kg"],["Salinité","🧂","mg/kg"]];
+const CULTURES=["Riz","Mil","Maïs","Sorgho","Arachide","Sésame","Coton","Oignon","Tomate","Carotte","Chou","Piment","Gombo","Aubergine amère","Mangue","Pastèque","Melon","Banane","Papaye","Bisap","Concombre","Courgette","Laitue","Manioc","Navet chinois","Patate douce","Poivron","Pomme de terre","Jaxatu"];
+const PILL={ok:"🟢 Optimal",bas:"🔴 Trop bas",haut:"🔴 Trop élevé",wait:"⏳"};
+
+function toast(msg,type){const t=document.createElement("div");t.className="toast "+(type||"");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
+async function api(path,opts={}){
+  opts.headers=Object.assign({"Content-Type":"application/json"},opts.headers||{});
+  if(TOKEN) opts.headers["Authorization"]="Bearer "+TOKEN;
+  const r=await fetch(API+path,opts);
+  let data=null; try{data=await r.json();}catch(e){}
+  if(!r.ok){throw {status:r.status,detail:(data&&data.detail)||"Erreur"};}
+  return data;
+}
+function authTab(t){
+  document.getElementById("tabLogin").classList.toggle("on",t==="login");
+  document.getElementById("tabReg").classList.toggle("on",t==="register");
+  document.getElementById("formLogin").style.display=t==="login"?"block":"none";
+  document.getElementById("formReg").style.display=t==="register"?"block":"none";
+}
+async function doRegister(){
+  try{
+    const body={full_name:rName.value,email:rEmail.value,phone:rPhone.value,password:rPass.value,is_cooperative:rCoop.checked,org_name:rCoop.checked?rOrg.value:null};
+    await api("/api/auth/register",{method:"POST",body:JSON.stringify(body)});
+    toast("Compte créé ! Connexion…","ok");
+    lEmail.value=rEmail.value; lPass.value=rPass.value; await doLogin();
+  }catch(e){toast(e.detail||"Échec de l'inscription","err");}
+}
+async function doLogin(){
+  try{
+    const form=new URLSearchParams();form.append("username",lEmail.value);form.append("password",lPass.value);
+    const r=await fetch(API+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:form});
+    if(!r.ok){const d=await r.json();throw{detail:d.detail};}
+    const data=await r.json(); TOKEN=data.access_token; localStorage.setItem("agro_token",TOKEN);
+    await boot();
+  }catch(e){toast(e.detail||"Connexion échouée","err");}
+}
+function logout(){TOKEN="";localStorage.removeItem("agro_token");location.reload();}
+
+async function boot(){
+  try{
+    SUB=await api("/api/billing/me");
+    PLANS=await api("/api/billing/plans");
+    document.getElementById("v-auth").classList.remove("on");
+    document.getElementById("v-app").classList.add("on");
+    document.getElementById("topbar").style.display="block";
+    const badge=document.getElementById("planBadge");
+    badge.textContent=SUB.plan; badge.className="plan-badge "+SUB.plan;
+    buildMeasureForm(); appTab("diag"); refreshUsage(); renderPlans();
+  }catch(e){TOKEN="";localStorage.removeItem("agro_token");}
+}
+function appTab(v){
+  document.querySelectorAll("#appnav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  ["diag","hist","coop","plans"].forEach(x=>document.getElementById("a-"+x).style.display=x===v?"block":"none");
+  if(v==="hist")loadHistory();
+  if(v==="coop")loadCoop();
+}
+async function refreshUsage(){
+  try{
+    const u=await api("/api/billing/usage");
+    const txt=document.getElementById("usageTxt"), fill=document.getElementById("usageFill");
+    if(u.analyses_limit===null){txt.textContent="Analyses illimitées ✓";fill.style.width="100%";fill.style.background="var(--baobab)";}
+    else{txt.textContent=u.analyses_used+" / "+u.analyses_limit+" analyses";fill.style.width=Math.min(100,u.analyses_used/u.analyses_limit*100)+"%";}
+  }catch(e){}
+}
+function buildMeasureForm(){
+  const c=document.getElementById("dCulture"); c.innerHTML=CULTURES.map(x=>`<option>${x}</option>`).join("");
+  document.getElementById("mgrid").innerHTML=PARAMS.map(([k,ic,u])=>
+    `<div class="mp"><label>${ic} ${k} <span style="margin-left:auto;font-size:.72rem;color:var(--ink-soft)">${u}</span></label><input type="number" step="any" id="m-${k}" placeholder="Mesure"></div>`).join("");
+}
+async function runDiagnostic(){
+  const meas={}; PARAMS.forEach(([k])=>{const v=document.getElementById("m-"+k).value;if(v!=="")meas[k]=parseFloat(v);});
+  if(Object.keys(meas).length===0){toast("Saisissez au moins une mesure","err");return;}
+  try{
+    const res=await api("/api/analyses",{method:"POST",body:JSON.stringify({culture:dCulture.value,region:dRegion.value,measurements:meas})});
+    renderDiag(res); refreshUsage();
+  }catch(e){
+    if(e.status===402){renderQuotaBlock(e.detail);} else toast(e.detail||"Erreur","err");
+  }
+}
+function renderDiag(res){
+  const vcls=res.verdict==="À corriger"?"bad":res.verdict==="Moyen"?"mid":"";
+  let rows=(res.diagnostic||[]).map(d=>{
+    const rng=d.parametre==="Salinité"?`0–${d.max}`:`${d.min}–${d.max}`;
+    return `<div class="detail-row"><b style="flex:0 0 110px">${d.parametre}</b><span style="flex:0 0 70px">${d.valeur??"—"}</span><span class="pill ${d.statut}">${PILL[d.statut]}</span><span style="flex:1;color:var(--ink-soft)">${d.recommandation?("→ "+d.recommandation):("Plage : "+rng)}</span></div>`;
+  }).join("");
+  const lock=!res.advanced?`<div class="lock">🔒 <b>Recommandations agronomiques détaillées</b> réservées au plan Premium. <span class="lk" style="color:var(--laterite);text-decoration:underline" onclick="appTab('plans')">Passer au Premium →</span></div>`:"";
+  document.getElementById("diagResult").innerHTML=`
+    <div class="score-head ${vcls}">
+      <div class="score-ring"><div class="big">${res.score}</div><div style="font-size:.7rem">/ 8</div></div>
+      <div><div style="font-family:var(--serif);font-weight:900;font-size:1.4rem">${res.verdict}</div><div style="opacity:.9;font-size:.9rem">${res.culture} · ${res.region||"—"}</div></div>
+    </div>
+    <div class="card pad" style="margin-top:14px">${rows}${lock}</div>`;
+}
+function renderQuotaBlock(msg){
+  document.getElementById("diagResult").innerHTML=`<div class="card pad" style="border:2px solid var(--gold);text-align:center">
+    <div style="font-size:42px">🔒</div><h3 style="font-family:var(--serif);color:var(--laterite-dk);font-size:1.3rem;margin:8px 0">Limite mensuelle atteinte</h3>
+    <p style="color:var(--ink-soft);margin-bottom:14px">${msg}</p>
+    <button class="btn btn-gold" onclick="appTab('plans')">Voir les abonnements →</button></div>`;
+}
+async function loadHistory(){
+  try{
+    const list=await api("/api/analyses");
+    document.getElementById("histSub").textContent=SUB.plan==="gratuit"?"Plan gratuit : 30 derniers jours visibles.":"Historique complet.";
+    if(!list.length){document.getElementById("histList").innerHTML='<p style="color:var(--ink-soft);text-align:center;padding:20px">Aucune analyse pour l\'instant.</p>';return;}
+    document.getElementById("histList").innerHTML=list.map(a=>{
+      const col=a.score>=6?"var(--baobab)":a.score>=4?"#c99020":"#a8421f";
+      const d=new Date(a.created_at).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+      return `<div class="histrow"><div class="hs" style="background:${col}">${a.score}</div><div style="flex:1"><b>${a.culture}</b> · ${a.region||"—"}<br><span style="font-size:.82rem;color:var(--ink-soft)">${a.verdict} · ${d}</span></div></div>`;
+    }).join("");
+  }catch(e){toast(e.detail||"Erreur","err");}
+}
+async function loadCoop(){
+  const box=document.getElementById("coopBody");
+  if(SUB.plan!=="cooperative"){
+    box.innerHTML=`<div class="card pad" style="border:2px dashed var(--gold);text-align:center"><div style="font-size:42px">👥</div>
+      <h3 style="font-family:var(--serif);color:var(--laterite-dk);margin:8px 0">Réservé au plan Coopérative</h3>
+      <p style="color:var(--ink-soft);margin-bottom:14px">Gérez plusieurs exploitations et membres, avec tableau de bord collaboratif.</p>
+      <button class="btn btn-gold" onclick="appTab('plans')">Découvrir le plan Coopérative →</button></div>`;return;
+  }
+  try{
+    const d=await api("/api/coop/dashboard");
+    const cult=Object.entries(d.by_culture||{}).map(([k,v])=>`${k} (${v})`).join(", ")||"—";
+    box.innerHTML=`<div class="dstats">
+      <div class="dstat"><div class="n">${d.members}</div><div class="l">membres</div></div>
+      <div class="dstat"><div class="n">${d.farms}</div><div class="l">exploitations</div></div>
+      <div class="dstat"><div class="n">${d.analyses}</div><div class="l">analyses</div></div>
+      <div class="dstat"><div class="n">${d.avg_score}<span style="font-size:1rem">/8</span></div><div class="l">score moyen</div></div>
+      <div class="dstat"><div class="n">${d.soils_ready}</div><div class="l">sols prêts</div></div>
+    </div>
+    <div class="card pad"><h3 style="font-family:var(--serif);color:var(--laterite-dk);margin-bottom:8px">🌱 Cultures suivies</h3><p style="color:var(--ink-soft)">${cult}</p></div>
+    <div class="card pad" style="margin-top:12px"><h3 style="font-family:var(--serif);color:var(--laterite-dk);margin-bottom:12px">➕ Ajouter une exploitation</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><input id="fName" placeholder="Nom (ex: Parcelle Nord)"><input id="fRegion" placeholder="Région"></div>
+      <button class="btn btn-primary" onclick="addFarm()">Enregistrer</button></div>`;
+  }catch(e){toast(e.detail||"Erreur","err");}
+}
+async function addFarm(){
+  try{await api("/api/coop/farms",{method:"POST",body:JSON.stringify({name:fName.value,region:fRegion.value})});toast("Exploitation ajoutée","ok");loadCoop();}
+  catch(e){toast(e.detail||"Erreur","err");}
+}
+function renderPlans(){
+  const cur=SUB.plan;
+  document.getElementById("plansBox").innerHTML=PLANS.plans.map(p=>{
+    const feat=p.plan==="premium";
+    const isCur=p.plan===cur;
+    const li=(ok,txt)=>`<li class="${ok?"":"no"}">${txt}</li>`;
+    let items=[
+      li(true,p.monthly_analyses===null?"Analyses illimitées":`${p.monthly_analyses} analyses / mois`),
+      li(true,p.history_days===null?"Historique complet":`Historique ${p.history_days} jours`),
+      li(p.advanced_reco,"Recommandations avancées"),
+      li(p.pdf_reports,"Rapports PDF"),
+      li(p.whatsapp_support,"Support WhatsApp"),
+      li(p.multi_user,"Multi-utilisateurs"),
+    ].join("");
+    const price=p.pricing.ttc===0?"Gratuit":`${p.pricing.ttc.toLocaleString("fr-FR")} <small>FCFA/mois TTC</small>`;
+    return `<div class="plan ${feat?"feat":""}">${feat?'<span class="pop">Populaire</span>':""}
+      <h3>${p.label}</h3><div class="price">${price}</div>
+      ${p.pricing.ttc>0?`<div style="font-size:.76rem;color:var(--ink-soft)">dont TVA 18% : ${p.pricing.vat.toLocaleString("fr-FR")} FCFA</div>`:""}
+      <ul>${items}</ul>
+      ${isCur?'<button class="btn btn-ghost btn-block" disabled>Plan actuel</button>':`<button class="btn ${feat?"btn-primary":"btn-gold"} btn-block" onclick="choosePlan('${p.plan}',${p.max_seats})">Choisir →</button>`}</div>`;
+  }).join("");
+}
+async function choosePlan(plan,maxSeats){
+  let seats=1;
+  if(plan==="cooperative"){seats=parseInt(prompt("Nombre de membres (sièges) ?",5)||"5");if(isNaN(seats)||seats<1)seats=1;seats=Math.min(seats,maxSeats);}
+  try{
+    const r=await api("/api/billing/change",{method:"POST",body:JSON.stringify({plan,seats})});
+    if(r.payment){
+      const pay=r.payment;
+      if(confirm(`💳 Paiement requis\n\nMontant : ${pay.amount_ttc.toLocaleString("fr-FR")} FCFA TTC\n(HT ${pay.amount_ht.toLocaleString("fr-FR")} + TVA ${pay.vat.toLocaleString("fr-FR")})\n\n${pay.instruction}\n\n[DÉMO] Confirmer le paiement maintenant ?`)){
+        await api("/api/billing/webhook",{method:"POST",body:JSON.stringify({payment_id:pay.id,provider_ref:"DEMO",status:"paid"})});
+        toast("Abonnement activé ✓","ok");
+      }else{toast("Paiement en attente","");}
+    }else{toast("Plan gratuit activé","ok");}
+    SUB=await api("/api/billing/me");
+    const badge=document.getElementById("planBadge");badge.textContent=SUB.plan;badge.className="plan-badge "+SUB.plan;
+    renderPlans(); refreshUsage();
+  }catch(e){toast(e.detail||"Erreur","err");}
+}
+
+// boot if token
+if(TOKEN) boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Secrets et configuration locale
+.env
+.env.save
+.env.save.1
+*.save
+*.save.*
+
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+
+# Sauvegardes et runtime
+app.backup-*/
+.gunicorn/
+*.db
+*.sqlite
+
+# Fichiers de démo / exemples lourds
+exemple_rapport.pdf

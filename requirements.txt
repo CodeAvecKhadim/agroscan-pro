@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+bcrypt
+python-jose[cryptography]
+python-multipart
+pydantic-settings
+email-validator
+reportlab
+qrcode[pil]
+# Production : décommenter pour PostgreSQL
+# psycopg[binary]

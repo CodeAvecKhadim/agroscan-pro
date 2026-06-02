@@ -1,0 +1,37 @@
+# =============================================================================
+#  Service systemd pour AgroScan Pro
+#  Fichier à placer dans : /etc/systemd/system/agroscan.service
+#  Il fait tourner l'application en permanence et la redémarre en cas de panne
+#  ou de redémarrage du serveur.
+# =============================================================================
+[Unit]
+Description=AgroScan Pro - API FastAPI (Social Technologie)
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=agroscan
+Group=agroscan
+WorkingDirectory=/opt/agroscan
+EnvironmentFile=/opt/agroscan/.env
+
+# Gunicorn avec 3 workers Uvicorn (adapté à un VPS 2 vCPU).
+# Augmentez --workers si vous prenez un VPS plus puissant (règle : 2 x vCPU + 1).
+ExecStart=/opt/agroscan/.venv/bin/gunicorn app.main:app \
+    --workers 3 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind 127.0.0.1:8000 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile -
+
+Restart=always
+RestartSec=5
+
+# Sécurité : on limite ce que le processus peut faire.
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

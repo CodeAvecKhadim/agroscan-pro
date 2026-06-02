@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#059669">
+<title>AgroScan Pro — Cartographie de parcelle</title>
+
+<!-- Leaflet (carte) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{
+    colors:{ brand:{50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b'} },
+    boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
+  }}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  html,body{font-family:'Inter',system-ui,sans-serif;height:100%;margin:0}
+  /* La carte occupe tout l'espace disponible entre le bandeau et le bouton */
+  #map{width:100%;height:100%;background:#e5e7eb;z-index:0}
+  .leaflet-container{font-family:ui-sans-serif,system-ui,sans-serif}
+  /* Animation douce d'apparition du badge */
+  @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.96)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+  .badge-pop{animation:pop .25s ease}
+  /* Petit pulse sur le bouton géoloc pendant la recherche */
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin .8s linear infinite}
+</style>
+</head>
+
+<body class="bg-slate-100 select-none">
+
+<!-- Conteneur plein écran en colonne : bandeau / carte / bouton -->
+<div class="flex flex-col h-screen w-screen overflow-hidden">
+
+  <!-- ===== 1. BANDEAU ===== -->
+  <header class="flex items-center gap-3 px-4 py-3 bg-white shadow-sm z-20 shrink-0">
+    <div class="w-9 h-9 rounded-xl bg-brand-700 flex items-center justify-center text-white text-lg shrink-0">🌱</div>
+    <div class="min-w-0 flex-1">
+      <h1 class="text-[15px] font-bold text-brand-800 leading-tight truncate">AgroScan Pro</h1>
+      <p class="text-[11px] text-slate-500 leading-tight truncate">Cartographie de parcelle · Sénégal</p>
+    </div>
+    <button id="btnGeo"
+      class="flex items-center gap-1.5 bg-brand-50 text-brand-700 text-[13px] font-semibold px-3 py-2 rounded-xl active:scale-95 transition shrink-0">
+      <svg id="geoIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+        <circle cx="12" cy="12" r="8"/>
+      </svg>
+      Me géolocaliser
+    </button>
+  </header>
+
+  <!-- ===== 2. CARTE (prend tout l'espace) ===== -->
+  <main class="relative flex-1">
+    <div id="map"></div>
+
+    <!-- Badge flottant : superficie en temps réel -->
+    <div id="badge"
+      class="hidden absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur
+             shadow-lg rounded-2xl px-4 py-2 text-center border border-brand-100">
+      <div class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Superficie</div>
+      <div id="badgeVal" class="text-lg font-extrabold text-brand-700 leading-none">—</div>
+    </div>
+
+    <!-- Aide / instruction (disparaît au 1er point) -->
+    <div id="hint"
+      class="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 bg-brand-800/90 text-white text-[12px]
+             px-3.5 py-2 rounded-full shadow whitespace-nowrap">
+      👆 Touchez la carte pour marquer les coins de votre champ
+    </div>
+
+    <!-- Boutons flottants : annuler dernier point / tout effacer -->
+    <div class="absolute bottom-3 right-3 z-10 flex flex-col gap-2">
+      <button id="btnUndo"
+        class="hidden w-11 h-11 bg-white shadow-lg rounded-full items-center justify-center text-slate-600 active:scale-95 transition"
+        title="Annuler le dernier point">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5"/><path d="M4 9h11a4 4 0 0 1 0 8h-1"/></svg>
+      </button>
+      <button id="btnClear"
+        class="hidden w-11 h-11 bg-white shadow-lg rounded-full items-center justify-center text-red-500 active:scale-95 transition"
+        title="Tout effacer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- ===== 4. BOUTON D'ACTION PRINCIPAL ===== -->
+  <footer class="p-3 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20 shrink-0">
+    <button id="btnValider" disabled
+      class="w-full py-4 rounded-2xl text-white font-bold text-[15px] transition
+             bg-gray-300 cursor-not-allowed flex items-center justify-center gap-2">
+      <span id="validerTxt">Marquez au moins 3 points</span>
+    </button>
+  </footer>
+
+</div>
+
+<script>
+/* =====================================================================
+   AgroScan Pro — Cartographie de parcelle
+   Leaflet + fond satellite Esri + dessin de polygone + calcul de surface
+   ===================================================================== */
+
+// --- Initialisation de la carte (centrée sur le Sénégal par défaut) ---
+const map = L.map('map', { zoomControl:true, attributionControl:true })
+            .setView([14.6928, -17.4467], 13);   // Dakar par défaut
+
+// Fond SATELLITE HD gratuit : Esri World Imagery
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19,
+  attribution: 'Imagerie © Esri'
+}).addTo(map);
+
+// Couche d'étiquettes (noms de lieux) par-dessus le satellite, légère
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19, opacity: 0.9
+}).addTo(map);
+
+// --- État du dessin ---
+let points = [];          // sommets du polygone [lat,lng]
+let markers = [];         // marqueurs visuels des sommets
+let polygon = null;       // le polygone Leaflet
+let polyline = null;      // la ligne tant que < 3 points
+
+const badge    = document.getElementById('badge');
+const badgeVal = document.getElementById('badgeVal');
+const hint     = document.getElementById('hint');
+const btnUndo  = document.getElementById('btnUndo');
+const btnClear = document.getElementById('btnClear');
+const btnValider = document.getElementById('btnValider');
+const validerTxt = document.getElementById('validerTxt');
+
+/* ---------- Calcul de superficie (formule sphérique, sans plugin) ----------
+   On utilise la formule de l'aire géodésique (équivalente à L.GeometryUtil),
+   qui donne la surface en m² à partir des coordonnées lat/lng. */
+function airePolygone(latlngs){
+  if(latlngs.length < 3) return 0;
+  const R = 6378137;                 // rayon terrestre (m)
+  const rad = Math.PI/180;
+  let aire = 0;
+  for(let i=0; i<latlngs.length; i++){
+    const p1 = latlngs[i];
+    const p2 = latlngs[(i+1) % latlngs.length];
+    aire += (p2.lng - p1.lng) * rad *
+            (2 + Math.sin(p1.lat*rad) + Math.sin(p2.lat*rad));
+  }
+  return Math.abs(aire * R * R / 2);
+}
+
+/* ---------- Affichage de la superficie dans le badge ---------- */
+function majSuperficie(){
+  if(points.length < 3){
+    badge.classList.add('hidden');
+    return;
+  }
+  const m2 = airePolygone(points.map(p => L.latLng(p[0], p[1])));
+  let txt;
+  if(m2 >= 10000){
+    txt = (m2/10000).toLocaleString('fr-FR',{maximumFractionDigits:2}) + ' ha';
+  } else {
+    txt = Math.round(m2).toLocaleString('fr-FR') + ' m²';
+  }
+  badgeVal.textContent = txt;
+  badge.classList.remove('hidden');
+  badge.classList.add('badge-pop');
+  setTimeout(()=>badge.classList.remove('badge-pop'), 260);
+}
+
+/* ---------- Redessine polygone + ligne + marqueurs ---------- */
+function redessiner(){
+  if(polygon){ map.removeLayer(polygon); polygon=null; }
+  if(polyline){ map.removeLayer(polyline); polyline=null; }
+
+  if(points.length >= 3){
+    polygon = L.polygon(points, {
+      color:'#059669', weight:3, fillColor:'#10b981', fillOpacity:0.25
+    }).addTo(map);
+  } else if(points.length === 2){
+    polyline = L.polyline(points, { color:'#059669', weight:3, dashArray:'6 6' }).addTo(map);
+  }
+
+  // Boutons et bouton valider
+  const peutValider = points.length >= 3;
+  btnUndo.classList.toggle('hidden', points.length === 0);
+  btnUndo.classList.toggle('flex', points.length > 0);
+  btnClear.classList.toggle('hidden', points.length === 0);
+  btnClear.classList.toggle('flex', points.length > 0);
+
+  if(peutValider){
+    btnValider.disabled = false;
+    btnValider.className = "w-full py-4 rounded-2xl text-white font-bold text-[15px] transition " +
+      "bg-brand-700 active:scale-[.99] active:bg-brand-800 flex items-center justify-center gap-2 shadow-lg shadow-brand-700/30";
+    validerTxt.textContent = "Valider la parcelle et passer à l'analyse";
+  } else {
+    btnValider.disabled = true;
+    btnValider.className = "w-full py-4 rounded-2xl text-white font-bold text-[15px] transition " +
+      "bg-gray-300 cursor-not-allowed flex items-center justify-center gap-2";
+    validerTxt.textContent = points.length === 0 ? "Marquez au moins 3 points"
+                          : (3 - points.length) + " point(s) restant(s)";
+  }
+  majSuperficie();
+}
+
+/* ---------- Ajout d'un point au clic/touch sur la carte ---------- */
+map.on('click', e => {
+  points.push([e.latlng.lat, e.latlng.lng]);
+  const m = L.circleMarker(e.latlng, {
+    radius:6, color:'#fff', weight:2, fillColor:'#059669', fillOpacity:1
+  }).addTo(map);
+  markers.push(m);
+  hint.classList.add('hidden');     // masque l'aide dès le 1er point
+  redessiner();
+});
+
+/* ---------- Annuler le dernier point ---------- */
+btnUndo.addEventListener('click', () => {
+  if(points.length === 0) return;
+  points.pop();
+  const m = markers.pop();
+  if(m) map.removeLayer(m);
+  if(points.length === 0) hint.classList.remove('hidden');
+  redessiner();
+});
+
+/* ---------- Tout effacer ---------- */
+btnClear.addEventListener('click', () => {
+  points = [];
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  hint.classList.remove('hidden');
+  redessiner();
+});
+
+/* ---------- Géolocalisation GPS ---------- */
+const btnGeo = document.getElementById('btnGeo');
+const geoIcon = document.getElementById('geoIcon');
+btnGeo.addEventListener('click', () => {
+  if(!navigator.geolocation){
+    alert("La géolocalisation n'est pas disponible sur cet appareil.");
+    return;
+  }
+  geoIcon.classList.add('spin');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      geoIcon.classList.remove('spin');
+      const { latitude, longitude } = pos.coords;
+      map.setView([latitude, longitude], 18);   // zoom serré sur le champ
+      L.circleMarker([latitude, longitude], {
+        radius:8, color:'#fff', weight:3, fillColor:'#2563eb', fillOpacity:1
+      }).addTo(map).bindPopup('Vous êtes ici').openPopup();
+    },
+    err => {
+      geoIcon.classList.remove('spin');
+      alert("Impossible de vous localiser. Vérifiez que le GPS est activé et que vous avez autorisé l'accès à la position.");
+    },
+    { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+  );
+});
+
+/* ---------- Validation de la parcelle ---------- */
+btnValider.addEventListener('click', () => {
+  if(points.length < 3) return;
+  const m2 = airePolygone(points.map(p => L.latLng(p[0], p[1])));
+  const ha = (m2/10000);
+  // Centre de la parcelle (moyenne des sommets) — utile pour l'analyse de sol GPS
+  const centreLat = points.reduce((s,p)=>s+p[0],0)/points.length;
+  const centreLng = points.reduce((s,p)=>s+p[1],0)/points.length;
+
+  const parcelle = {
+    superficie_ha: +ha.toFixed(3),
+    superficie_m2: Math.round(m2),
+    sommets: points.map(p => ({ lat:+p[0].toFixed(6), lng:+p[1].toFixed(6) })),
+    centre: { lat:+centreLat.toFixed(6), lng:+centreLng.toFixed(6) }
+  };
+
+  // Ici, on transmettra la parcelle à l'étape d'analyse de sol.
+  // Pour l'instant : confirmation visible + données en console.
+  console.log('Parcelle validée :', parcelle);
+  alert("✅ Parcelle validée\n\n"
+      + "Superficie : " + (ha>=1 ? ha.toFixed(2)+" ha" : Math.round(m2)+" m²") + "\n"
+      + "Coins : " + points.length + "\n"
+      + "Centre GPS : " + centreLat.toFixed(5) + ", " + centreLng.toFixed(5) + "\n\n"
+      + "Étape suivante : analyse de sol de cette parcelle.");
+
+  // Exemple de redirection vers le module d'analyse (à activer plus tard) :
+  // const params = new URLSearchParams({ ha:parcelle.superficie_ha, lat:parcelle.centre.lat, lng:parcelle.centre.lng });
+  // window.location.href = "/oad?" + params.toString();
+});
+
+// S'assure que la carte se dimensionne bien au chargement
+setTimeout(()=>map.invalidateSize(), 200);
+</script>
+</body>
+</html>

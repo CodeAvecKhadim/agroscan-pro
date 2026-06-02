@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#10b981">
+<title>AgroScan Pro — Outil d'Aide à la Décision (Analyse de sol)</title>
+<style>
+:root{
+  --vert:#10b981; --vert-fonce:#059669; --vert-clair:#ecfdf5;
+  --bleu:#1b6ca8; --bleu-fonce:#0f4c75; --bleu-clair:#e4f0f8;
+  --or:#d99125; --rouge:#c0392b; --rouge-bg:#fbe6dc;
+  --orange:#e08a1e; --orange-bg:#f8ecd1; --ok:#3f7d3a; --ok-bg:#e6f0df;
+  --ink:#0f172a; --ink-soft:#64748b; --line:#dde4e1;
+  --paper:#f8fafc; --card:#ffffff; --r:16px; --r-sm:10px;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;
+  -webkit-font-smoothing:antialiased;padding:0 0 40px;
+  background-image:radial-gradient(circle at 10% 5%,rgba(31,122,61,.05),transparent 40%),radial-gradient(circle at 90% 95%,rgba(27,108,168,.05),transparent 42%);min-height:100vh}
+.entete{background:linear-gradient(110deg,var(--vert-fonce),var(--vert) 60%,var(--bleu));color:#fff;padding:18px 16px;box-shadow:0 4px 18px -8px rgba(20,90,44,.6)}
+.entete-in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:11px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;flex-shrink:0}
+.entete h1{font-size:1.2rem;font-weight:700;line-height:1.1}
+.entete p{font-size:.74rem;opacity:.9}.entete p b{color:#ffe7b3}
+.wrap{max-width:680px;margin:18px auto;padding:0 16px}
+.carte{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 1px 2px rgba(40,60,40,.05),0 10px 30px -18px rgba(40,80,50,.3);padding:20px;margin-bottom:16px}
+.carte h2{font-size:1.05rem;color:var(--vert-fonce);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.carte .desc{font-size:.86rem;color:var(--ink-soft);margin-bottom:16px}
+.champ{margin-bottom:14px}
+.champ label{display:block;font-weight:600;font-size:.85rem;margin-bottom:6px;color:var(--ink)}
+.champ .unite{color:var(--ink-soft);font-weight:400;font-size:.78rem}
+input,select{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:inherit;font-size:1rem;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:none;border-color:var(--vert);box-shadow:0 0 0 3px rgba(31,122,61,.15)}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231f7a3d' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.grille2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.grille2{grid-template-columns:1fr}}
+.note-seuils{display:none;margin-top:-6px;margin-bottom:14px;font-size:.8rem;color:var(--bleu-fonce);background:var(--bleu-clair);border-radius:var(--r-sm);padding:10px 12px;line-height:1.45}
+.note-seuils.on{display:block}
+.btn{width:100%;padding:15px;border-radius:12px;font-size:1.05rem;font-weight:700;background:var(--vert);color:#fff;cursor:pointer;transition:transform .14s;box-shadow:0 6px 16px -6px rgba(31,122,61,.6);margin-top:6px}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(0)}
+#rapport{display:none}#rapport.actif{display:block;animation:apparait .4s ease}
+@keyframes apparait{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.rapport-tete{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:18px;border-radius:var(--r);color:#fff;margin-bottom:16px;background:linear-gradient(120deg,var(--vert-fonce),var(--vert))}
+.rapport-tete.alerte{background:linear-gradient(120deg,#7a2e1e,var(--rouge))}
+.rapport-tete.attention{background:linear-gradient(120deg,#9a6712,var(--orange))}
+.rapport-tete .ico{font-size:2rem}
+.rapport-tete .txt h3{font-size:1.2rem;font-weight:700}
+.rapport-tete .txt p{font-size:.86rem;opacity:.92}
+.btn-voix{margin-left:auto;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:10px 16px;font-size:.9rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s}
+.btn-voix:hover{background:rgba(255,255,255,.32)}.btn-voix.lit{background:#fff;color:var(--vert-fonce)}
+.diag{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;margin-bottom:10px;border-left-width:5px;background:var(--card)}
+.diag.rouge{border-left-color:var(--rouge);background:var(--rouge-bg)}
+.diag.orange{border-left-color:var(--orange);background:var(--orange-bg)}
+.diag.ok{border-left-color:var(--ok);background:var(--ok-bg)}
+.diag .titre{font-weight:700;font-size:.92rem;margin-bottom:3px;display:flex;align-items:center;gap:7px}
+.diag.rouge .titre{color:#9a3318}.diag.orange .titre{color:#7a4a0e}.diag.ok .titre{color:var(--vert-fonce)}
+.diag .conseil{font-size:.88rem;color:var(--ink-soft);line-height:1.5}
+.diag .mesure{font-size:.78rem;color:var(--ink-soft);font-weight:600;background:rgba(255,255,255,.6);padding:1px 8px;border-radius:20px;margin-left:auto}
+.section-titre{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--bleu-fonce);margin:18px 0 8px}
+.retour{display:inline-block;margin-top:6px;color:var(--bleu);font-weight:600;font-size:.9rem;cursor:pointer;background:none;border:none}
+.retour:hover{text-decoration:underline}
+.avert{font-size:.78rem;color:var(--ink-soft);background:#fff7ef;border:1px solid #f0d9bf;border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;line-height:1.5}
+.avert b{color:var(--vert-fonce)}
+.pied{text-align:center;font-size:.78rem;color:var(--ink-soft);padding:10px 16px}.pied b{color:var(--vert-fonce)}
+</style>
+</head>
+<body>
+
+<header class="entete">
+  <div class="entete-in">
+    <div class="logo">🌱</div>
+    <div>
+      <h1>AgroScan Pro — Analyse de sol</h1>
+      <p>Outil d'Aide à la Décision · une solution <b>Social Technologie</b></p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="carte" id="bloc-formulaire">
+    <h2>🔬 Saisir les mesures du capteur</h2>
+    <p class="desc">Choisissez votre culture (29 disponibles) et reportez les 7 valeurs lues sur l'écran de votre capteur. Les seuils s'adaptent automatiquement à la culture.</p>
+
+    <div class="champ">
+      <label for="culture">🌾 Culture ciblée</label>
+      <select id="culture" onchange="afficherSeuils()">
+        <option value="Riz">Riz</option>
+        <option value="Mil">Mil</option>
+        <option value="Maïs">Maïs</option>
+        <option value="Sorgho">Sorgho</option>
+        <option value="Arachide">Arachide</option>
+        <option value="Sésame">Sésame</option>
+        <option value="Coton">Coton</option>
+        <option value="Oignon">Oignon</option>
+        <option value="Tomate">Tomate</option>
+        <option value="Carotte">Carotte</option>
+        <option value="Chou">Chou</option>
+        <option value="Piment">Piment</option>
+        <option value="Gombo">Gombo</option>
+        <option value="Aubergine amère">Aubergine amère</option>
+        <option value="Mangue">Mangue</option>
+        <option value="Pastèque">Pastèque</option>
+        <option value="Melon">Melon</option>
+        <option value="Banane">Banane</option>
+        <option value="Papaye">Papaye</option>
+        <option value="Bisap">Bisap</option>
+        <option value="Concombre">Concombre</option>
+        <option value="Courgette">Courgette</option>
+        <option value="Laitue">Laitue</option>
+        <option value="Manioc">Manioc</option>
+        <option value="Navet chinois">Navet chinois</option>
+        <option value="Patate douce">Patate douce</option>
+        <option value="Poivron">Poivron</option>
+        <option value="Pomme de terre">Pomme de terre</option>
+        <option value="Jaxatu">Jaxatu</option>
+      </select>
+    </div>
+    <div class="note-seuils" id="note-seuils"></div>
+
+    <div class="grille2">
+      <div class="champ"><label for="humidite">💧 Humidité du sol <span class="unite">(%)</span></label>
+        <input type="number" id="humidite" inputmode="decimal" step="any" placeholder="Ex : 45"></div>
+      <div class="champ"><label for="temperature">🌡️ Température du sol <span class="unite">(°C)</span></label>
+        <input type="number" id="temperature" inputmode="decimal" step="any" placeholder="Ex : 28"></div>
+    </div>
+    <div class="grille2">
+      <div class="champ"><label for="ec">⚡ Conductivité (EC) <span class="unite">(mS/cm)</span></label>
+        <input type="number" id="ec" inputmode="decimal" step="any" placeholder="Ex : 0.8"></div>
+      <div class="champ"><label for="ph">🧪 pH du sol <span class="unite">(0 à 14)</span></label>
+        <input type="number" id="ph" inputmode="decimal" step="any" placeholder="Ex : 6.5"></div>
+    </div>
+    <div class="grille2">
+      <div class="champ"><label for="azote">🌿 Azote (N) <span class="unite">(mg/kg)</span></label>
+        <input type="number" id="azote" inputmode="decimal" step="any" placeholder="Ex : 60"></div>
+      <div class="champ"><label for="phosphore">🌿 Phosphore (P) <span class="unite">(mg/kg)</span></label>
+        <input type="number" id="phosphore" inputmode="decimal" step="any" placeholder="Ex : 25"></div>
+    </div>
+    <div class="champ"><label for="potassium">🌿 Potassium (K) <span class="unite">(mg/kg)</span></label>
+      <input type="number" id="potassium" inputmode="decimal" step="any" placeholder="Ex : 180"></div>
+
+    <button class="btn" onclick="analyser()">📋 Générer le diagnostic du sol</button>
+  </div>
+
+  <div class="carte" id="rapport">
+    <div class="rapport-tete" id="rapport-tete">
+      <span class="ico" id="rapport-ico">✅</span>
+      <div class="txt">
+        <h3 id="rapport-titre">Rapport de Diagnostic du Sol</h3>
+        <p id="rapport-sous">Culture analysée</p>
+      </div>
+      <button class="btn-voix" id="btn-voix" onclick="lireRapport()">🔊 Écouter</button>
+    </div>
+    <div id="rapport-contenu"></div>
+    <div class="avert">⚠️ <b>Outil d'orientation (~70 %).</b> Ce diagnostic ne remplace pas une analyse de laboratoire certifiée ni l'avis d'un technicien. Pour confirmer : ISRA Hann (+221 33 832 84 26) ou ANCAR (+221 33 869 73 00).</div>
+    <button class="retour" onclick="nouvelleAnalyse()">← Faire une nouvelle analyse</button>
+  </div>
+</div>
+
+<div class="pied"><b>AgroScan Pro</b> — Social Technologie · 📞 +221 78 491 90 11</div>
+
+<script>
+/* =====================================================================
+   AgroScan Pro — Module OAD (29 cultures, seuils par culture)
+   Les alertes "Sénégal" (salinité, acidité) sont des règles générales.
+   Les seuils N-P-K, pH et EC sont SPÉCIFIQUES à la culture choisie.
+   ===================================================================== */
+
+const SEUILS = {"Riz":{"ph":[5.0,7.0],"ec":[0.3,1.0],"n":[80.0,200.0],"p":[40.0,100.0],"k":[100.0,250.0],"hum":[70.0,100.0],"temp":[20.0,35.0],"sal":500.0},"Mil":{"ph":[5.5,7.5],"ec":[0.1,1.0],"n":[30.0,100.0],"p":[20.0,60.0],"k":[60.0,150.0],"hum":[20.0,60.0],"temp":[25.0,38.0],"sal":800.0},"Maïs":{"ph":[5.8,7.0],"ec":[0.2,1.5],"n":[80.0,200.0],"p":[50.0,120.0],"k":[100.0,250.0],"hum":[50.0,80.0],"temp":[18.0,32.0],"sal":600.0},"Sorgho":{"ph":[5.5,7.5],"ec":[0.15,1.2],"n":[40.0,120.0],"p":[25.0,70.0],"k":[70.0,180.0],"hum":[25.0,70.0],"temp":[22.0,36.0],"sal":800.0},"Arachide":{"ph":[5.8,7.0],"ec":[0.2,1.5],"n":[50.0,150.0],"p":[30.0,80.0],"k":[80.0,200.0],"hum":[40.0,70.0],"temp":[22.0,32.0],"sal":600.0},"Sésame":{"ph":[5.5,7.5],"ec":[0.1,1.2],"n":[30.0,100.0],"p":[20.0,60.0],"k":[60.0,150.0],"hum":[25.0,60.0],"temp":[25.0,38.0],"sal":700.0},"Coton":{"ph":[6.0,7.5],"ec":[0.2,1.5],"n":[60.0,180.0],"p":[40.0,100.0],"k":[80.0,200.0],"hum":[40.0,75.0],"temp":[22.0,35.0],"sal":700.0},"Oignon":{"ph":[6.0,7.5],"ec":[0.3,1.5],"n":[80.0,200.0],"p":[50.0,120.0],"k":[100.0,250.0],"hum":[50.0,75.0],"temp":[18.0,30.0],"sal":600.0},"Tomate":{"ph":[6.0,7.0],"ec":[0.3,2.0],"n":[100.0,250.0],"p":[60.0,150.0],"k":[150.0,300.0],"hum":[60.0,80.0],"temp":[18.0,30.0],"sal":800.0},"Carotte":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[100.0,200.0],"hum":[55.0,75.0],"temp":[15.0,25.0],"sal":500.0},"Chou":{"ph":[6.0,7.5],"ec":[0.25,2.0],"n":[100.0,250.0],"p":[60.0,150.0],"k":[150.0,300.0],"hum":[60.0,80.0],"temp":[15.0,25.0],"sal":700.0},"Piment":{"ph":[5.5,7.0],"ec":[0.2,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[120.0,250.0],"hum":[55.0,80.0],"temp":[22.0,32.0],"sal":700.0},"Gombo":{"ph":[5.8,7.0],"ec":[0.15,1.5],"n":[60.0,150.0],"p":[40.0,100.0],"k":[80.0,200.0],"hum":[50.0,75.0],"temp":[22.0,35.0],"sal":700.0},"Aubergine amère":{"ph":[5.5,7.0],"ec":[0.15,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[120.0,250.0],"hum":[55.0,80.0],"temp":[22.0,32.0],"sal":700.0},"Mangue":{"ph":[5.5,7.5],"ec":[0.15,1.5],"n":[40.0,120.0],"p":[30.0,80.0],"k":[80.0,200.0],"hum":[40.0,75.0],"temp":[24.0,38.0],"sal":800.0},"Pastèque":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[60.0,150.0],"p":[40.0,100.0],"k":[100.0,200.0],"hum":[50.0,80.0],"temp":[24.0,35.0],"sal":700.0},"Melon":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[60.0,150.0],"p":[40.0,100.0],"k":[100.0,200.0],"hum":[50.0,80.0],"temp":[24.0,35.0],"sal":600.0},"Banane":{"ph":[5.5,7.0],"ec":[0.3,1.5],"n":[100.0,250.0],"p":[60.0,150.0],"k":[150.0,350.0],"hum":[70.0,90.0],"temp":[22.0,32.0],"sal":800.0},"Papaye":{"ph":[5.5,7.0],"ec":[0.2,1.5],"n":[80.0,200.0],"p":[50.0,120.0],"k":[120.0,250.0],"hum":[60.0,85.0],"temp":[22.0,34.0],"sal":700.0},"Bisap":{"ph":[5.5,7.5],"ec":[0.1,1.2],"n":[30.0,100.0],"p":[20.0,60.0],"k":[60.0,150.0],"hum":[30.0,70.0],"temp":[22.0,38.0],"sal":700.0},"Concombre":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[100.0,200.0],"hum":[60.0,80.0],"temp":[18.0,32.0],"sal":600.0},"Courgette":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[100.0,200.0],"hum":[55.0,80.0],"temp":[18.0,32.0],"sal":600.0},"Laitue":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[100.0,200.0],"hum":[60.0,80.0],"temp":[15.0,25.0],"sal":500.0},"Manioc":{"ph":[5.5,7.0],"ec":[0.1,1.2],"n":[30.0,100.0],"p":[20.0,60.0],"k":[80.0,200.0],"hum":[40.0,80.0],"temp":[22.0,32.0],"sal":700.0},"Navet chinois":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[70.0,160.0],"p":[40.0,100.0],"k":[80.0,180.0],"hum":[55.0,75.0],"temp":[15.0,28.0],"sal":500.0},"Patate douce":{"ph":[5.5,7.0],"ec":[0.15,1.2],"n":[50.0,150.0],"p":[30.0,80.0],"k":[80.0,200.0],"hum":[50.0,80.0],"temp":[22.0,32.0],"sal":600.0},"Poivron":{"ph":[6.0,7.0],"ec":[0.2,1.5],"n":[80.0,200.0],"p":[50.0,120.0],"k":[120.0,250.0],"hum":[60.0,80.0],"temp":[18.0,30.0],"sal":700.0},"Pomme de terre":{"ph":[5.5,7.0],"ec":[0.2,1.5],"n":[80.0,200.0],"p":[50.0,120.0],"k":[100.0,250.0],"hum":[55.0,80.0],"temp":[15.0,25.0],"sal":500.0},"Jaxatu":{"ph":[5.5,7.0],"ec":[0.15,1.5],"n":[80.0,180.0],"p":[50.0,120.0],"k":[100.0,200.0],"hum":[55.0,80.0],"temp":[22.0,35.0],"sal":700.0}};
+
+let texteVocal = "";
+
+function val(id){
+  const v = document.getElementById(id).value.trim();
+  if(v === "") return null;
+  const n = parseFloat(v); return isNaN(n) ? null : n;
+}
+
+/* Affiche un rappel des plages optimales de la culture choisie. */
+function afficherSeuils(){
+  const c = document.getElementById("culture").value;
+  const s = SEUILS[c];
+  const note = document.getElementById("note-seuils");
+  if(!s){ note.classList.remove("on"); return; }
+  note.classList.add("on");
+  note.innerHTML = "🎯 <b>Plages optimales pour "+c+"</b> : pH "+s.ph[0]+"–"+s.ph[1]
+    +" · EC "+s.ec[0]+"–"+s.ec[1]+" mS/cm · N "+s.n[0]+"–"+s.n[1]
+    +" · P "+s.p[0]+"–"+s.p[1]+" · K "+s.k[0]+"–"+s.k[1]+" mg/kg";
+}
+
+function analyser(){
+  const culture = document.getElementById("culture").value;
+  const s = SEUILS[culture];
+  const humidite=val("humidite"), temperature=val("temperature"), ec=val("ec"),
+        ph=val("ph"), azote=val("azote"), phosphore=val("phosphore"), potassium=val("potassium");
+
+  if(ec===null && ph===null && azote===null && phosphore===null && potassium===null){
+    alert("Veuillez saisir au moins quelques mesures (EC, pH, N, P ou K) avant de générer le diagnostic.");
+    return;
+  }
+
+  const alertes=[], npk=[], generaux=[], phrasesVocales=[];
+  let gravite="ok";
+
+  /* ---------- 1) ALERTES CRITIQUES SÉNÉGAL (règles générales) ---------- */
+  if(ec!==null){
+    if(ec > 2.0){
+      alertes.push({niveau:"rouge",titre:"🧂 Salinité élevée (CRITIQUE)",
+        conseil:"Attention, salinité élevée détectée (Fléau fréquent dans les Niayes et le Delta du Fleuve). Risque de blocage racinaire. Recommandation : Lessivage des sols à l'eau douce.",
+        mesure:ec+" mS/cm"});
+      phrasesVocales.push("Alerte importante : la salinité du sol est élevée. C'est un problème fréquent dans les Niayes et le Delta du Fleuve. Il y a un risque de blocage des racines. Il est recommandé de laver le sol avec de l'eau douce.");
+      gravite="alerte";
+    } else if(ec > 1.2){
+      alertes.push({niveau:"orange",titre:"🧂 Salinité à surveiller",
+        conseil:"Conductivité électrique modérément élevée. Surveillez la salinité, surtout pour les cultures sensibles (oignon, laitue). Améliorez le drainage et évitez de sur-irriguer.",
+        mesure:ec+" mS/cm"});
+      phrasesVocales.push("Attention : la salinité du sol commence à être élevée. Surveillez-la, surtout pour les cultures sensibles comme l'oignon.");
+      if(gravite==="ok") gravite="attention";
+    } else {
+      // dans la plage optimale de la culture ?
+      let txt="Pas de problème de salinité détecté.";
+      if(s && s.ec[1]!==null && ec > s.ec[1]) txt="Salinité correcte en général, mais un peu élevée pour "+culture+" (optimal ≤ "+s.ec[1]+" mS/cm).";
+      generaux.push({niveau:"ok",titre:"⚡ Conductivité normale",conseil:txt,mesure:ec+" mS/cm"});
+    }
+  }
+
+  if(ph!==null){
+    if(ph < 5.5){
+      alertes.push({niveau:"rouge",titre:"🧪 Sol fortement acide",
+        conseil:"Sol fortement acide (Fréquent en Casamance). Risque de toxicité aluminique et blocage du Phosphore. Recommandation : Apport d'amendement calcaire (Chaux agricole).",
+        mesure:"pH "+ph});
+      phrasesVocales.push("Le sol est fortement acide. C'est fréquent en Casamance. Il y a un risque de toxicité de l'aluminium et le phosphore est bloqué. Il est recommandé d'apporter de la chaux agricole.");
+      gravite="alerte";
+    } else if(ph > 8.5){
+      alertes.push({niveau:"orange",titre:"🧪 Sol trop basique",
+        conseil:"Sol basique : le fer, le zinc et le manganèse peuvent être bloqués. Apportez de la matière organique pour faire baisser le pH progressivement.",mesure:"pH "+ph});
+      phrasesVocales.push("Le sol est trop basique. Apportez de la matière organique pour faire baisser le pH.");
+      if(gravite==="ok") gravite="attention";
+    } else {
+      // pH non critique : on vérifie l'adéquation à la culture
+      let txt="Le pH est dans une plage favorable à la plupart des cultures.";
+      if(s){
+        if(ph < s.ph[0]) txt="pH un peu bas pour "+culture+" (optimal "+s.ph[0]+"–"+s.ph[1]+"). Surveillez, un léger chaulage peut aider.";
+        else if(ph > s.ph[1]) txt="pH un peu élevé pour "+culture+" (optimal "+s.ph[0]+"–"+s.ph[1]+").";
+        else txt="pH idéal pour "+culture+" (optimal "+s.ph[0]+"–"+s.ph[1]+").";
+      }
+      generaux.push({niveau:"ok",titre:"🧪 pH "+( s && (ph>=s.ph[0]&&ph<=s.ph[1])?"favorable":"à surveiller"),conseil:txt,mesure:"pH "+ph});
+    }
+  }
+
+  /* ---------- 2) ANALYSE N-P-K (seuils SPÉCIFIQUES à la culture) ---------- */
+  // Azote
+  if(azote!==null){
+    const seuil = s ? s.n[0] : 50;
+    if(azote < seuil){
+      npk.push({niveau:"orange",titre:"🌿 Carence en Azote (N)",
+        conseil:"Carence en Azote pour "+culture+" (optimal "+s.n[0]+"–"+s.n[1]+" mg/kg). Apport recommandé d'urée ou de matière organique compostée.",
+        mesure:azote+" mg/kg"});
+      phrasesVocales.push("Le sol manque d'azote pour la culture "+culture+". Apportez de l'urée ou de la matière organique compostée.");
+      if(gravite==="ok") gravite="attention";
+    } else if(s && azote > s.n[1]){
+      npk.push({niveau:"orange",titre:"🌿 Excès d'Azote (N)",
+        conseil:"Azote au-dessus de l'optimal pour "+culture+" ("+s.n[0]+"–"+s.n[1]+"). Risque de feuillage excessif au détriment des fruits ; réduisez les apports azotés.",
+        mesure:azote+" mg/kg"});
+      phrasesVocales.push("Le sol a trop d'azote. Réduisez les apports pour éviter trop de feuilles.");
+      if(gravite==="ok") gravite="attention";
+    } else {
+      npk.push({niveau:"ok",titre:"🌿 Azote (N) suffisant",conseil:"Niveau d'azote satisfaisant pour "+culture+".",mesure:azote+" mg/kg"});
+    }
+  }
+  // Phosphore
+  if(phosphore!==null){
+    const seuil = s ? s.p[0] : 20;
+    if(phosphore < seuil){
+      npk.push({niveau:"orange",titre:"🌿 Carence en Phosphore (P)",
+        conseil:"Carence en Phosphore pour "+culture+" (optimal "+s.p[0]+"–"+s.p[1]+" mg/kg). Impact sur le développement des racines. Apport recommandé de Phosphate d'Ammoniac (DAP) ou phosphate de Thiès.",
+        mesure:phosphore+" mg/kg"});
+      phrasesVocales.push("Le sol manque de phosphore pour la culture "+culture+". Cela ralentit le développement des racines. Apportez du phosphate d'ammoniac, le D.A.P, ou du phosphate de Thiès.");
+      if(gravite==="ok") gravite="attention";
+    } else if(s && phosphore > s.p[1]){
+      npk.push({niveau:"ok",titre:"🌿 Phosphore (P) élevé",conseil:"Phosphore au-dessus de l'optimal pour "+culture+". Pas d'apport supplémentaire nécessaire.",mesure:phosphore+" mg/kg"});
+    } else {
+      npk.push({niveau:"ok",titre:"🌿 Phosphore (P) suffisant",conseil:"Niveau de phosphore satisfaisant pour "+culture+".",mesure:phosphore+" mg/kg"});
+    }
+  }
+  // Potassium
+  if(potassium!==null){
+    const seuil = s ? s.k[0] : 150;
+    if(potassium < seuil){
+      npk.push({niveau:"orange",titre:"🌿 Carence en Potassium (K)",
+        conseil:"Carence en Potassium pour "+culture+" (optimal "+s.k[0]+"–"+s.k[1]+" mg/kg). Impact sur le calibre et la qualité des fruits/tubercules. Apport recommandé de Sulfate de Potassium.",
+        mesure:potassium+" mg/kg"});
+      phrasesVocales.push("Le sol manque de potassium pour la culture "+culture+". Cela réduit la taille et la qualité des fruits et des tubercules. Apportez du sulfate de potassium.");
+      if(gravite==="ok") gravite="attention";
+    } else if(s && potassium > s.k[1]){
+      npk.push({niveau:"ok",titre:"🌿 Potassium (K) élevé",conseil:"Potassium au-dessus de l'optimal pour "+culture+". Pas d'apport supplémentaire nécessaire.",mesure:potassium+" mg/kg"});
+    } else {
+      npk.push({niveau:"ok",titre:"🌿 Potassium (K) suffisant",conseil:"Niveau de potassium satisfaisant pour "+culture+".",mesure:potassium+" mg/kg"});
+    }
+  }
+
+  /* ---------- 3) INFOS COMPLÉMENTAIRES (humidité/température par culture) ---------- */
+  if(humidite!==null){
+    let n="ok", c="Humidité du sol : "+humidite+" %.";
+    if(s){
+      if(humidite < s.hum[0]){ n="orange"; c="Sol sec pour "+culture+" (optimal "+s.hum[0]+"–"+s.hum[1]+" %). Pensez à irriguer."; }
+      else if(humidite > s.hum[1]){ n="orange"; c="Sol très humide pour "+culture+" (optimal "+s.hum[0]+"–"+s.hum[1]+" %). Vérifiez le drainage."; }
+      else c="Humidité idéale pour "+culture+" ("+s.hum[0]+"–"+s.hum[1]+" %).";
+    }
+    generaux.push({niveau:n,titre:"💧 Humidité",conseil:c,mesure:humidite+" %"});
+  }
+  if(temperature!==null){
+    let n="ok", c="Température du sol : "+temperature+" °C.";
+    if(s){
+      if(temperature < s.temp[0]){ n="orange"; c="Sol froid pour "+culture+" (optimal "+s.temp[0]+"–"+s.temp[1]+" °C). La germination peut être ralentie."; }
+      else if(temperature > s.temp[1]){ n="orange"; c="Sol chaud pour "+culture+" (optimal "+s.temp[0]+"–"+s.temp[1]+" °C)."; }
+      else c="Température idéale pour "+culture+" ("+s.temp[0]+"–"+s.temp[1]+" °C).";
+    }
+    generaux.push({niveau:n,titre:"🌡️ Température du sol",conseil:c,mesure:temperature+" °C"});
+  }
+
+  /* ---------- AFFICHAGE ---------- */
+  const contenu=document.getElementById("rapport-contenu"); let html="";
+  if(alertes.length){ html+='<div class="section-titre">🚨 Alertes critiques</div>'; alertes.forEach(d=>html+=ligne(d)); }
+  if(npk.length){ html+='<div class="section-titre">🌿 Analyse des éléments N-P-K</div>'; npk.forEach(d=>html+=ligne(d)); }
+  if(generaux.length){ html+='<div class="section-titre">📊 Autres paramètres</div>'; generaux.forEach(d=>html+=ligne(d)); }
+  contenu.innerHTML=html;
+
+  const tete=document.getElementById("rapport-tete"),ico=document.getElementById("rapport-ico"),
+        titre=document.getElementById("rapport-titre"),sous=document.getElementById("rapport-sous");
+  tete.className="rapport-tete"+(gravite==="alerte"?" alerte":gravite==="attention"?" attention":"");
+  if(gravite==="alerte"){ico.textContent="🚨";titre.textContent="Diagnostic : action urgente requise";}
+  else if(gravite==="attention"){ico.textContent="⚠️";titre.textContent="Diagnostic : corrections nécessaires";}
+  else {ico.textContent="✅";titre.textContent="Diagnostic : sol favorable";}
+  sous.textContent="Culture analysée : "+culture;
+
+  let intro="Rapport de diagnostic du sol pour la culture : "+culture+". ";
+  if(gravite==="alerte") intro+="Attention, des problèmes importants ont été détectés. ";
+  else if(gravite==="attention") intro+="Des corrections sont nécessaires. ";
+  else intro+="Le sol est globalement favorable. ";
+  let conclusion = phrasesVocales.length===0 ? "Aucun problème majeur détecté. Vous pouvez cultiver dans de bonnes conditions." : "Voici les recommandations. ";
+  texteVocal = intro+conclusion+phrasesVocales.join(" ")+" Pour confirmer ce diagnostic, contactez un technicien de l'A.N.C.A.R ou de l'I.S.R.A.";
+
+  document.getElementById("rapport").classList.add("actif");
+  document.getElementById("rapport").scrollIntoView({behavior:"smooth",block:"start"});
+  arreterVoix();
+}
+
+function ligne(d){
+  return '<div class="diag '+d.niveau+'"><div class="titre">'+d.titre+'<span class="mesure">'+d.mesure+'</span></div><div class="conseil">'+d.conseil+'</div></div>';
+}
+
+/* ---------- Lecture vocale (Web Speech API) ---------- */
+function lireRapport(){
+  if(!('speechSynthesis' in window)){ alert("La lecture vocale n'est pas disponible sur ce navigateur. Essayez Chrome sur Android."); return; }
+  if(speechSynthesis.speaking){ arreterVoix(); return; }
+  const u=new SpeechSynthesisUtterance(texteVocal);
+  u.lang="fr-FR"; u.rate=0.92; u.pitch=1.0;
+  const voix=speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith("fr"));
+  if(voix) u.voice=voix;
+  const btn=document.getElementById("btn-voix");
+  btn.classList.add("lit"); btn.textContent="⏸️ Arrêter";
+  u.onend=()=>{btn.classList.remove("lit");btn.textContent="🔊 Écouter";};
+  u.onerror=()=>{btn.classList.remove("lit");btn.textContent="🔊 Écouter";};
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function arreterVoix(){ if('speechSynthesis' in window) speechSynthesis.cancel();
+  const btn=document.getElementById("btn-voix"); if(btn){btn.classList.remove("lit");btn.textContent="🔊 Écouter";} }
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
+function nouvelleAnalyse(){ arreterVoix(); document.getElementById("rapport").classList.remove("actif");
+  document.getElementById("bloc-formulaire").scrollIntoView({behavior:"smooth",block:"start"}); }
+
+// Affiche les seuils de la première culture au chargement
+afficherSeuils();
+</script>
+</body>
+</html>

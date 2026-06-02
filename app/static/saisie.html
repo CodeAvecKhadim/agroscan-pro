@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#059669">
+<title>AgroScan Pro — Saisie des données du sol</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{
+    colors:{ brand:{50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b'} },
+    boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
+  }}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  body{font-family:'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  /* Animation au clic sur une carte */
+  @keyframes tap{0%{transform:scale(1)}50%{transform:scale(.97)}100%{transform:scale(1)}}
+  .tap{animation:tap .18s ease}
+  /* Apparition douce */
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .rise{animation:rise .4s ease both}
+  /* Carte active (remplie) : liseré vert */
+  .card-active{box-shadow:0 0 0 2px #059669, 0 8px 20px -10px rgba(21,128,61,.5)!important}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  /* pulse météo */
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  .pulse{animation:pulse 1.5s ease-in-out infinite}
+</style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 pb-28">
+
+<div class="max-w-md mx-auto">
+
+  <!-- ===== EN-TÊTE ===== -->
+  <header class="px-4 pt-5 pb-3">
+    <div class="flex items-center gap-2 text-[12px] text-brand-700 font-semibold mb-1">
+      <span class="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center text-[11px]">2</span>
+      Étape 2 sur 3 · Saisie des mesures
+    </div>
+    <h1 class="text-2xl font-extrabold text-brand-800 leading-tight">Données du sol</h1>
+    <p class="text-sm text-slate-500">Reportez les valeurs lues sur votre capteur 7-en-1.</p>
+  </header>
+
+  <!-- ===== WIDGET MÉTÉO SIMULÉE ===== -->
+  <section class="px-4 mb-5">
+    <div id="meteo" class="rise rounded-3xl p-4 text-white shadow-lg relative overflow-hidden
+         bg-gradient-to-br from-sky-500 to-blue-600">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[11px] uppercase tracking-wide opacity-80 font-semibold flex items-center gap-1">
+            <span id="meteo-zone" class="pulse">Localisation…</span>
+          </div>
+          <div class="flex items-end gap-2 mt-1">
+            <span id="meteo-temp" class="text-3xl font-extrabold leading-none">--°</span>
+            <span id="meteo-emoji" class="text-2xl">⛅</span>
+          </div>
+          <div id="meteo-desc" class="text-[13px] opacity-90 mt-1">Chargement de la météo…</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] uppercase tracking-wide opacity-80 font-semibold">Évapotranspiration</div>
+          <div id="meteo-evap" class="text-lg font-bold">—</div>
+          <div id="meteo-conseil" class="text-[11px] opacity-90 mt-1 max-w-[130px]"></div>
+        </div>
+      </div>
+      <div class="text-[10px] opacity-70 mt-2">Météo en temps réel · source Open-Meteo</div>
+    </div>
+  </section>
+
+  <!-- ===== SÉLECTEUR DE CULTURE ===== -->
+  <section class="px-4 mb-5">
+    <h2 class="text-sm font-bold text-slate-700 mb-2">🌾 Culture ciblée</h2>
+    <div class="grid grid-cols-5 gap-2" id="cultures-rapide"></div>
+    <!-- accès aux 29 cultures -->
+    <div class="mt-2">
+      <select id="culture-select"
+        class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-slate-700">
+      </select>
+    </div>
+  </section>
+
+  <!-- ===== CARTES DES PARAMÈTRES ===== -->
+  <section class="px-4">
+    <h2 class="text-sm font-bold text-slate-700 mb-2">🔬 Mesures du capteur</h2>
+    <div class="grid grid-cols-2 gap-3" id="cards"></div>
+  </section>
+
+</div>
+
+<!-- ===== BOUTON GÉANT (fixe en bas) ===== -->
+<div class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-8">
+  <div class="max-w-md mx-auto">
+    <button id="btnDiag"
+      class="w-full py-4 rounded-2xl text-white font-bold text-base bg-brand-700 shadow-lg shadow-brand-700/30
+             active:scale-[.99] active:bg-brand-800 transition flex items-center justify-center gap-2">
+      🚀 Lancer le diagnostic intelligent
+    </button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   AgroScan Pro — Page de saisie des données (Étape 2)
+   Cartes interactives + sélecteur culture + météo simulée
+   ===================================================================== */
+
+/* ---------- Les 7 paramètres du capteur (cartes) ---------- */
+const PARAMS = [
+  { id:'moisture', nom:'Humidité',     unite:'%',     icone:'💧', couleur:'sky',     ph:'Ex : 45' },
+  { id:'temp',     nom:'Température',   unite:'°C',    icone:'🌡️', couleur:'orange',  ph:'Ex : 28' },
+  { id:'ec',       nom:'Conductivité', unite:'mS/cm', icone:'⚡', couleur:'yellow',  ph:'Ex : 0.8' },
+  { id:'ph',       nom:'pH du sol',    unite:'pH',    icone:'🧪', couleur:'purple',  ph:'Ex : 6.5' },
+  { id:'n',        nom:'Azote (N)',    unite:'mg/kg', icone:'🌿', couleur:'green',   ph:'Ex : 60' },
+  { id:'p',        nom:'Phosphore (P)',unite:'mg/kg', icone:'🪨', couleur:'amber',   ph:'Ex : 25' },
+  { id:'k',        nom:'Potassium (K)',unite:'mg/kg', icone:'🍌', couleur:'lime',    ph:'Ex : 180' },
+];
+
+/* Map des couleurs Tailwind (classes en clair pour le CDN) */
+const COUL = {
+  sky:   { bg:'bg-sky-50',    ic:'bg-sky-100',    tx:'text-sky-700' },
+  orange:{ bg:'bg-orange-50', ic:'bg-orange-100', tx:'text-orange-700' },
+  yellow:{ bg:'bg-yellow-50', ic:'bg-yellow-100', tx:'text-yellow-700' },
+  purple:{ bg:'bg-purple-50', ic:'bg-purple-100', tx:'text-purple-700' },
+  green: { bg:'bg-green-50',  ic:'bg-green-100',  tx:'text-green-700' },
+  amber: { bg:'bg-amber-50',  ic:'bg-amber-100',  tx:'text-amber-700' },
+  lime:  { bg:'bg-lime-50',   ic:'bg-lime-100',   tx:'text-lime-700' },
+};
+
+/* ---------- Génération des cartes ---------- */
+const cardsEl = document.getElementById('cards');
+PARAMS.forEach((p, i) => {
+  const c = COUL[p.couleur];
+  const wrap = document.createElement('div');
+  wrap.className = `card ${c.bg} rounded-2xl p-3 border border-slate-100 shadow-sm rise`;
+  wrap.style.animationDelay = (i*0.04)+'s';
+  wrap.id = 'card-'+p.id;
+  wrap.innerHTML = `
+    <div class="flex items-center gap-2 mb-2">
+      <div class="w-9 h-9 rounded-xl ${c.ic} flex items-center justify-center text-lg">${p.icone}</div>
+      <div class="leading-tight">
+        <div class="text-[13px] font-bold text-slate-700">${p.nom}</div>
+        <div class="text-[10px] text-slate-400 font-semibold">${p.unite}</div>
+      </div>
+    </div>
+    <input type="number" inputmode="decimal" step="any" placeholder="${p.ph}" data-id="${p.id}"
+      class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-base font-semibold
+             text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+  `;
+  cardsEl.appendChild(wrap);
+});
+
+/* Animation + état "rempli" au clic/saisie sur une carte */
+cardsEl.querySelectorAll('input').forEach(inp => {
+  const card = document.getElementById('card-'+inp.dataset.id);
+  inp.addEventListener('focus', () => { card.classList.add('tap'); setTimeout(()=>card.classList.remove('tap'),200); });
+  inp.addEventListener('input', () => {
+    card.classList.toggle('card-active', inp.value.trim() !== '');
+  });
+});
+
+/* ---------- Sélecteur de culture ---------- */
+const CULTURES_RAPIDE = [
+  { nom:'Riz',      icone:'🌾' },
+  { nom:'Tomate',   icone:'🍅' },
+  { nom:'Oignon',   icone:'🧅' },
+  { nom:'Piment',   icone:'🌶️' },
+  { nom:'Arachide', icone:'🥜' },
+];
+// liste complète des 29 cultures pour le menu déroulant
+const TOUTES_CULTURES = ["Riz","Mil","Maïs","Sorgho","Arachide","Sésame","Coton","Oignon","Tomate","Carotte","Chou","Piment","Gombo","Aubergine amère","Mangue","Pastèque","Melon","Banane","Papaye","Bisap","Concombre","Courgette","Laitue","Manioc","Navet chinois","Patate douce","Poivron","Pomme de terre","Jaxatu"];
+
+let cultureChoisie = 'Riz';
+const rapideEl = document.getElementById('cultures-rapide');
+const selectEl = document.getElementById('culture-select');
+
+// remplit le menu déroulant complet
+TOUTES_CULTURES.forEach(c => {
+  const o = document.createElement('option');
+  o.value = c; o.textContent = c;
+  selectEl.appendChild(o);
+});
+
+// boutons rapides
+function rendreCulturesRapide(){
+  rapideEl.innerHTML = '';
+  CULTURES_RAPIDE.forEach(c => {
+    const b = document.createElement('button');
+    const actif = c.nom === cultureChoisie;
+    b.className = `flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl border transition active:scale-95 ${
+      actif ? 'bg-brand-700 border-brand-700 text-white shadow-md shadow-brand-700/30'
+            : 'bg-white border-slate-200 text-slate-600'}`;
+    b.innerHTML = `<span class="text-xl">${c.icone}</span><span class="text-[10px] font-semibold">${c.nom}</span>`;
+    b.onclick = () => { choisirCulture(c.nom); };
+    rapideEl.appendChild(b);
+  });
+}
+function choisirCulture(nom){
+  cultureChoisie = nom;
+  // synchronise le menu déroulant
+  selectEl.value = nom;
+  rendreCulturesRapide();
+}
+selectEl.addEventListener('change', () => { cultureChoisie = selectEl.value; rendreCulturesRapide(); });
+choisirCulture('Riz');
+
+/* ---------- Widget météo RÉELLE (API Open-Meteo, gratuite, sans clé) ---------- *
+   On récupère la vraie météo du lieu (géolocalisation) via api.open-meteo.com :
+   température, humidité, code météo, et évapotranspiration de référence (ET0 FAO).
+   Si la localisation ou le réseau échoue, on garde une estimation de repli
+   pour que l'affichage ne soit jamais vide. */
+
+// Villes de repli (si le GPS est refusé) — pour au moins nommer une zone.
+const ZONES = [
+  { nom:'Podor',       lat:16.65, lng:-14.96 },
+  { nom:'Saint-Louis', lat:16.02, lng:-16.49 },
+  { nom:'Dakar',       lat:14.69, lng:-17.45 },
+  { nom:'Thiès',       lat:14.79, lng:-16.93 },
+  { nom:'Kaolack',     lat:14.15, lng:-16.07 },
+  { nom:'Tambacounda', lat:13.77, lng:-13.67 },
+  { nom:'Ziguinchor',  lat:12.56, lng:-16.27 },
+  { nom:'Kédougou',    lat:12.56, lng:-12.18 },
+];
+function zonePlusProche(lat, lng){
+  let best = ZONES[2], dmin = Infinity;   // défaut Dakar
+  ZONES.forEach(z => {
+    const d = (z.lat-lat)**2 + (z.lng-lng)**2;
+    if(d < dmin){ dmin = d; best = z; }
+  });
+  return best;
+}
+
+// Traduit le code météo Open-Meteo (WMO) en texte + emoji simples.
+function decrireTemps(code){
+  if(code === 0) return { emoji:'☀️', desc:'Ciel dégagé' };
+  if(code <= 2)  return { emoji:'🌤️', desc:'Peu nuageux' };
+  if(code === 3) return { emoji:'☁️', desc:'Couvert' };
+  if(code <= 48) return { emoji:'🌫️', desc:'Brume / brouillard' };
+  if(code <= 67) return { emoji:'🌧️', desc:'Pluie' };
+  if(code <= 77) return { emoji:'🌨️', desc:'Averses' };
+  if(code <= 82) return { emoji:'🌧️', desc:'Averses fortes' };
+  if(code <= 99) return { emoji:'⛈️', desc:'Orage' };
+  return { emoji:'🌡️', desc:'Conditions variables' };
+}
+
+// Niveau d'évapotranspiration à partir de l'ET0 (mm/jour) fourni par l'API.
+function niveauEvap(et0){
+  if(et0 == null) return { evap:'—', conseil:'' };
+  if(et0 >= 6)  return { evap:'Forte',   conseil:'Évaporation forte : traitez le soir, arrosez tôt le matin.' };
+  if(et0 >= 3.5)return { evap:'Modérée', conseil:'Évaporation modérée : traitez de préférence en fin de journée.' };
+  return            { evap:'Faible',   conseil:'Faible évaporation : bon maintien de l\'humidité du sol.' };
+}
+
+// Affiche la météo reçue de l'API.
+function afficherMeteoReelle(nomZone, t, hum, code, et0){
+  const { emoji, desc } = decrireTemps(code);
+  const { evap, conseil } = niveauEvap(et0);
+  document.getElementById('meteo-zone').classList.remove('pulse');
+  document.getElementById('meteo-zone').textContent = '📍 ' + nomZone;
+  document.getElementById('meteo-temp').textContent = Math.round(t) + '°C';
+  document.getElementById('meteo-emoji').textContent = emoji;
+  document.getElementById('meteo-desc').textContent = desc + (hum != null ? ' · ' + Math.round(hum) + '% humidité' : '');
+  document.getElementById('meteo-evap').textContent = evap;
+  document.getElementById('meteo-conseil').textContent = conseil;
+}
+
+// Repli si l'API est injoignable : message neutre, sans inventer de chiffres.
+function meteoIndisponible(nomZone){
+  document.getElementById('meteo-zone').classList.remove('pulse');
+  document.getElementById('meteo-zone').textContent = '📍 ' + (nomZone || 'Sénégal');
+  document.getElementById('meteo-temp').textContent = '--°';
+  document.getElementById('meteo-emoji').textContent = '🌡️';
+  document.getElementById('meteo-desc').textContent = 'Météo indisponible (vérifiez la connexion)';
+  document.getElementById('meteo-evap').textContent = '—';
+  document.getElementById('meteo-conseil').textContent = '';
+}
+
+// Appel réel à Open-Meteo pour une position donnée.
+async function chargerMeteoPour(lat, lng, nomZone){
+  const url = 'https://api.open-meteo.com/v1/forecast'
+    + '?latitude=' + lat + '&longitude=' + lng
+    + '&current=temperature_2m,relative_humidity_2m,weather_code'
+    + '&daily=et0_fao_evapotranspiration&timezone=auto';
+  try {
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const cur = d.current || {};
+    const et0 = (d.daily && d.daily.et0_fao_evapotranspiration)
+                ? d.daily.et0_fao_evapotranspiration[0] : null;
+    afficherMeteoReelle(nomZone, cur.temperature_2m, cur.relative_humidity_2m, cur.weather_code, et0);
+  } catch(e){
+    meteoIndisponible(nomZone);   // pas de réseau / API KO : on n'invente rien
+  }
+}
+
+// Détecte la position (GPS) puis charge la vraie météo.
+function chargerMeteo(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const z = zonePlusProche(pos.coords.latitude, pos.coords.longitude);
+        // on utilise la position EXACTE pour la météo, et le nom de la ville la plus proche pour l'affichage
+        chargerMeteoPour(pos.coords.latitude, pos.coords.longitude, z.nom);
+      },
+      ()  => chargerMeteoPour(ZONES[2].lat, ZONES[2].lng, ZONES[2].nom),  // refus GPS -> Dakar
+      { timeout:6000 }
+    );
+  } else {
+    chargerMeteoPour(ZONES[2].lat, ZONES[2].lng, ZONES[2].nom);
+  }
+}
+chargerMeteo();
+
+/* ---------- Soumission : "Lancer le diagnostic" ---------- */
+document.getElementById('btnDiag').addEventListener('click', () => {
+  const data = { culture: cultureChoisie };
+  let saisis = 0;
+  cardsEl.querySelectorAll('input').forEach(inp => {
+    const v = inp.value.trim();
+    data[inp.dataset.id] = (v === '') ? null : parseFloat(v);
+    if(v !== '') saisis++;
+  });
+
+  if(saisis === 0){
+    alert("Veuillez saisir au moins quelques mesures avant de lancer le diagnostic.");
+    return;
+  }
+
+  console.log('Données du sol :', data);
+  alert("✅ Données enregistrées pour : " + data.culture + "\n\n"
+      + "Mesures saisies : " + saisis + " / 7\n\n"
+      + "Étape suivante : diagnostic intelligent de votre sol.");
+
+  // Branchement futur vers le module de diagnostic (étape 3) :
+  // const params = new URLSearchParams({ culture:data.culture, ph:data.ph, ec:data.ec,
+  //   azote:data.n, phosphore:data.p, potassium:data.k, humidite:data.moisture, temperature:data.temp });
+  // window.location.href = "/oad?" + params.toString();
+});
+</script>
+</body>
+</html>

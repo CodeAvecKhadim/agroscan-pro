@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#059669">
+<title>AgroScan Pro — Résultats de l'analyse</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{
+    colors:{ brand:{50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b'} },
+    boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
+  }}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  body{font-family:'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  /* Cercle de score : animation du tracé */
+  .ring-val{transition:stroke-dashoffset 1.2s ease, stroke .4s ease}
+  /* Apparition */
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .rise{animation:rise .5s ease both}
+  /* Bouton audio en lecture : pulsation */
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 12px rgba(255,255,255,0)}}
+  .lit{animation:pulse 1.3s ease-out infinite}
+  /* Gros texte lisible */
+  .action-num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+
+<!-- Fond clair, contraste élevé, gros texte par défaut -->
+<body class="bg-slate-50 text-slate-900 text-[17px] leading-relaxed pb-44">
+
+<div class="max-w-md mx-auto px-4 py-6">
+
+  <!-- ===== EN-TÊTE ===== -->
+  <header class="mb-5 rise">
+    <div class="text-[13px] font-bold text-brand-700 flex items-center gap-2 mb-1">
+      <span class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-[12px]">✓</span>
+      Étape 3 sur 3 · Résultats
+    </div>
+    <h1 class="text-3xl font-extrabold text-brand-800 leading-tight">Votre rapport</h1>
+    <p id="sous-titre" class="text-slate-600">Analyse du sol — parcelle de Riz</p>
+  </header>
+
+  <!-- ===== 1. SCORE DE SANTÉ (cercle) ===== -->
+  <section class="rise bg-white rounded-3xl shadow-sm border-2 p-6 mb-5 text-center" id="bloc-score">
+    <div class="relative w-48 h-48 mx-auto">
+      <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+        <circle id="ring" class="ring-val" cx="60" cy="60" r="52" fill="none"
+                stroke="#10b981" stroke-width="12" stroke-linecap="round"
+                stroke-dasharray="327" stroke-dashoffset="327"/>
+      </svg>
+      <!-- valeur centrale -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <div id="score-emoji" class="text-4xl leading-none mb-1">🌱</div>
+        <div id="score-val" class="text-4xl font-extrabold leading-none">0</div>
+        <div class="text-[13px] text-slate-400 font-semibold">sur 100</div>
+      </div>
+    </div>
+    <!-- libellé d'état, gros et coloré -->
+    <div id="score-label" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+         text-white font-extrabold text-xl bg-brand-600">
+      <span id="score-label-ico">✅</span><span id="score-label-txt">Excellent</span>
+    </div>
+    <p id="score-phrase" class="mt-3 text-slate-700 font-medium px-2"></p>
+  </section>
+
+  <!-- ===== 2. ACTIONS À MENER (simple, numéroté, gros) ===== -->
+  <section class="rise mb-5">
+    <h2 class="text-xl font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+      📋 Ce que vous devez faire
+    </h2>
+    <div id="actions" class="space-y-3"></div>
+  </section>
+
+  <!-- ===== Légende couleurs (compréhension visuelle) ===== -->
+  <section class="rise mb-2">
+    <div class="flex items-center justify-center gap-4 text-[13px] font-semibold text-slate-500">
+      <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded-full bg-brand-500"></span>Bon</span>
+      <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded-full bg-orange-400"></span>Vigilance</span>
+      <span class="flex items-center gap-1.5"><span class="w-4 h-4 rounded-full bg-red-500"></span>Alerte</span>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== 3. BOUTONS AUDIO FLOTTANTS (très grands) ===== -->
+<div class="fixed bottom-0 left-0 right-0 z-40 p-3 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-8">
+  <div class="max-w-md mx-auto space-y-2">
+
+    <!-- WOLOF (priorité visuelle : le plus grand) -->
+    <button id="btnWolof" aria-label="Écouter le conseil en Wolof"
+      class="w-full py-5 rounded-2xl bg-brand-700 text-white font-extrabold text-xl shadow-xl shadow-brand-700/40
+             active:scale-[.99] transition flex items-center justify-center gap-3">
+      <span class="text-3xl">🔊</span> ÉCOUTER EN WOLOF
+    </button>
+
+    <!-- FRANÇAIS -->
+    <button id="btnFrancais" aria-label="Écouter le conseil en Français"
+      class="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-600/30
+             active:scale-[.99] transition flex items-center justify-center gap-3">
+      <span class="text-2xl">🔊</span> ÉCOUTER EN FRANÇAIS
+    </button>
+  </div>
+</div>
+
+<!-- élément audio caché pour les MP3 Wolof (renseignés plus tard) -->
+<audio id="audioWolof" preload="none"></audio>
+
+<script>
+/* =====================================================================
+   AgroScan Pro — Page de résultats (rapport agronomique de l'OAD)
+   Score de santé + actions + audio FR (synthèse) et Wolof (MP3 humains)
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   DONNÉES DU DIAGNOSTIC
+   En production, ces valeurs viendront de l'étape précédente
+   (résultat du moteur de fertilité / analyse de sol).
+   Pour la démonstration, on part d'un exemple ; vous pourrez les
+   remplacer par les vraies données via l'URL ou une variable.
+   --------------------------------------------------------------------- */
+let diagnostic = {
+  culture: "Riz",
+  score: 48,                       // 0 à 100
+  actions: [
+    "Appliquer de la chaux agricole pour corriger l'acidité du sol.",
+    "Lessiver le sol à l'eau douce pour faire baisser la salinité.",
+    "Espacer les irrigations et arroser tôt le matin.",
+    "Apporter de la matière organique (fumier composté)."
+  ],
+  // Fichier(s) audio Wolof pré-enregistrés (voir explication plus bas).
+  // Laisser vide ("") tant que le MP3 n'est pas disponible.
+  audioWolofURL: ""   // ex: "/audio/conseil_riz_acide.mp3"
+};
+
+/* Permet de recevoir les données via l'URL (quand on enchaîne les pages) :
+   ex. resultats.html?culture=Tomate&score=72&a=Chauler|Arroser|Drainer  */
+(function lireURL(){
+  const p = new URLSearchParams(location.search);
+  if(p.get("score")) diagnostic.score = parseInt(p.get("score"));
+  if(p.get("culture")) diagnostic.culture = p.get("culture");
+  if(p.get("a")) diagnostic.actions = p.get("a").split("|").filter(Boolean);
+  if(p.get("wolof")) diagnostic.audioWolofURL = p.get("wolof");
+})();
+
+/* ---------------------------------------------------------------------
+   1) SCORE DE SANTÉ — cercle de progression coloré
+   --------------------------------------------------------------------- */
+function niveauDepuisScore(s){
+  if(s >= 70) return { cle:"bon",       label:"Excellent",  ico:"✅", emoji:"🌱",
+                       stroke:"#059669", bg:"bg-brand-600",   border:"border-brand-200",
+                       phrase:"Votre sol est en bonne santé. Continuez vos bonnes pratiques." };
+  if(s >= 45) return { cle:"vigilance", label:"Vigilance",  ico:"⚠️", emoji:"🟠",
+                       stroke:"#f97316", bg:"bg-orange-500", border:"border-orange-200",
+                       phrase:"Votre sol demande des corrections. Suivez les actions ci-dessous." };
+  return            { cle:"alerte",    label:"Alerte",     ico:"🚨", emoji:"🔴",
+                       stroke:"#ef4444", bg:"bg-red-500",    border:"border-red-200",
+                       phrase:"Attention : votre sol a des problèmes importants à corriger vite." };
+}
+
+function afficherScore(){
+  const s = Math.max(0, Math.min(100, diagnostic.score));
+  const n = niveauDepuisScore(s);
+
+  document.getElementById("sous-titre").textContent = "Analyse du sol — parcelle de " + diagnostic.culture;
+  document.getElementById("score-val").textContent = s;
+  document.getElementById("score-emoji").textContent = n.emoji;
+
+  // anneau coloré
+  const ring = document.getElementById("ring");
+  const circ = 327;                       // 2πr avec r=52
+  ring.setAttribute("stroke", n.stroke);
+  setTimeout(()=>{ ring.style.strokeDashoffset = circ * (1 - s/100); }, 200);
+
+  // pastille d'état
+  const label = document.getElementById("score-label");
+  label.className = "mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-extrabold text-xl " + n.bg;
+  document.getElementById("score-label-ico").textContent = n.ico;
+  document.getElementById("score-label-txt").textContent = n.label;
+  document.getElementById("score-phrase").textContent = n.phrase;
+
+  // bordure de la carte score selon l'état
+  document.getElementById("bloc-score").className =
+    "rise bg-white rounded-3xl shadow-sm border-2 p-6 mb-5 text-center " + n.border;
+}
+
+/* ---------------------------------------------------------------------
+   2) ACTIONS À MENER — liste numérotée, gros caractères, icône colorée
+   --------------------------------------------------------------------- */
+function afficherActions(){
+  const box = document.getElementById("actions");
+  box.innerHTML = "";
+  diagnostic.actions.forEach((txt, i) => {
+    const el = document.createElement("div");
+    el.className = "flex items-start gap-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-4";
+    el.innerHTML = `
+      <div class="action-num shrink-0 w-9 h-9 rounded-full bg-brand-700 text-white font-extrabold
+                  text-lg flex items-center justify-center">${i+1}</div>
+      <div class="text-[17px] font-semibold text-slate-800 leading-snug pt-1">${txt}</div>`;
+    box.appendChild(el);
+  });
+}
+
+/* ---------------------------------------------------------------------
+   Construit le texte lu à voix haute (français), en phrases simples.
+   --------------------------------------------------------------------- */
+function texteConseilFR(){
+  const n = niveauDepuisScore(diagnostic.score);
+  let t = "Résultat de l'analyse de votre sol pour la culture " + diagnostic.culture + ". ";
+  t += "État général : " + n.label + ". " + n.phrase + " ";
+  t += "Voici les actions à mener. ";
+  diagnostic.actions.forEach((a, i) => { t += "Action " + (i+1) + ". " + a + " "; });
+  t += "Pour plus d'aide, contactez un technicien de l'A.N.C.A.R.";
+  return t;
+}
+
+/* ---------------------------------------------------------------------
+   4) AUDIO FRANÇAIS — Web Speech API (synthèse vocale du navigateur)
+   --------------------------------------------------------------------- */
+function lireFrancais(){
+  if(!('speechSynthesis' in window)){
+    alert("La lecture vocale n'est pas disponible sur ce téléphone. Essayez Chrome.");
+    return;
+  }
+  // si déjà en train de parler -> on arrête (bascule)
+  if(speechSynthesis.speaking){ arreterTout(); return; }
+  arreterAudioWolof();
+
+  const u = new SpeechSynthesisUtterance(texteConseilFR());
+  u.lang = "fr-FR"; u.rate = 0.9; u.pitch = 1.0;
+  const v = speechSynthesis.getVoices().find(x => x.lang && x.lang.startsWith("fr"));
+  if(v) u.voice = v;
+
+  const btn = document.getElementById("btnFrancais");
+  btn.classList.add("lit");
+  u.onend = u.onerror = () => btn.classList.remove("lit");
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+/* ---------------------------------------------------------------------
+   3) AUDIO WOLOF — fichiers MP3 enregistrés par un traducteur humain
+   ---------------------------------------------------------------------
+   IMPORTANT (à lire) :
+   La synthèse vocale des navigateurs NE SAIT PAS lire le wolof (aucune
+   voix wolof n'existe). Pour un wolof correct et naturel, la bonne méthode
+   est d'utiliser des fichiers audio MP3 enregistrés par un humain.
+
+   COMMENT BRANCHER VOS MP3 :
+   1) Faites enregistrer par un traducteur les conseils en wolof (un MP3
+      par message, ou un MP3 par type de problème : acidité, salinité, etc.).
+   2) Déposez les fichiers sur votre serveur, par exemple dans /audio/.
+   3) Renseignez l'URL du bon fichier dans diagnostic.audioWolofURL
+      (soit en dur, soit via l'URL de la page : ...?wolof=/audio/xxx.mp3).
+   4) Le bouton ci-dessous jouera automatiquement ce MP3.
+
+   Astuce avancée : si vous avez plusieurs MP3 (un par action), vous pouvez
+   les enchaîner en mettant leurs URLs dans un tableau et en jouant le
+   suivant à la fin du précédent (événement 'ended').
+   --------------------------------------------------------------------- */
+function lireWolof(){
+  arreterTout();   // coupe le français si en cours
+  const audio = document.getElementById("audioWolof");
+  const btn = document.getElementById("btnWolof");
+
+  if(diagnostic.audioWolofURL && diagnostic.audioWolofURL.trim() !== ""){
+    // --- CAS RÉEL : un MP3 wolof est disponible ---
+    if(!audio.paused){ audio.pause(); audio.currentTime = 0; btn.classList.remove("lit"); return; }
+    audio.src = diagnostic.audioWolofURL;
+    btn.classList.add("lit");
+    audio.onended = () => btn.classList.remove("lit");
+    audio.onerror = () => { btn.classList.remove("lit"); alert("Le fichier audio wolof n'a pas pu être lu."); };
+    audio.play().catch(()=>{ btn.classList.remove("lit"); });
+  } else {
+    // --- CAS DÉMO : pas encore de MP3 wolof branché ---
+    alert("🔊 Audio en Wolof\n\n"
+        + "Le conseil en wolof sera lu par une voix humaine enregistrée (fichier MP3).\n\n"
+        + "Pour l'activer : enregistrez le conseil avec un traducteur, déposez le MP3 "
+        + "sur le serveur, et indiquez son adresse. Le bouton le jouera automatiquement.\n\n"
+        + "(En attendant, vous pouvez utiliser le bouton « Écouter en Français ».)");
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Arrêts
+   --------------------------------------------------------------------- */
+function arreterAudioWolof(){
+  const a = document.getElementById("audioWolof");
+  if(a && !a.paused){ a.pause(); a.currentTime = 0; }
+  document.getElementById("btnWolof").classList.remove("lit");
+}
+function arreterTout(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  document.getElementById("btnFrancais").classList.remove("lit");
+  arreterAudioWolof();
+}
+
+/* certains navigateurs chargent les voix de façon asynchrone */
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); }
+
+/* branchements */
+document.getElementById("btnFrancais").addEventListener("click", lireFrancais);
+document.getElementById("btnWolof").addEventListener("click", lireWolof);
+
+/* affichage initial */
+afficherScore();
+afficherActions();
+</script>
+</body>
+</html>

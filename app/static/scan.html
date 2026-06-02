@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#059669">
+<title>AgroScan Pro — Diagnostic maladie par photo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme:{ extend:{
+    colors:{ brand:{50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b'} },
+    boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
+  }}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  body{font-family:'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+
+  /* ----- Animation du scanner laser ----- */
+  .scan-zone{position:relative;overflow:hidden}
+  .laser{
+    position:absolute;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,#10b981,#a7f3d0,#10b981,transparent);
+    box-shadow:0 0 14px 4px rgba(34,197,94,.7);
+    animation:scan 1.5s ease-in-out infinite;
+  }
+  @keyframes scan{
+    0%{top:0%}
+    50%{top:100%}
+    100%{top:0%}
+  }
+  /* léger voile + grille pour l'effet "analyse" */
+  .scan-overlay{
+    position:absolute;inset:0;
+    background:
+      linear-gradient(rgba(21,128,61,.12),rgba(21,128,61,.12)),
+      repeating-linear-gradient(0deg,transparent 0 14px,rgba(34,197,94,.08) 14px 15px),
+      repeating-linear-gradient(90deg,transparent 0 14px,rgba(34,197,94,.08) 14px 15px);
+  }
+  /* points d'analyse clignotants */
+  @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+  .blink{animation:blink 1s ease-in-out infinite}
+
+  /* ----- Transitions d'écran ----- */
+  .screen{display:none}
+  .screen.on{display:block;animation:fade .35s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* barre de progression de l'analyse */
+  @keyframes fill{from{width:0}to{width:100%}}
+  .progress-fill{animation:fill 2s linear forwards}
+</style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+<div class="max-w-md mx-auto px-4 py-5">
+
+  <!-- En-tête -->
+  <header class="mb-5">
+    <h1 class="text-2xl font-extrabold text-brand-800 leading-tight flex items-center gap-2">
+      📷 Diagnostic par photo
+    </h1>
+    <p class="text-sm text-slate-500">Prenez une feuille malade en photo pour identifier le problème.</p>
+  </header>
+
+  <!-- ===== ÉCRAN 1 : CAPTURE ===== -->
+  <section id="ecran-capture" class="screen on">
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 text-center">
+      <div class="w-24 h-24 mx-auto rounded-full bg-brand-50 flex items-center justify-center text-5xl mb-4">🍃</div>
+      <h2 class="text-lg font-bold text-slate-800 mb-1">Scanner une feuille malade</h2>
+      <p class="text-sm text-slate-500 mb-6 px-2">
+        Cadrez bien la zone atteinte (taches, jaunissement, trous…) en pleine lumière.
+      </p>
+
+      <!-- input caméra natif : capture="environment" ouvre la caméra arrière -->
+      <input type="file" id="inputPhoto" accept="image/*" capture="environment" class="hidden">
+
+      <button id="btnScanner"
+        class="w-full py-4 rounded-2xl bg-brand-700 text-white font-bold text-base shadow-lg shadow-brand-700/30
+               active:scale-[.99] active:bg-brand-800 transition flex items-center justify-center gap-2">
+        📸 Scanner une feuille malade
+      </button>
+      <button id="btnGalerie"
+        class="w-full mt-2 py-3 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold text-sm
+               active:scale-[.99] transition">
+        🖼️ Choisir une photo existante
+      </button>
+    </div>
+
+    <p class="text-[11px] text-slate-400 text-center mt-4 px-4 leading-relaxed">
+      🔬 <b>Diagnostic par intelligence artificielle</b> (crop.health). Résultat indicatif :
+      confirmez toujours avec un technicien avant tout traitement.
+    </p>
+  </section>
+
+  <!-- ===== ÉCRAN 2 : ANALYSE (scanner laser) ===== -->
+  <section id="ecran-analyse" class="screen">
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-4">
+      <div class="scan-zone rounded-2xl aspect-square w-full bg-slate-100">
+        <img id="imgScan" alt="Feuille analysée" class="w-full h-full object-cover rounded-2xl">
+        <div class="scan-overlay rounded-2xl"></div>
+        <div class="laser"></div>
+        <!-- coins de visée -->
+        <div class="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-brand-500 rounded-tl"></div>
+        <div class="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-brand-500 rounded-tr"></div>
+        <div class="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-brand-500 rounded-bl"></div>
+        <div class="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-brand-500 rounded-br"></div>
+      </div>
+
+      <div class="mt-4 text-center">
+        <div class="text-brand-700 font-bold text-base blink flex items-center justify-center gap-2">
+          <span>🔬</span> Analyse en cours…
+        </div>
+        <div id="analyse-etape" class="text-sm text-slate-500 mt-1 h-5">Détection de la zone atteinte…</div>
+        <div class="w-full h-2 bg-slate-100 rounded-full mt-3 overflow-hidden">
+          <div class="progress-fill h-full bg-gradient-to-r from-brand-500 to-brand-700 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ÉCRAN 3 : RÉSULTAT ===== -->
+  <section id="ecran-resultat" class="screen">
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <!-- bandeau résultat -->
+      <div class="p-4 flex items-center gap-4" id="resultat-bandeau">
+        <img id="imgResultat" alt="Feuille" class="w-20 h-20 rounded-2xl object-cover border border-slate-100">
+        <div class="flex-1">
+          <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Maladie détectée</div>
+          <div id="resultat-nom" class="text-xl font-extrabold text-slate-800 leading-tight">—</div>
+          <div class="flex items-center gap-2 mt-1">
+            <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div id="resultat-barre" class="h-full bg-brand-600 rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+            <span id="resultat-pct" class="text-sm font-bold text-brand-700">0%</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-0.5">indice de certitude</div>
+        </div>
+      </div>
+
+      <!-- 3 puces d'action -->
+      <div class="px-4 pb-2 space-y-2">
+        <div class="rounded-2xl bg-sky-50 border border-sky-100 p-3">
+          <div class="text-[13px] font-bold text-sky-800 flex items-center gap-2 mb-0.5">👁️ Symptômes</div>
+          <div id="res-symptomes" class="text-[13px] text-slate-600 leading-snug"></div>
+        </div>
+        <div class="rounded-2xl bg-amber-50 border border-amber-100 p-3">
+          <div class="text-[13px] font-bold text-amber-800 flex items-center gap-2 mb-0.5">🔎 Cause</div>
+          <div id="res-cause" class="text-[13px] text-slate-600 leading-snug"></div>
+        </div>
+        <div class="rounded-2xl bg-brand-50 border border-brand-100 p-3">
+          <div class="text-[13px] font-bold text-brand-800 flex items-center gap-2 mb-0.5">💊 Traitement (Sénégal)</div>
+          <div id="res-traitement" class="text-[13px] text-slate-600 leading-snug"></div>
+        </div>
+      </div>
+
+      <div class="px-4 py-3">
+        <div class="text-[11px] text-slate-400 leading-relaxed mb-3">
+          ⚠️ Diagnostic d'orientation par IA. Confirmez avec un technicien ANCAR
+          (+221 33 869 73 00) ou la DPV avant tout traitement.
+        </div>
+        <button id="btnRecommencer"
+          class="w-full py-3.5 rounded-2xl bg-brand-700 text-white font-bold text-sm
+                 active:scale-[.99] active:bg-brand-800 transition">
+          📷 Scanner une autre feuille
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =====================================================================
+   AgroScan Pro — Module de diagnostic maladie par photo
+   Appareil photo natif + animation scanner + résultat
+   ===================================================================== */
+
+const ecranCapture  = document.getElementById('ecran-capture');
+const ecranAnalyse  = document.getElementById('ecran-analyse');
+const ecranResultat = document.getElementById('ecran-resultat');
+const inputPhoto    = document.getElementById('inputPhoto');
+
+/* ---------- Affiche un écran, masque les autres ---------- */
+function montrer(ecran){
+  [ecranCapture, ecranAnalyse, ecranResultat].forEach(e => e.classList.remove('on'));
+  ecran.classList.add('on');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- Déclenchement de l'appareil photo ----------
+   L'attribut capture="environment" ouvre la caméra arrière sur mobile.
+   "Choisir une photo" retire l'attribut capture pour ouvrir la galerie. */
+document.getElementById('btnScanner').addEventListener('click', () => {
+  inputPhoto.setAttribute('capture', 'environment');
+  inputPhoto.click();
+});
+document.getElementById('btnGalerie').addEventListener('click', () => {
+  inputPhoto.removeAttribute('capture');
+  inputPhoto.click();
+});
+
+/* ---------- Quand une photo est prise/choisie ---------- */
+let dernierFichier = null;
+inputPhoto.addEventListener('change', e => {
+  const fichier = e.target.files[0];
+  if(!fichier) return;
+  dernierFichier = fichier;
+  const url = URL.createObjectURL(fichier);
+  document.getElementById('imgScan').src = url;
+  document.getElementById('imgResultat').src = url;
+  lancerAnalyse();
+});
+
+/* ---------- Analyse : animation laser + VRAI appel à l'API crop.health ---------- */
+const ETAPES = [
+  "Détection de la zone atteinte…",
+  "Analyse des couleurs et textures…",
+  "Comparaison avec la base de maladies…",
+  "Génération du diagnostic…"
+];
+function lancerAnalyse(){
+  montrer(ecranAnalyse);
+  const etapeEl = document.getElementById('analyse-etape');
+  let i = 0;
+  etapeEl.textContent = ETAPES[0];
+  const timer = setInterval(() => {
+    i++;
+    if(i < ETAPES.length) etapeEl.textContent = ETAPES[i];
+  }, 500);
+
+  // Appel réel à notre serveur, qui interroge crop.health (clé côté serveur).
+  obtenirDiagnostic(dernierFichier)
+    .then(diag => { clearInterval(timer); afficherResultat(diag); })
+    .catch(err => {
+      clearInterval(timer);
+      afficherErreur(err && err.message ? err.message : "Diagnostic indisponible.");
+    });
+}
+
+/* ---------- Appel à l'API serveur ----------
+   On envoie la photo à /api/scan-maladie. Le serveur appelle crop.health
+   avec la clé secrète et renvoie {disponible, maladies:[...]}. */
+async function obtenirDiagnostic(fichier){
+  if(!fichier) throw new Error("Aucune photo.");
+  const fd = new FormData();
+  fd.append('photo', fichier);
+  const r = await fetch('/api/scan-maladie', { method:'POST', body: fd });
+  if(!r.ok){
+    let msg = "Le diagnostic n'a pas pu être réalisé.";
+    try { const e = await r.json(); if(e.detail) msg = e.detail; } catch(_){}
+    throw new Error(msg);
+  }
+  const data = await r.json();
+  if(!data.disponible || !data.maladies || data.maladies.length === 0){
+    throw new Error("Aucune maladie reconnue sur cette photo. Réessayez avec une photo plus nette de la zone atteinte.");
+  }
+  // On prend la maladie la plus probable.
+  return data.maladies[0];
+}
+
+/* ---------- Affichage du résultat ---------- */
+function afficherResultat(diag){
+  document.getElementById('resultat-nom').textContent = diag.nom;
+  document.getElementById('resultat-pct').textContent = diag.certitude + '%';
+  document.getElementById('res-symptomes').textContent = diag.symptomes || "Information non disponible.";
+  document.getElementById('res-cause').textContent = diag.cause || "Information non disponible.";
+  document.getElementById('res-traitement').textContent = diag.traitement || "Consultez un technicien ANCAR pour le traitement adapté.";
+
+  const barre = document.getElementById('resultat-barre');
+  barre.className = "h-full rounded-full transition-all duration-700 " +
+    (diag.certitude >= 85 ? "bg-brand-600" : diag.certitude >= 70 ? "bg-amber-500" : "bg-orange-500");
+
+  montrer(ecranResultat);
+  setTimeout(() => { barre.style.width = diag.certitude + '%'; }, 150);
+}
+
+/* ---------- Affichage d'une erreur (API indisponible, photo floue…) ---------- */
+function afficherErreur(message){
+  document.getElementById('resultat-nom').textContent = "Diagnostic impossible";
+  document.getElementById('resultat-pct').textContent = "";
+  document.getElementById('res-symptomes').textContent = message;
+  document.getElementById('res-cause').textContent = "";
+  document.getElementById('res-traitement').textContent = "Vérifiez votre connexion, ou réessayez avec une photo nette et bien éclairée de la feuille malade.";
+  const barre = document.getElementById('resultat-barre');
+  barre.className = "h-full rounded-full bg-slate-300"; barre.style.width = "0%";
+  montrer(ecranResultat);
+}
+
+/* ---------- Recommencer ---------- */
+document.getElementById('btnRecommencer').addEventListener('click', () => {
+  inputPhoto.value = '';
+  montrer(ecranCapture);
+});
+</script>
+</body>
+</html>
