@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>AgroScan Pro — Calendrier cultural</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--laterite:#059669;--laterite-dk:#047857;--laterite-deep:#065f46;--gold:#34d399;--millet:#6ee7b7;--baobab:#059669;--baobab-dk:#065f46;--paper:#f5faf7;--paper-2:#fbf6ec;--card:#ffffff;--ink:#0f2a1e;--ink-soft:#4b5d52;--line:#d1fae5;--shadow:0 1px 2px rgba(60,40,20,.06),0 8px 24px -12px rgba(90,50,20,.25);--r:18px;--sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;background-image:radial-gradient(circle at 12% 8%,rgba(217,145,37,.06),transparent 40%),radial-gradient(circle at 88% 92%,rgba(63,107,58,.06),transparent 42%)}
+a{color:inherit;text-decoration:none}
+button,select,input{font-family:inherit}
+
+.nav{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--laterite-deep),var(--laterite) 60%,var(--laterite-dk));color:#fff;box-shadow:0 6px 22px -10px rgba(90,33,20,.7)}
+.nav-in{max-width:900px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:42px;height:42px;border-radius:11px;background:linear-gradient(150deg,var(--gold),var(--millet));display:grid;place-items:center;font-size:23px}
+.brand h1{font-family:var(--serif);font-weight:900;font-size:1.15rem;line-height:1}
+.brand p{font-size:.7rem;opacity:.85}.brand p b{color:var(--millet)}
+.nav-links{margin-left:auto;display:flex;gap:18px;align-items:center}
+.nav-links a{font-size:.88rem;opacity:.9}
+@media(max-width:600px){.nav-links a:not(.cta){display:none}}
+.cta{background:var(--gold);color:var(--laterite-deep);padding:8px 16px;border-radius:10px;font-weight:700;font-size:.85rem}
+
+main{max-width:900px;margin:0 auto;padding:32px 18px 60px}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--laterite);background:#fff;border:1px solid var(--line);padding:5px 14px;border-radius:20px;margin-bottom:14px}
+h2.title{font-family:var(--serif);font-weight:900;font-size:1.9rem;color:var(--laterite-dk);line-height:1.1;margin-bottom:8px}
+.lead{color:var(--ink-soft);font-size:1rem;margin-bottom:24px;max-width:600px}
+
+.form-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:560px){.form-row{grid-template-columns:1fr}}
+.field label{display:block;font-size:.85rem;font-weight:600;color:var(--laterite-dk);margin-bottom:6px}
+.field select,.field input{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:.95rem;background:#fff;color:var(--ink)}
+.field select:focus,.field input:focus{outline:none;border-color:var(--gold)}
+.btn{margin-top:16px;width:100%;padding:13px;background:var(--laterite);color:#fff;border:none;border-radius:12px;font-weight:600;font-size:1rem;cursor:pointer;transition:transform .14s}
+.btn:hover{transform:translateY(-2px)}
+
+.semis-hint{font-size:.82rem;color:var(--baobab-dk);background:#eef5ec;border:1px solid #d3e4cf;border-radius:10px;padding:10px 12px;margin-top:12px;display:none}
+.semis-hint.on{display:block}
+
+/* Timeline */
+.timeline{display:none}
+.timeline.on{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tl-head{background:linear-gradient(120deg,var(--baobab),var(--baobab-dk));color:#fff;border-radius:var(--r);padding:18px 20px;margin-bottom:6px}
+.tl-head h3{font-family:var(--serif);font-weight:900;font-size:1.3rem}
+.tl-head p{font-size:.86rem;opacity:.92}
+.step{display:flex;gap:14px;padding:16px 4px;position:relative}
+.step:not(:last-child)::before{content:"";position:absolute;left:23px;top:46px;bottom:-8px;width:2px;background:var(--line)}
+.step .dot{width:46px;height:46px;border-radius:50%;background:var(--paper-2);border:2px solid var(--gold);display:grid;place-items:center;font-size:22px;flex-shrink:0;z-index:1}
+.step .body{flex:1;padding-top:2px}
+.step .body .when{font-size:.78rem;font-weight:700;color:var(--laterite);text-transform:uppercase;letter-spacing:.03em}
+.step .body h4{font-family:var(--serif);font-weight:700;font-size:1.1rem;color:var(--laterite-dk);margin:2px 0}
+.step .body .date{font-size:.85rem;color:var(--baobab-dk);font-weight:600;margin-bottom:4px}
+.step .body p{font-size:.9rem;color:var(--ink-soft)}
+.avert{margin-top:18px;font-size:.82rem;color:#9a6712;background:#fdf6e9;border:1px solid #f0dcae;border-radius:12px;padding:12px 14px;font-style:italic}
+
+footer{text-align:center;padding:24px;color:var(--ink-soft);font-size:.82rem;border-top:1px solid var(--line);margin-top:30px}
+footer a{color:var(--laterite)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <a href="/" class="brand"><div class="mark">🌾</div>
+      <div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div></a>
+    <div class="nav-links">
+      <a href="/oad">Analyse sol</a>
+      <a href="/scan">Maladie</a>
+      <a href="/" class="cta">Accueil</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <span class="eyebrow">📅 Calendrier cultural</span>
+  <h2 class="title">Le bon geste, au bon moment</h2>
+  <p class="lead">Choisissez votre culture et votre date de semis : AgroScan vous propose les grandes étapes
+     à suivre jusqu'à la récolte, adaptées à la durée du cycle.</p>
+
+  <div class="form-card">
+    <div class="form-row">
+      <div class="field">
+        <label for="culture">Culture</label>
+        <select id="culture" onchange="majHint()"></select>
+      </div>
+      <div class="field">
+        <label for="datesemis">Date de semis / plantation</label>
+        <input type="date" id="datesemis">
+      </div>
+    </div>
+    <div class="semis-hint" id="hint"></div>
+    <button class="btn" onclick="genererCalendrier()">📅 Générer mon calendrier</button>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <div class="tl-head" id="tl-head">
+      <h3 id="tl-titre">Calendrier</h3>
+      <p id="tl-sous"></p>
+    </div>
+    <div id="steps"></div>
+    <div class="avert" id="avert"></div>
+  </div>
+</main>
+
+<footer>
+  <b>AgroScan Pro</b> — Social Technologie · <a href="/">Retour à l'accueil</a>
+</footer>
+
+<script>
+/* Données des cultures : cycle [min,max] jours, semis direct ou pépinière, période de semis.
+   ⚠️ Indicatif — à valider par un agronome (ISRA/ANCAR). */
+const CULTURES = {"Riz": {"cycle": [90, 150], "direct": true, "semis": "Hivernage (juin–août) ou contre-saison irriguée (déc.–févr.)"}, "Mil": {"cycle": [75, 110], "direct": true, "semis": "Début hivernage (juin–juillet)"}, "Maïs": {"cycle": [90, 120], "direct": true, "semis": "Hivernage (juin–juillet) ; irrigué en contre-saison"}, "Sorgho": {"cycle": [100, 130], "direct": true, "semis": "Hivernage (juin–juillet)"}, "Arachide": {"cycle": [90, 120], "direct": true, "semis": "Début hivernage (juin–juillet)"}, "Sésame": {"cycle": [90, 120], "direct": true, "semis": "Hivernage (juillet)"}, "Coton": {"cycle": [150, 180], "direct": true, "semis": "Début hivernage (juin)"}, "Oignon": {"cycle": [90, 150], "direct": false, "semis": "Saison fraîche (oct.–déc.), repiquage 6–8 sem."}, "Tomate": {"cycle": [90, 120], "direct": false, "semis": "Saison fraîche (oct.–janv.), repiquage 4–5 sem."}, "Carotte": {"cycle": [90, 120], "direct": true, "semis": "Saison fraîche (oct.–janv.), semis direct"}, "Chou": {"cycle": [70, 110], "direct": false, "semis": "Saison fraîche (oct.–janv.), repiquage 4 sem."}, "Piment": {"cycle": [100, 150], "direct": false, "semis": "Saison fraîche à chaude, repiquage 5–6 sem."}, "Gombo": {"cycle": [50, 90], "direct": true, "semis": "Hivernage et saison chaude, semis direct"}, "Aubergine amère": {"cycle": [90, 130], "direct": false, "semis": "Toute l'année (irrigué), repiquage 5 sem."}, "Mangue": {"cycle": [0, 0], "direct": false, "semis": "Plantation pérenne (arbre) ; greffage recommandé"}, "Pastèque": {"cycle": [75, 100], "direct": true, "semis": "Saison sèche chaude (févr.–mai), semis direct"}, "Melon": {"cycle": [80, 110], "direct": true, "semis": "Saison sèche chaude, semis direct"}, "Banane": {"cycle": [0, 0], "direct": false, "semis": "Plantation pérenne (rejets) ; production continue"}, "Papaye": {"cycle": [0, 0], "direct": false, "semis": "Plantation pérenne ; 1re récolte en 8–11 mois"}, "Bisap": {"cycle": [120, 180], "direct": true, "semis": "Début hivernage (juin–juillet)"}, "Concombre": {"cycle": [50, 75], "direct": true, "semis": "Saison fraîche à chaude, semis direct ou repiquage"}, "Courgette": {"cycle": [50, 70], "direct": true, "semis": "Saison fraîche à chaude, semis direct"}, "Laitue": {"cycle": [40, 70], "direct": false, "semis": "Saison fraîche (oct.–févr.), repiquage 3–4 sem."}, "Manioc": {"cycle": [240, 365], "direct": true, "semis": "Début hivernage, bouturage de tiges"}, "Navet chinois": {"cycle": [45, 70], "direct": true, "semis": "Saison fraîche, semis direct"}, "Patate douce": {"cycle": [100, 150], "direct": true, "semis": "Hivernage et contre-saison, bouturage"}, "Poivron": {"cycle": [100, 140], "direct": false, "semis": "Saison fraîche, repiquage 5–6 sem."}, "Pomme de terre": {"cycle": [90, 120], "direct": true, "semis": "Saison fraîche (nov.–janv.), plants/tubercules"}, "Jaxatu": {"cycle": [90, 130], "direct": false, "semis": "Toute l'année (irrigué), repiquage 5 sem."}};
+const AVERT = "Données indicatives — à valider par un agronome (ISRA/ANCAR). Les dates varient selon la variété, la zone et la saison.";
+
+// Remplit le menu déroulant des cultures (ordre alphabétique)
+const sel = document.getElementById("culture");
+Object.keys(CULTURES).sort((a,b)=>a.localeCompare(b,'fr')).forEach(c => {
+  const o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
+});
+
+// Affiche la période de semis conseillée sous le formulaire
+function majHint(){
+  const c = sel.value; const info = CULTURES[c];
+  const hint = document.getElementById("hint");
+  if(info && info.semis){
+    hint.innerHTML = "🌾 <b>Période de semis conseillée pour "+c+" :</b> "+info.semis;
+    hint.classList.add("on");
+  } else hint.classList.remove("on");
+}
+majHint();
+
+// Pré-remplit la date du jour
+document.getElementById("datesemis").value = new Date().toISOString().slice(0,10);
+
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function formatDate(d){ return d.getDate()+" "+MOIS[d.getMonth()]+" "+d.getFullYear(); }
+
+// Construit les étapes selon le cycle
+function etapes(cmin, cmax, direct){
+  if(cmax <= 0){  // pérenne
+    return [
+      {j:0,   ic:"🌱", t:"Plantation", d:"Mettre en terre le plant/la bouture. Arroser abondamment à la reprise."},
+      {j:30,  ic:"💧", t:"Reprise & arrosage", d:"Surveiller la reprise. Arrosage régulier les premières semaines."},
+      {j:90,  ic:"✂️", t:"Premier entretien", d:"Désherbage, paillage, fertilisation organique au pied."},
+      {j:180, ic:"🦠", t:"Suivi sanitaire", d:"Surveiller maladies et ravageurs. Tailler si nécessaire."},
+      {j:365, ic:"🍎", t:"Entrée en production", d:"Selon l'espèce, première production entre 1 et 5 ans."},
+    ];
+  }
+  const cyc = Math.round((cmin+cmax)/2);
+  const out = [];
+  if(direct){
+    out.push({j:0, ic:"🌱", t:"Semis direct", d:"Semer directement au champ en lignes. Garder le sol humide jusqu'à la levée."});
+    out.push({j:Math.max(7,Math.round(cyc*0.07)), ic:"🌿", t:"Levée & démariage", d:"Après la levée, éclaircir pour garder les plants les plus vigoureux."});
+  } else {
+    out.push({j:0, ic:"🌱", t:"Semis en pépinière", d:"Semer en pépinière à l'abri. Arroser en pluie fine matin et soir."});
+    out.push({j:Math.max(21,Math.round(cyc*0.22)), ic:"🌿", t:"Repiquage au champ", d:"Repiquer les jeunes plants au champ, de préférence en fin de journée."});
+  }
+  out.push({j:Math.round(cyc*0.35), ic:"💊", t:"Apport d'engrais", d:"Premier apport selon l'analyse de sol. Fractionner l'azote."});
+  out.push({j:Math.round(cyc*0.55), ic:"🦠", t:"Surveillance sanitaire", d:"Surveiller maladies et ravageurs. Utilisez le diagnostic photo AgroScan au moindre doute."});
+  out.push({j:Math.round(cyc*0.70), ic:"💧", t:"Phase critique en eau", d:"Forte demande en eau (floraison/grossissement). Ne pas laisser le sol se dessécher."});
+  out.push({j:cmin, ic:"🧺", t:"Début de récolte possible", d:"La récolte peut commencer autour du jour "+cmin+", selon la variété."});
+  if(cmax!==cmin) out.push({j:cmax, ic:"✅", t:"Fin de récolte estimée", d:"Récolte généralement terminée vers le jour "+cmax+"."});
+  return out;
+}
+
+function genererCalendrier(){
+  const c = sel.value;
+  const info = CULTURES[c];
+  const dateStr = document.getElementById("datesemis").value;
+  if(!dateStr){ alert("Veuillez choisir une date de semis."); return; }
+  const semis = new Date(dateStr + "T00:00:00");
+
+  const liste = etapes(info.cycle[0], info.cycle[1], info.direct);
+  let html = "";
+  liste.forEach(e => {
+    const d = new Date(semis); d.setDate(d.getDate() + e.j);
+    const when = e.j === 0 ? "Jour du semis" : "Jour +" + e.j;
+    html += '<div class="step">'
+          + '<div class="dot">'+e.ic+'</div>'
+          + '<div class="body">'
+          +   '<div class="when">'+when+'</div>'
+          +   '<h4>'+e.t+'</h4>'
+          +   '<div class="date">📆 '+formatDate(d)+'</div>'
+          +   '<p>'+e.d+'</p>'
+          + '</div></div>';
+  });
+
+  document.getElementById("steps").innerHTML = html;
+  const cycleTxt = info.cycle[1] > 0 ? ("Cycle d'environ "+info.cycle[0]+" à "+info.cycle[1]+" jours") : "Culture pérenne";
+  document.getElementById("tl-titre").textContent = "Calendrier — " + c;
+  document.getElementById("tl-sous").textContent = cycleTxt + " · semis le " + formatDate(semis);
+  document.getElementById("avert").textContent = "⚠️ " + AVERT;
+  document.getElementById("timeline").classList.add("on");
+  document.getElementById("timeline").scrollIntoView({behavior:"smooth", block:"start"});
+}
+</script>
+</body>
+</html>

@@ -333,14 +333,17 @@ document.getElementById('btnDiag').addEventListener('click', () => {
   }
 
   console.log('Données du sol :', data);
-  alert("✅ Données enregistrées pour : " + data.culture + "\n\n"
-      + "Mesures saisies : " + saisis + " / 7\n\n"
-      + "Étape suivante : diagnostic intelligent de votre sol.");
 
-  // Branchement futur vers le module de diagnostic (étape 3) :
-  // const params = new URLSearchParams({ culture:data.culture, ph:data.ph, ec:data.ec,
-  //   azote:data.n, phosphore:data.p, potassium:data.k, humidite:data.moisture, temperature:data.temp });
-  // window.location.href = "/oad?" + params.toString();
+  // Transmet les mesures à la page de diagnostic /oad via l'URL,
+  // puis redirige. Les champs vides sont simplement omis.
+  const params = new URLSearchParams();
+  if(data.culture) params.set('culture', data.culture);
+  const corresp = { moisture:'humidite', temp:'temperature', ec:'ec', ph:'ph',
+                    n:'azote', p:'phosphore', k:'potassium' };
+  Object.keys(corresp).forEach(cle => {
+    if(data[cle] !== null && data[cle] !== undefined) params.set(corresp[cle], data[cle]);
+  });
+  window.location.href = "/oad?" + params.toString();
 });
 </script>
 </body>
