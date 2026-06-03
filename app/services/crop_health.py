@@ -15,7 +15,7 @@ import requests
 from app.core.config import settings
 
 # Point d'entrée de l'API d'identification crop.health
-API_URL = "https://crop.health.kindwise.com/api/v1/identification"
+API_URL = "https://crop.kindwise.com/api/v1/identification"
 
 
 class CropHealthError(Exception):
@@ -45,8 +45,10 @@ def identifier_maladie(image_bytes: bytes, langue: str = "fr") -> dict:
 
     payload = {
         "images": [image_b64],
-        # On demande les détails utiles pour le producteur, dans sa langue.
-        "details": ["common_names", "description", "treatment"],
+    }
+    # details et language doivent passer en parametres d'URL (exigence Kindwise)
+    params = {
+        "details": "common_names,description,treatment",
         "language": langue,
     }
     headers = {
@@ -55,7 +57,7 @@ def identifier_maladie(image_bytes: bytes, langue: str = "fr") -> dict:
     }
 
     try:
-        r = requests.post(API_URL, json=payload, headers=headers, timeout=30)
+        r = requests.post(API_URL, params=params, json=payload, headers=headers, timeout=30)
     except requests.RequestException as e:
         raise CropHealthError(f"Connexion à crop.health impossible : {e}")
 

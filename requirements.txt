@@ -8,5 +8,6 @@ pydantic-settings
 email-validator
 reportlab
 qrcode[pil]
+requests
 # Production : décommenter pour PostgreSQL
 # psycopg[binary]

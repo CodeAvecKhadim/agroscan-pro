@@ -100,6 +100,11 @@ def page_tarifs():
     """Page Tarifs : 4 offres avec sélecteur de durée et réductions."""
     return _page("tarifs.html")
 
+@app.get("/calendrier", include_in_schema=False)
+def page_calendrier():
+    """Calendrier cultural : étapes clés d'une culture selon la date de semis."""
+    return _page("calendrier.html")
+
 
 @app.post("/api/scan-maladie", tags=["Diagnostic"])
 async def scan_maladie(photo: UploadFile = File(...)):
