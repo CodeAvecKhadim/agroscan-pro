@@ -11,7 +11,7 @@ import os
 
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.routers import auth, analyses, billing, coop, fertilite, credits
+from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles
 from app.services.crop_health import identifier_maladie, CropHealthError
 
 # Création automatique des tables (en production : utiliser Alembic pour les migrations).
@@ -39,6 +39,7 @@ app.include_router(billing.router)
 app.include_router(coop.router)
 app.include_router(fertilite.router)
 app.include_router(credits.router)
+app.include_router(parcelles.router)
 
 
 @app.get("/api/health", tags=["Système"])
