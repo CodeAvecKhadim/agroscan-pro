@@ -77,6 +77,7 @@ class User(Base):
     phone = Column(String)                       # numéro WhatsApp
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.OWNER)
+    profil = Column(String, nullable=False, default="producteur")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=now_utc)
 

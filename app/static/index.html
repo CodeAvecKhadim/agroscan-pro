@@ -7,6 +7,7 @@
 <title>AgroScan Pro — Social Technologie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/agroscan.css">
 <style>
 :root{--laterite:#059669;--laterite-dk:#047857;--laterite-deep:#065f46;--gold:#34d399;--millet:#6ee7b7;--baobab:#059669;--baobab-dk:#065f46;--paper:#f5faf7;--paper-2:#fbf6ec;--card:#ffffff;--ink:#0f2a1e;--ink-soft:#4b5d52;--line:#d1fae5;--ok:#059669;--ok-bg:#d1fae5;--bas:#059669;--bas-bg:#d1fae5;--haut:#047857;--haut-bg:#d1fae5;--wait:#9b9182;--wait-bg:#ecfdf5;--shadow:0 1px 2px rgba(60,40,20,.06),0 8px 24px -12px rgba(90,50,20,.25);--shadow-lg:0 30px 60px -25px rgba(90,50,20,.45);--r:18px;--r-sm:12px;--sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -268,13 +269,25 @@ async function doRegister(){
     lEmail.value=rEmail.value; lPass.value=rPass.value; await doLogin();
   }catch(e){toast(e.detail||"Échec de l'inscription","err");}
 }
+function _decodeJWT(token){
+  try{
+    const b64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(atob(b64));
+  }catch(e){return {};}
+}
+
 async function doLogin(){
   try{
     const form=new URLSearchParams();form.append("username",lEmail.value);form.append("password",lPass.value);
     const r=await fetch(API+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:form});
     if(!r.ok){const d=await r.json();throw{detail:d.detail};}
     const data=await r.json(); TOKEN=data.access_token; localStorage.setItem("agro_token",TOKEN);
-    await boot();
+    // Routage selon le profil utilisateur
+    const payload=_decodeJWT(TOKEN);
+    const profil=payload.profil||'producteur';
+    if(profil==='conseiller') location.href='/conseiller';
+    else if(profil==='admin') location.href='/admin';
+    else location.href='/app';
   }catch(e){toast(e.detail||"Connexion échouée","err");}
 }
 function logout(){TOKEN="";localStorage.removeItem("agro_token");location.reload();}
@@ -421,7 +434,14 @@ async function choosePlan(plan,maxSeats){
 }
 
 // boot if token
-if(TOKEN) boot();
+// Si un token existe, rediriger directement selon le profil
+if(TOKEN){
+  const _p=_decodeJWT(TOKEN);
+  const _profil=_p.profil||'producteur';
+  if(_profil==='conseiller') location.href='/conseiller';
+  else if(_profil==='admin') location.href='/admin';
+  else location.href='/app';
+}
 </script>
 </body>
 </html>

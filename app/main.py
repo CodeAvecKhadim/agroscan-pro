@@ -139,6 +139,45 @@ def page_calendrier():
     return _page("calendrier.html")
 
 
+# --- Pages producteur — 5 modules AgroScan Pro ---
+
+@app.get("/app", include_in_schema=False)
+def page_app():
+    """Tableau de bord producteur — accès aux 5 modules."""
+    return _page("app.html")
+
+@app.get("/mon-champ", include_in_schema=False)
+def page_mon_champ():
+    """Module Mon Champ — parcelles, sol, cartographie."""
+    return _page("mon-champ.html")
+
+@app.get("/sante", include_in_schema=False)
+def page_sante():
+    """Module Santé des cultures — consultations, diagnostics, traitements."""
+    return _page("sante.html")
+
+@app.get("/ferme", include_in_schema=False)
+def page_ferme():
+    """Module Gestion de ferme — activités, coûts, journal."""
+    return _page("ferme.html")
+
+@app.get("/meteo", include_in_schema=False)
+def page_meteo():
+    """Module Météo — conditions, alertes, prévisions, planificateur."""
+    return _page("meteo.html")
+
+@app.get("/ia", include_in_schema=False)
+def page_ia():
+    """Module IA Agricole — assistant, recommandations, conversations."""
+    return _page("ia.html")
+
+
+@app.get("/conseiller", include_in_schema=False)
+def page_conseiller():
+    """Espace conseiller — tableau de bord technique (Phase 6)."""
+    return _page("conseiller.html")
+
+
 @app.post("/api/scan-maladie", tags=["Diagnostic"])
 async def scan_maladie(photo: UploadFile = File(...)):
     """

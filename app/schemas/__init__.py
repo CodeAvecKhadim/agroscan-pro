@@ -17,6 +17,7 @@ class RegisterIn(BaseModel):
     password: str = Field(min_length=6)
     org_name: Optional[str] = None        # nom de la coopérative (sinon compte individuel)
     is_cooperative: bool = False
+    profil: Optional[str] = "producteur"
 
 
 class LoginIn(BaseModel):
@@ -36,6 +37,7 @@ class UserOut(BaseModel):
     email: EmailStr
     phone: Optional[str]
     role: UserRole
+    profil: str = "producteur"
     org_id: int
 
     class Config:

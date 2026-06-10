@@ -1,0 +1,190 @@
+/*
+ * agroscan.css — Feuille de styles commune AgroScan Pro
+ * Utilisée par toutes les pages : index, app, carte, sante, ferme, meteo, ia…
+ * Ne pas modifier les variables sans tester l'ensemble des pages.
+ */
+
+/* ── Variables ────────────────────────────────────────── */
+:root {
+  /* Couleurs principales */
+  --g:         #059669;
+  --gdk:       #047857;
+  --gdeep:     #065f46;
+  --gold:      #34d399;
+  --millet:    #6ee7b7;
+
+  /* Aliases legacy (index.html utilise ces noms) */
+  --laterite:      #059669;
+  --laterite-dk:   #047857;
+  --laterite-deep: #065f46;
+  --baobab:        #059669;
+  --baobab-dk:     #065f46;
+
+  /* Fond, cartes, texte */
+  --paper:   #f5faf7;
+  --paper-2: #fbf6ec;
+  --card:    #ffffff;
+  --ink:     #0f2a1e;
+  --soft:    #4b5d52;
+  --ink-soft:#4b5d52;
+  --line:    #d1fae5;
+
+  /* Statuts */
+  --ok:      #059669;
+  --ok-bg:   #d1fae5;
+  --warn:    #d97706;
+  --warn-bg: #fef3c7;
+  --red:     #dc2626;
+  --red-bg:  #fee2e2;
+  --blue:    #2563eb;
+  --purple:  #7c3aed;
+
+  /* Ombres & rayons */
+  --shadow:    0 1px 3px rgba(0,0,0,.07), 0 8px 24px -12px rgba(0,60,30,.18);
+  --shadow-lg: 0 30px 60px -25px rgba(90,50,20,.45);
+  --r:         18px;
+  --r-sm:      12px;
+
+  /* Typographie */
+  --sans:  'Outfit', sans-serif;
+  --serif: 'Fraunces', Georgia, serif;
+}
+
+/* ── Reset minimal ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+a { text-decoration: none; }
+
+/* ── Topbar ───────────────────────────────────────────── */
+.as-topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(110deg, var(--gdeep), var(--g));
+  color: #fff;
+  box-shadow: 0 4px 20px -8px rgba(0,60,20,.5);
+}
+.as-topbar-in {
+  max-width: 560px; margin: 0 auto;
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+.as-brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.as-mark {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(150deg, var(--gold), var(--millet));
+  display: grid; place-items: center; font-size: 20px;
+}
+.as-brand h1 { font-family: var(--serif); font-weight: 900; font-size: 1rem; line-height: 1.1; }
+.as-brand p  { font-size: .68rem; opacity: .8; }
+
+/* ── Boutons ──────────────────────────────────────────── */
+.as-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 22px; border-radius: var(--r-sm);
+  font-family: var(--sans); font-weight: 600; font-size: 1rem;
+  transition: transform .15s, box-shadow .15s; cursor: pointer; border: none;
+}
+.as-btn-primary {
+  background: var(--g); color: #fff;
+  box-shadow: 0 6px 16px -6px rgba(5,150,105,.5);
+}
+.as-btn-primary:hover { transform: translateY(-2px); }
+.as-btn-primary:active { transform: scale(.97); }
+.as-btn-gold   { background: var(--gold); color: var(--gdeep); }
+.as-btn-ghost  { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+.as-btn-block  { width: 100%; }
+.as-btn-lg     { padding: 18px 24px; font-size: 1.1rem; border-radius: var(--r); }
+
+/* ── Carte / panneau ──────────────────────────────────── */
+.as-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r); box-shadow: var(--shadow);
+}
+.as-pad { padding: 20px 18px; }
+
+/* ── Conteneur principal ──────────────────────────────── */
+.as-wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 80px; }
+
+/* ── Titres de section ────────────────────────────────── */
+.as-section-title {
+  font-family: var(--serif); font-weight: 700;
+  font-size: 1.1rem; color: var(--gdeep); margin-bottom: 12px;
+}
+
+/* ── Menu bas (bottom navigation) ────────────────────── */
+.as-bottom-menu {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; border-top: 1px solid var(--line);
+  display: flex; z-index: 40;
+  box-shadow: 0 -4px 20px -8px rgba(0,60,20,.12);
+}
+.as-bm-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px; color: var(--soft); font-size: .65rem; font-weight: 600;
+  cursor: pointer; transition: color .15s; font-family: inherit;
+}
+.as-bm-item.active, .as-bm-item:hover { color: var(--g); }
+.as-bm-icon { font-size: 1.3rem; line-height: 1; }
+
+/* ── Toast ────────────────────────────────────────────── */
+.as-toast {
+  position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 11px 20px; border-radius: 12px;
+  font-size: .88rem; z-index: 200;
+  box-shadow: 0 8px 30px -8px rgba(0,0,0,.4);
+  animation: as-pop .3s; max-width: 90%; text-align: center;
+}
+.as-toast.err { background: #7f1d1d; }
+.as-toast.ok  { background: var(--gdeep); }
+@keyframes as-pop {
+  from { opacity: 0; transform: translateX(-50%) scale(.9); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+/* ── Badge plan ───────────────────────────────────────── */
+.as-badge {
+  font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  background: rgba(255,255,255,.2); text-transform: uppercase;
+  letter-spacing: .04em; white-space: nowrap; color: #fff;
+}
+.as-badge.premium     { background: var(--gold); color: var(--gdeep); }
+.as-badge.cooperative { background: var(--millet); color: var(--gdeep); }
+
+/* ── Champs de formulaire ─────────────────────────────── */
+.as-field { margin-bottom: 14px; }
+.as-field label { display: block; font-weight: 600; font-size: .82rem; color: var(--soft); margin-bottom: 6px; }
+.as-input, .as-select {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--line);
+  border-radius: var(--r-sm); font-family: inherit; font-size: 1rem;
+  background: #fff; color: var(--ink);
+}
+.as-input:focus, .as-select:focus {
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(52,211,153,.2);
+}
+
+/* ── Spinner ──────────────────────────────────────────── */
+.as-spinner {
+  display: inline-block; width: 22px; height: 22px;
+  border: 3px solid var(--line); border-top-color: var(--g);
+  border-radius: 50%; animation: as-spin .8s linear infinite;
+}
+@keyframes as-spin { to { transform: rotate(360deg); } }
+.as-loading { text-align: center; padding: 40px; color: var(--soft); }
+
+/* ── Vide / zéro état ─────────────────────────────────── */
+.as-empty { text-align: center; padding: 30px 20px; color: var(--soft); }
+.as-empty .as-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.as-empty p { font-size: .9rem; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 560px) {
+  .as-wrap { padding-left: 12px; padding-right: 12px; }
+}

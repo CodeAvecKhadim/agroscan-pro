@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>AgroScan Pro — Espace Conseiller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/agroscan.css">
+<style>
+body { padding-bottom: 0; }
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; text-align: center;
+}
+.hero-mark {
+  width: 80px; height: 80px; border-radius: 20px; margin: 0 auto 20px;
+  background: linear-gradient(150deg, var(--gold), var(--millet));
+  display: grid; place-items: center; font-size: 40px;
+  box-shadow: var(--shadow);
+}
+.hero h1 {
+  font-family: var(--serif); font-weight: 900; font-size: 2rem;
+  color: var(--gdeep); margin-bottom: 8px;
+}
+.hero p { color: var(--soft); font-size: 1rem; max-width: 380px; margin: 0 auto 28px; }
+.coming-soon {
+  background: var(--card); border: 2px dashed var(--gold);
+  border-radius: var(--r); padding: 24px 28px; max-width: 420px; width: 100%;
+  margin: 0 auto 24px;
+}
+.coming-soon .cs-title {
+  font-family: var(--serif); font-weight: 700; font-size: 1.1rem;
+  color: var(--gdeep); margin-bottom: 12px;
+}
+.coming-soon ul {
+  list-style: none; text-align: left;
+}
+.coming-soon li {
+  font-size: .9rem; color: var(--soft); padding: 6px 0;
+  border-bottom: 1px solid var(--line); display: flex; gap: 10px;
+}
+.coming-soon li:last-child { border-bottom: none; }
+.coming-soon li .cs-icon { font-size: 1.1rem; flex-shrink: 0; }
+.user-info {
+  font-size: .82rem; color: var(--soft); margin-bottom: 20px;
+}
+.user-info strong { color: var(--gdeep); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-mark">🧑‍🌾</div>
+  <h1>Espace Conseiller</h1>
+  <p id="welcomeMsg">Tableau de bord technique — en cours de construction.</p>
+
+  <div class="user-info" id="userInfo"></div>
+
+  <div class="coming-soon">
+    <div class="cs-title">📋 Ce qui arrive en Phase 6</div>
+    <ul>
+      <li><span class="cs-icon">🗺️</span> Carte de toutes vos parcelles suivies</li>
+      <li><span class="cs-icon">🌱</span> État des cultures : stade, activités, retards</li>
+      <li><span class="cs-icon">📸</span> Validation des diagnostics photo (Kindwise)</li>
+      <li><span class="cs-icon">📡</span> NDVI satellite par parcelle (Sentinel-2)</li>
+      <li><span class="cs-icon">🧪</span> Données sol, pH, fertilité par parcelle</li>
+      <li><span class="cs-icon">📊</span> Rapports PDF pour vos producteurs</li>
+    </ul>
+  </div>
+
+  <button class="as-btn as-btn-primary" onclick="logout()">Se déconnecter</button>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+function _decodeJWT(token) {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(b64));
+  } catch(e) { return {}; }
+}
+
+// Vérifier que l'utilisateur est bien un conseiller
+const payload = _decodeJWT(TOKEN);
+if (payload.profil && payload.profil !== 'conseiller' && payload.profil !== 'admin') {
+  location.href = '/app';
+}
+
+async function boot() {
+  try {
+    const me = await fetch('/api/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    }).then(r => r.ok ? r.json() : null);
+
+    if (me) {
+      const prenom = (me.full_name || '').split(' ')[0];
+      document.getElementById('welcomeMsg').textContent =
+        `Bonjour ${prenom}, votre espace conseiller est en préparation.`;
+      document.getElementById('userInfo').innerHTML =
+        `Connecté en tant que <strong>${me.full_name}</strong> · profil : <strong>${me.profil || 'conseiller'}</strong>`;
+    }
+  } catch(e) {}
+}
+
+function logout() {
+  localStorage.removeItem('agro_token');
+  location.href = '/';
+}
+
+boot();
+</script>
+</body>
+</html>

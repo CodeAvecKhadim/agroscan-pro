@@ -39,6 +39,7 @@ def register(request: Request, data: RegisterIn, db: Session = Depends(get_db)):
         phone=data.phone,
         hashed_password=hash_password(data.password),
         role=UserRole.OWNER,
+        profil=data.profil or "producteur",
     )
     db.add(user)
     db.commit()
@@ -55,7 +56,7 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
     user = db.query(User).filter(User.email == form.username).first()
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
-    token = create_access_token({"sub": str(user.id), "org": user.org_id, "role": user.role.value})
+    token = create_access_token({"sub": str(user.id), "org": user.org_id, "role": user.role.value, "profil": user.profil})
     return TokenOut(access_token=token)
 
 

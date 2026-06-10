@@ -134,3 +134,16 @@ def require_role(*roles: UserRole):
             raise HTTPException(status_code=403, detail="Droits insuffisants.")
         return user
     return checker
+
+
+def require_profil(*profils: str):
+    """Exige que l'utilisateur ait l'un des profils indiqués (producteur/conseiller/admin)."""
+    def checker(user: User = Depends(current_user)) -> User:
+        user_profil = getattr(user, "profil", "producteur")
+        if user_profil not in profils:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Accès réservé au profil : {', '.join(profils)}.",
+            )
+        return user
+    return checker
