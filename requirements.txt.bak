@@ -9,6 +9,5 @@ email-validator
 reportlab
 qrcode[pil]
 requests
-slowapi
 # Production : décommenter pour PostgreSQL
 # psycopg[binary]

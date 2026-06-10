@@ -55,6 +55,17 @@ def current_subscription(user: User = Depends(current_user),
     return sub
 
 
+def effective_plan(sub: Subscription) -> PlanType:
+    """
+    Retourne le plan réellement actif en tenant compte du statut.
+    Un plan EXPIRED ou PAST_DUE est traité comme GRATUIT pour les features.
+    Évite d'accorder des fonctionnalités premium à des abonnements impayés/échus.
+    """
+    if sub.status in (SubStatus.ACTIVE, SubStatus.TRIAL):
+        return sub.plan
+    return PlanType.GRATUIT
+
+
 def _current_period() -> str:
     """Clé du mois courant, ex : '2026-05'."""
     return datetime.now(timezone.utc).strftime("%Y-%m")
