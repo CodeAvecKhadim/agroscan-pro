@@ -3,15 +3,19 @@ Point d'entrée de l'API AgroScan Pro.
 Assemble les routeurs, configure CORS, crée les tables au démarrage et sert l'interface.
 Lancer en développement :  uvicorn app.main:app --reload
 """
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 import os
 
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles
+from app.core.limiter import limiter
+from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia
 from app.services.crop_health import identifier_maladie, CropHealthError
 
 # Création automatique des tables (en production : utiliser Alembic pour les migrations).
@@ -23,10 +27,28 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS : autoriser le front (à restreindre à votre domaine en production).
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security headers middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        if request.url.scheme == "https":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS : origines explicites. Configurer ALLOWED_ORIGINS dans .env pour la production.
+_origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,6 +62,13 @@ app.include_router(coop.router)
 app.include_router(fertilite.router)
 app.include_router(credits.router)
 app.include_router(parcelles.router)
+app.include_router(agronomie.router)
+app.include_router(rules_engine.router)
+app.include_router(champ.router)
+app.include_router(sante.router)
+app.include_router(ferme.router)
+app.include_router(meteo.router)
+app.include_router(ia.router)
 
 
 @app.get("/api/health", tags=["Système"])
@@ -49,8 +78,10 @@ def health():
 
 
 # --- Interface web (sert le fichier statique) ---
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+STATIC_DIR  = os.path.join(os.path.dirname(__file__), "static")
+UPLOADS_DIR = "/opt/agroscan/uploads"
+app.mount("/static",  StaticFiles(directory=STATIC_DIR),  name="static")
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 @app.get("/", include_in_schema=False)

@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     PRICE_PREMIUM_HT: int = 5000
     PRICE_COOP_HT: int = 25000
 
+    # --- CORS (séparer par virgule dans .env : https://mondomaine.com,https://api.mondomaine.com) ---
+    ALLOWED_ORIGINS: str = "http://localhost:8000,http://localhost:3000"
+
     # --- Connecteurs de paiement (à remplir : Wave / Orange Money / PayDunya) ---
     PAYMENT_PROVIDER: str = "manuel"   # manuel | wave | orange_money | paydunya
     PAYMENT_API_KEY: str = ""

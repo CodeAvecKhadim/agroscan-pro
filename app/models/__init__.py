@@ -157,3 +157,38 @@ class UsageCounter(Base):
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     period = Column(String, index=True)          # ex : "2026-05"
     analyses_count = Column(Integer, default=0)
+
+
+# Importer les modèles agronomiques pour que Base.metadata les découvre.
+from app.models.agronomie import (  # noqa: F401, E402
+    Culture, Variete, ParametreClimatique, BesoinEau, BesoinNutritionnel,
+    StadePhenologique, CalendrierCultural, RendementReference,
+    Maladie, CultureMaladie, Ravageur, CultureRavageur, RecommandationCulture,
+)
+
+# Module Mon Champ
+from app.models.champ import (  # noqa: F401, E402
+    Parcelle as ChampParcelle, Cartographie, AnalyseSol,
+    Infrastructure, SourceEau,
+)
+
+# Module Santé des Cultures
+from app.models.sante import (  # noqa: F401, E402
+    Consultation, Observation, PhotoConsultation,
+    Diagnostic, Traitement, Suivi, RapportSante,
+)
+
+# Module Gestion de Ferme
+from app.models.ferme import (  # noqa: F401, E402
+    Activite, Preuve, Cout, MainOeuvre, JournalEntree,
+)
+
+# Module Météo & Alertes Intelligentes
+from app.models.meteo import (  # noqa: F401, E402
+    ConditionMeteo, Prevision, Alerte, ConfigAlertes, RecommandationPlan,
+)
+
+# Module IA Agricole
+from app.models.ia import (  # noqa: F401, E402
+    Conversation, MessageIA, RecommandationIA, FeedbackIA, ConfigIA,
+)

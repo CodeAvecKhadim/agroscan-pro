@@ -1,9 +1,10 @@
 """
 Routeur des abonnements et de la facturation.
-- GET  /api/billing/plans   : grille tarifaire (prix TTC, TVA 18 %).
-- GET  /api/billing/me      : abonnement + consommation courante.
-- POST /api/billing/change  : changer de plan (renvoie l'instruction de paiement).
-- POST /api/billing/webhook : confirmation de paiement par le PSP (Wave/OM/PayDunya).
+- GET  /api/billing/plans            : grille tarifaire (prix TTC, TVA 18 %).
+- GET  /api/billing/me               : abonnement + consommation courante.
+- POST /api/billing/change           : changer de plan (renvoie l'instruction de paiement).
+- POST /api/billing/webhook          : confirmation de paiement par le PSP (Wave/OM).
+- POST /api/billing/webhook-paydunya : confirmation IPN PayDunya (appelé par le serveur Node.js).
 """
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
 from app.core.deps import current_user, current_subscription, require_role, get_usage
-from app.models import User, Subscription, Payment, PlanType, UserRole
+from app.models import User, Subscription, Payment, PlanType, SubStatus, UserRole
 from app.schemas import SubscriptionOut, ChangePlanIn, UsageOut
 from app.services.plans import PLAN_FEATURES, price_ttc, features_for
 from app.services.subscription import change_plan, confirm_payment
@@ -95,3 +96,49 @@ def payment_webhook(
     payment.status = "failed"
     db.commit()
     return {"ok": False, "message": "Paiement échoué."}
+
+
+@router.post("/webhook-paydunya")
+def paydunya_webhook(
+    payload: dict,
+    x_webhook_secret: str = Header(default=""),
+    db: Session = Depends(get_db),
+):
+    """
+    Endpoint appelé par le serveur Node.js agritech après confirmation IPN PayDunya.
+    Corps attendu : {"user_id": "42", "provider_ref": "TOKEN_PAYDUNYA"}
+    Trouve le paiement PENDING de l'utilisateur et active l'abonnement.
+    """
+    if not settings.PAYMENT_WEBHOOK_SECRET:
+        raise HTTPException(status_code=503, detail="Webhook non configuré côté serveur.")
+    if x_webhook_secret != settings.PAYMENT_WEBHOOK_SECRET:
+        raise HTTPException(status_code=401, detail="Signature webhook invalide.")
+
+    try:
+        user_id = int(payload.get("user_id", 0))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="user_id invalide.")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id manquant.")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable.")
+
+    sub = db.query(Subscription).filter(Subscription.org_id == user.org_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Abonnement introuvable.")
+
+    # Cherche le paiement en attente le plus récent pour cet abonnement.
+    payment = (
+        db.query(Payment)
+        .filter(Payment.subscription_id == sub.id, Payment.status == "pending")
+        .order_by(Payment.created_at.desc())
+        .first()
+    )
+    if not payment:
+        raise HTTPException(status_code=404, detail="Aucun paiement en attente pour cet utilisateur.")
+
+    provider_ref = payload.get("provider_ref", "")
+    confirm_payment(db, payment, provider_ref)
+    return {"ok": True, "message": f"Abonnement activé pour l'utilisateur {user_id}."}

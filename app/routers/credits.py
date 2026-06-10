@@ -21,3 +21,9 @@ def liste_services(db: Session = Depends(get_db)):
 def solde(user: User = Depends(current_user), db: Session = Depends(get_db)):
     bal = credits.grant_trial_if_needed(db, user.id)
     return {"solde": bal, "historique": credits.recent_ledger(db, user.id, 10)}
+
+
+@router.get("/balance")
+def balance(user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Alias de /solde pour compatibilité."""
+    return solde(user=user, db=db)
