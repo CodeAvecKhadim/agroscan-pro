@@ -1,7 +1,7 @@
 # Secrets et configuration locale
 .env
-.env.save
-.env.save.1
+.env.*
+!.env.example
 *.save
 *.save.*
 
