@@ -217,6 +217,105 @@ def lister_regles_alias(
     return _query_rules(db, categorie, active_only, plan, gravite, culture, skip, limit)
 
 
+# ── Statistiques ────────────────────────────────────────────────────────────
+
+@router.get("/stats/rapport")
+def rapport_rules_engine(db: Session = Depends(get_db)):
+    """Rapport complet : total règles, par catégorie, cultures couvertes."""
+    from sqlalchemy import func
+    from app.models.rules_engine import RegleCulture
+    from app.models.agronomie import Culture
+
+    categories = ["maladie", "ravageur", "fertilisation", "irrigation", "meteo", "calendrier", "rendement"]
+    par_categorie = {}
+    total = 0
+    for cat in categories:
+        n = db.query(RegleMoteur).filter(RegleMoteur.active == True, RegleMoteur.categorie == cat).count()
+        par_categorie[cat] = n
+        total += n
+
+    # Cultures couvertes (au moins 1 règle liée)
+    cultures_ids = (
+        db.query(RegleCulture.culture_id)
+        .join(RegleMoteur)
+        .filter(RegleMoteur.active == True)
+        .distinct()
+        .all()
+    )
+    cultures_ids = [c[0] for c in cultures_ids]
+    cultures_noms = [
+        c.nom for c in db.query(Culture).filter(Culture.id.in_(cultures_ids)).all()
+    ] if cultures_ids else []
+
+    return {
+        "total_regles": total,
+        "par_categorie": par_categorie,
+        "nb_cultures_couvertes": len(cultures_ids),
+        "cultures_couvertes": sorted(cultures_noms),
+        "objectif": "500-520 règles",
+        "statut": "✓ Objectif atteint" if total >= 490 else f"En cours ({total}/500)",
+    }
+
+
+@router.get("/stats/culture/{culture_nom}")
+def regles_par_culture(
+    culture_nom: str,
+    active_only: bool = Query(True),
+    db: Session = Depends(get_db),
+):
+    """Toutes les règles associées à une culture donnée."""
+    from app.models.agronomie import Culture
+
+    culture = db.query(Culture).filter_by(nom=culture_nom).first()
+    if not culture:
+        raise HTTPException(status_code=404, detail=f"Culture '{culture_nom}' introuvable")
+
+    q = (
+        db.query(RegleMoteur)
+        .options(selectinload(RegleMoteur.cultures))
+        .join(RegleCulture)
+        .filter(RegleCulture.culture_id == culture.id)
+    )
+    if active_only:
+        q = q.filter(RegleMoteur.active == True)
+
+    rules = q.order_by(RegleMoteur.categorie, RegleMoteur.priorite.desc()).all()
+    par_categorie: dict = {}
+    for r in rules:
+        cat = r.categorie
+        if cat not in par_categorie:
+            par_categorie[cat] = []
+        par_categorie[cat].append({
+            "code": r.code,
+            "nom": r.nom,
+            "gravite": r.gravite,
+            "priorite": r.priorite,
+        })
+
+    return {
+        "culture": culture_nom,
+        "total_regles": len(rules),
+        "par_categorie": par_categorie,
+    }
+
+
+# ── Activation/désactivation règle ─────────────────────────────────────────
+
+@router.patch("/{code}/toggle")
+def toggle_regle(
+    code: str,
+    active: bool = Query(..., description="True pour activer, False pour désactiver"),
+    db: Session = Depends(get_db),
+):
+    """Active ou désactive une règle."""
+    rule = db.query(RegleMoteur).filter_by(code=code).first()
+    if not rule:
+        raise HTTPException(status_code=404, detail=f"Règle '{code}' introuvable")
+    rule.active = active
+    db.commit()
+    return {"code": code, "active": active, "message": f"Règle {'activée' if active else 'désactivée'}"}
+
+
 # ── Historique ──────────────────────────────────────────────────────────────
 
 @router.get("/historique")

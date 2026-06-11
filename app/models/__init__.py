@@ -169,7 +169,7 @@ from app.models.agronomie import (  # noqa: F401, E402
 
 # Module Mon Champ
 from app.models.champ import (  # noqa: F401, E402
-    Parcelle as ChampParcelle, Cartographie, AnalyseSol,
+    Parcelle, Parcelle as ChampParcelle, Cartographie, AnalyseSol,
     Infrastructure, SourceEau,
 )
 
@@ -192,4 +192,10 @@ from app.models.meteo import (  # noqa: F401, E402
 # Module IA Agricole
 from app.models.ia import (  # noqa: F401, E402
     Conversation, MessageIA, RecommandationIA, FeedbackIA, ConfigIA,
+)
+
+# Module Satellite — Sentinel Hub
+from app.models.satellite import (  # noqa: F401, E402
+    SatelliteProduct, SatelliteJob, SatelliteConfig, SatelliteMetrics,
+    SensorType, JobStatus, JobType,
 )

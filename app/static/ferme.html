@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>Ma Ferme — AgroScan Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit}
+
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
+.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-sub{font-size:.72rem;opacity:.8}
+.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+
+/* TABS NAV */
+.sec-tabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:16px}
+.sec-tab{flex:1;padding:12px 4px;text-align:center;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s}
+.sec-tab.active{color:var(--g);border-bottom-color:var(--g)}
+.sec-pane{display:none}
+.sec-pane.active{display:block}
+
+/* ACTIVITÉS */
+.act-group{margin-bottom:22px}
+.act-group-title{font-size:.78rem;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.act-group-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.act-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;margin-bottom:8px}
+.act-card:active{transform:scale(.98)}
+.act-top{display:flex;align-items:flex-start;gap:10px}
+.act-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.act-body{flex:1;min-width:0}
+.act-title{font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
+.act-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stag{padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600}
+.stag.planifie{background:#e0f2fe;color:#0c4a6e}
+.stag.en_cours{background:#fef3c7;color:#713f12}
+.stag.termine{background:#d1fae5;color:var(--gdeep)}
+.stag.annule{background:#f3f4f6;color:#6b7280}
+.act-cost{text-align:right;flex-shrink:0}
+.act-cost .cv{font-family:var(--serif);font-weight:900;font-size:.9rem;color:var(--gdk)}
+.act-cost .cl{font-size:.68rem;color:var(--soft)}
+
+/* JOURNAL */
+.journal-entry{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--g)}
+.journal-entry.alerte{border-left-color:var(--red)}
+.journal-entry.meteo{border-left-color:var(--blue)}
+.journal-entry.decision{border-left-color:var(--orange)}
+.je-top{display:flex;justify-content:space-between;margin-bottom:4px}
+.je-type{font-size:.72rem;font-weight:700;color:var(--g);text-transform:uppercase}
+.je-date{font-size:.72rem;color:var(--soft)}
+.je-body{font-size:.86rem;line-height:1.4}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--soft)}
+.empty .eico{font-size:2.5rem;margin-bottom:10px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:14px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.79rem;font-weight:600;color:var(--soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:var(--paper);transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g);background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px}
+.btn-primary{background:var(--g);color:#fff}
+.btn-primary:hover{background:var(--gdk)}
+.btn-danger{background:#fef2f2;color:var(--red);margin-top:6px}
+.btn-ghost{background:var(--paper);color:var(--soft);margin-top:6px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:8px 14px;border-radius:9px;font-size:.82rem;font-weight:600}
+.btn-outline{border:1.5px solid var(--g);color:var(--g);background:none;border-radius:9px;padding:7px 13px;font-size:.82rem;font-weight:600}
+
+/* DETAIL TABS */
+.d-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:14px}
+.d-tab{flex:1;padding:10px 4px;font-size:.8rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;text-align:center}
+.d-tab.active{color:var(--g);border-bottom-color:var(--g)}
+.d-pane{display:none}
+.d-pane.active{display:block}
+
+/* INFO ROW */
+.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.87rem}
+.info-row:last-child{border-bottom:none}
+.info-row .irl{color:var(--soft)}
+.info-row .irv{font-weight:600}
+
+/* COST ROW */
+.cost-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.85rem;align-items:center}
+.cost-row .cr-label{flex:1;color:var(--ink)}
+.cost-row .cr-cat{font-size:.72rem;color:var(--soft);margin-top:2px}
+.cost-row .cr-amt{font-family:var(--serif);font-weight:900;color:var(--gdk);white-space:nowrap;margin-left:8px}
+.cost-total{background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;border-radius:10px;padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.cost-total .ct-l{font-size:.82rem;opacity:.9}
+.cost-total .ct-v{font-family:var(--serif);font-weight:900;font-size:1.2rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:88%;text-align:center}
+.toast.err{background:#7f1d1d}.toast.ok{background:var(--gdeep)}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:30px;color:var(--soft)}
+
+/* BOTTOM NAV */
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
+.bm-item.active,.bm-item:hover{color:var(--g)}
+.bm-item .bm-icon{font-size:1.3rem;line-height:1}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <a href="/app" class="tb-back">←</a>
+    <div style="flex:1">
+      <div class="tb-title">📋 Ma Ferme</div>
+      <div class="tb-sub" id="tbSub">Activités & journal</div>
+    </div>
+    <button class="tb-btn" id="btnTopAdd" onclick="openNewAct()">+ Activité</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="sec-tabs">
+    <div class="sec-tab active" onclick="switchSec(this,'sActivites')">Activités</div>
+    <div class="sec-tab" onclick="switchSec(this,'sJournal');loadJournal()">Journal</div>
+  </div>
+
+  <!-- ACTIVITÉS -->
+  <div class="sec-pane active" id="sActivites">
+    <!-- Filtre statut -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+      <button class="stag planifie" style="cursor:pointer;border:none;padding:7px 14px;border-radius:20px" onclick="filterAct('')" id="fAll">Toutes</button>
+      <button style="cursor:pointer;border:none;padding:7px 14px;border-radius:20px;font-size:.72rem;font-weight:600;background:#e0f2fe;color:#0c4a6e" onclick="filterAct('planifie')">Planifiées</button>
+      <button style="cursor:pointer;border:none;padding:7px 14px;border-radius:20px;font-size:.72rem;font-weight:600;background:#fef3c7;color:#713f12" onclick="filterAct('en_cours')">En cours</button>
+      <button style="cursor:pointer;border:none;padding:7px 14px;border-radius:20px;font-size:.72rem;font-weight:600;background:#d1fae5;color:var(--gdeep)" onclick="filterAct('termine')">Terminées</button>
+    </div>
+    <div id="actList"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- JOURNAL -->
+  <div class="sec-pane" id="sJournal">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-outline" onclick="openJournalForm()">+ Note</button>
+    </div>
+    <div id="journalList"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fabBtn" style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewAct()">＋</button>
+
+<!-- MODAL: NOUVELLE ACTIVITÉ -->
+<div class="overlay" id="ovAct" onclick="if(event.target===this)closeSheet('ovAct')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="actModalTitle">Nouvelle activité</h2>
+      <button class="sheet-close" onclick="closeSheet('ovAct')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formAct" onsubmit="submitAct(event)">
+        <div class="field">
+          <label>Titre *</label>
+          <input type="text" id="aTitle" required maxlength="200" placeholder="Ex: Fertilisation parcelle nord">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Type *</label>
+            <select id="aType" required>
+              <option value="">—</option>
+              <option value="semis">Semis</option>
+              <option value="plantation">Plantation</option>
+              <option value="fertilisation">Fertilisation</option>
+              <option value="traitement">Traitement</option>
+              <option value="irrigation">Irrigation</option>
+              <option value="desherbage">Désherbage</option>
+              <option value="recolte">Récolte</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Date prévue</label>
+            <input type="date" id="aDate">
+          </div>
+        </div>
+        <div class="field">
+          <label>Parcelle</label>
+          <select id="aParcelle">
+            <option value="">— Toute la ferme —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Surface traitée (ha)</label>
+          <input type="number" id="aSurface" min="0.01" step="0.01">
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="aDesc" rows="2" placeholder="Détails de l'activité…"></textarea>
+        </div>
+        <div class="field">
+          <label>Note</label>
+          <textarea id="aNote" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btnActSave">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovAct')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DÉTAIL ACTIVITÉ -->
+<div class="overlay" id="ovDetail" onclick="if(event.target===this)closeSheet('ovDetail')">
+  <div class="sheet" style="max-height:93vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div style="flex:1">
+        <h2 id="dTitle">Activité</h2>
+        <div id="dMeta" style="font-size:.74rem;color:var(--soft);margin-top:2px"></div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('ovDetail')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="d-tabs">
+        <div class="d-tab active" onclick="switchDTab(this,'dInfo')">Infos</div>
+        <div class="d-tab" onclick="switchDTab(this,'dCouts');loadCouts()">Coûts</div>
+        <div class="d-tab" onclick="switchDTab(this,'dMO');loadMO()">Main d'œuvre</div>
+      </div>
+
+      <!-- INFO -->
+      <div class="d-pane active" id="dInfo">
+        <div id="dInfoContent"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px" id="dActions"></div>
+      </div>
+
+      <!-- COÛTS -->
+      <div class="d-pane" id="dCouts">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn-outline" onclick="openCoutForm()">+ Coût</button>
+        </div>
+        <div id="coutsContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- MAIN D'OEUVRE -->
+      <div class="d-pane" id="dMO">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn-outline" onclick="openMOForm()">+ Main d'œuvre</button>
+        </div>
+        <div id="moContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: COÛT -->
+<div class="overlay" id="ovCout" onclick="if(event.target===this)closeSheet('ovCout')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><h2>Ajouter un coût</h2><button class="sheet-close" onclick="closeSheet('ovCout')">✕</button></div>
+    <div class="sheet-body">
+      <form id="formCout" onsubmit="submitCout(event)">
+        <div class="field">
+          <label>Désignation *</label>
+          <input type="text" id="cDesig" required maxlength="300" placeholder="Ex: Urée 50kg, Fongicide Mancozèbe…">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Montant (FCFA) *</label>
+            <input type="number" id="cMontant" required min="0" step="1">
+          </div>
+          <div class="field">
+            <label>Catégorie</label>
+            <select id="cCat">
+              <option value="intrant">Intrant</option>
+              <option value="materiel">Matériel</option>
+              <option value="transport">Transport</option>
+              <option value="prestation">Prestation</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Quantité</label>
+            <input type="number" id="cQte" min="0" step="0.01">
+          </div>
+          <div class="field">
+            <label>Unité</label>
+            <input type="text" id="cUnit" placeholder="kg, L, sac…">
+          </div>
+        </div>
+        <div class="field">
+          <label>Fournisseur</label>
+          <input type="text" id="cFourn">
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovCout')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: MAIN D'OEUVRE -->
+<div class="overlay" id="ovMO" onclick="if(event.target===this)closeSheet('ovMO')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><h2>Main d'œuvre</h2><button class="sheet-close" onclick="closeSheet('ovMO')">✕</button></div>
+    <div class="sheet-body">
+      <form id="formMO" onsubmit="submitMO(event)">
+        <div class="field">
+          <label>Type *</label>
+          <select id="moType" required>
+            <option value="familiale">Familiale</option>
+            <option value="salariale">Salariale</option>
+            <option value="entraide">Entraide</option>
+            <option value="prestataire">Prestataire</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Nb personnes</label>
+            <input type="number" id="moNb" min="1" step="1">
+          </div>
+          <div class="field">
+            <label>Nb jours</label>
+            <input type="number" id="moJours" min="0.5" step="0.5">
+          </div>
+        </div>
+        <div class="field">
+          <label>Coût total (FCFA)</label>
+          <input type="number" id="moCout" min="0" step="1">
+        </div>
+        <div class="field">
+          <label>Note</label>
+          <textarea id="moNote" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovMO')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: JOURNAL -->
+<div class="overlay" id="ovJournal" onclick="if(event.target===this)closeSheet('ovJournal')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><h2>Note de journal</h2><button class="sheet-close" onclick="closeSheet('ovJournal')">✕</button></div>
+    <div class="sheet-body">
+      <form id="formJournal" onsubmit="submitJournal(event)">
+        <div class="field-row">
+          <div class="field">
+            <label>Type</label>
+            <select id="jType">
+              <option value="observation">Observation</option>
+              <option value="decision">Décision</option>
+              <option value="note_terrain">Note terrain</option>
+              <option value="alerte">Alerte</option>
+              <option value="meteo">Météo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Date *</label>
+            <input type="date" id="jDate" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>Contenu *</label>
+          <textarea id="jContenu" required rows="4" placeholder="Que s'est-il passé aujourd'hui sur la ferme ?"></textarea>
+        </div>
+        <div class="field">
+          <label>Parcelle concernée</label>
+          <select id="jParcelle">
+            <option value="">— Toute la ferme —</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovJournal')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/sante" class="bm-item"><span class="bm-icon">🩺</span>Santé</a>
+  <a href="/ferme" class="bm-item active"><span class="bm-icon">📋</span>Ferme</a>
+  <a href="/meteo" class="bm-item"><span class="bm-icon">🌤️</span>Météo</a>
+  <a href="/ia" class="bm-item"><span class="bm-icon">🤖</span>IA</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+let activites = [];
+let currentAct = null;
+let parcelles = [];
+let actFilter = '';
+let journalLoaded = false;
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+const ACT_ICONS = {semis:'🌱', plantation:'🌿', fertilisation:'🧪', traitement:'💊',
+  irrigation:'💧', desherbage:'✂️', recolte:'🌾', autre:'📌'};
+const ACT_BG = {semis:'#f0fdf4', plantation:'#f0fdf4', fertilisation:'#fef3c7',
+  traitement:'#fee2e2', irrigation:'#e0f2fe', desherbage:'#fef3c7', recolte:'#d1fae5', autre:'#f3f4f6'};
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'});
+}
+function fmtMont(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('fr-FR') + ' FCFA';
+}
+
+// ── LOAD ACTIVITÉS ──
+async function loadActivites(statut = '') {
+  try {
+    const q = statut ? `?statut=${statut}&limit=100` : '?limit=100';
+    const raw = await api('/api/ferme/activites' + q);
+    activites = Array.isArray(raw) ? raw : (raw.activites || []);
+    renderActivites();
+    document.getElementById('tbSub').textContent = `${activites.length} activité${activites.length > 1 ? 's' : ''}`;
+  } catch(e) {
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    document.getElementById('actList').innerHTML = '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
+    toast('Erreur: ' + e.detail, 'err');
+  }
+}
+
+function renderActivites() {
+  const el = document.getElementById('actList');
+  if (activites.length === 0) {
+    el.innerHTML = `<div class="empty">
+      <div class="eico">📋</div>
+      <p>Aucune activité. Planifiez vos travaux agricoles.</p>
+      <button class="btn btn-primary" style="max-width:220px;margin:0 auto" onclick="openNewAct()">+ Planifier une activité</button>
+    </div>`;
+    return;
+  }
+
+  // Group by statut
+  const groups = {
+    en_cours: activites.filter(a => a.statut === 'en_cours'),
+    planifie: activites.filter(a => a.statut === 'planifie'),
+    termine: activites.filter(a => a.statut === 'termine'),
+    annule: activites.filter(a => a.statut === 'annule'),
+  };
+  const labels = {en_cours:'🟡 En cours', planifie:'🔵 Planifiées', termine:'✅ Terminées', annule:'⛔ Annulées'};
+
+  let html = '';
+  for (const [key, list] of Object.entries(groups)) {
+    if (list.length === 0) continue;
+    html += `<div class="act-group">
+      <div class="act-group-title">${labels[key]} (${list.length})</div>
+      ${list.map(a => {
+        const icon = ACT_ICONS[a.type] || '📌';
+        const bg = ACT_BG[a.type] || '#f3f4f6';
+        const dt = a.date_prevue ? fmtDate(a.date_prevue) : (a.date_debut ? fmtDate(a.date_debut) : 'Date non fixée');
+        const parcNom = a.contexte && a.contexte.parcelle_nom || '';
+        return `<div class="act-card" onclick="openDetail(${a.id})">
+          <div class="act-top">
+            <div class="act-icon" style="background:${bg}">${icon}</div>
+            <div class="act-body">
+              <div class="act-title">${a.titre}</div>
+              <div class="act-meta">${dt}${parcNom ? ' · ' + parcNom : ''}</div>
+              <div class="act-tags"><span class="stag ${a.statut}">${labelStatut(a.statut)}</span></div>
+            </div>
+            ${a.cout_total_fcfa ? `<div class="act-cost">
+              <div class="cv">${Number(a.cout_total_fcfa/1000).toFixed(0)}k</div>
+              <div class="cl">FCFA</div>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+function labelStatut(s) {
+  return {planifie:'Planifiée', en_cours:'En cours', termine:'Terminée', annule:'Annulée'}[s] || s;
+}
+
+function filterAct(statut) {
+  actFilter = statut;
+  loadActivites(statut);
+}
+
+// ── NEW ACTIVITÉ ──
+function openNewAct() {
+  document.getElementById('formAct').reset();
+  document.getElementById('actModalTitle').textContent = 'Nouvelle activité';
+  document.getElementById('ovAct').classList.add('open');
+}
+
+async function submitAct(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnActSave');
+  btn.disabled = true;
+  const surf = parseFloat(document.getElementById('aSurface').value);
+  const body = {
+    type: document.getElementById('aType').value,
+    titre: document.getElementById('aTitle').value.trim(),
+    parcelle_id: parseInt(document.getElementById('aParcelle').value) || null,
+    date_prevue: document.getElementById('aDate').value || null,
+    surface_traitee_ha: isNaN(surf) ? null : surf,
+    description: document.getElementById('aDesc').value.trim() || null,
+    note: document.getElementById('aNote').value.trim() || null,
+  };
+  try {
+    await api('/api/ferme/activites', {method:'POST', body:JSON.stringify(body)});
+    toast('Activité créée', 'ok');
+    closeSheet('ovAct');
+    loadActivites(actFilter);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── DETAIL ──
+async function openDetail(id) {
+  currentAct = null;
+  document.getElementById('ovDetail').classList.add('open');
+  document.getElementById('dInfoContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('dActions').innerHTML = '';
+  document.querySelectorAll('.d-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.d-pane').forEach(p => p.classList.remove('active'));
+  document.querySelector('.d-tab').classList.add('active');
+  document.getElementById('dInfo').classList.add('active');
+
+  try {
+    const act = await api(`/api/ferme/activites/${id}`);
+    currentAct = act;
+    document.getElementById('dTitle').textContent = ACT_ICONS[act.type] + ' ' + act.titre;
+    document.getElementById('dMeta').textContent = `${labelStatut(act.statut)} · ${fmtDate(act.date_prevue)}`;
+
+    document.getElementById('dInfoContent').innerHTML = `
+      <div class="info-row"><span class="irl">Type</span><span class="irv">${act.type}</span></div>
+      <div class="info-row"><span class="irl">Statut</span><span class="irv">${labelStatut(act.statut)}</span></div>
+      ${act.date_prevue ? `<div class="info-row"><span class="irl">Date prévue</span><span class="irv">${fmtDate(act.date_prevue)}</span></div>` : ''}
+      ${act.date_debut ? `<div class="info-row"><span class="irl">Démarrage</span><span class="irv">${fmtDate(act.date_debut)}</span></div>` : ''}
+      ${act.date_fin ? `<div class="info-row"><span class="irl">Fin</span><span class="irv">${fmtDate(act.date_fin)}</span></div>` : ''}
+      ${act.surface_traitee_ha ? `<div class="info-row"><span class="irl">Surface</span><span class="irv">${act.surface_traitee_ha} ha</span></div>` : ''}
+      ${act.cout_total_fcfa ? `<div class="info-row"><span class="irl">Coût total</span><span class="irv">${fmtMont(act.cout_total_fcfa)}</span></div>` : ''}
+      ${act.description ? `<div class="info-row"><span class="irl">Description</span><span class="irv" style="text-align:left;flex:1;margin-left:8px">${act.description}</span></div>` : ''}
+      ${act.note ? `<div style="margin-top:10px;padding:10px;background:var(--paper);border-radius:8px;font-size:.84rem;color:var(--soft)">${act.note}</div>` : ''}
+    `;
+
+    // Actions
+    const acts = document.getElementById('dActions');
+    acts.innerHTML = '';
+    if (act.statut === 'planifie') {
+      const b = document.createElement('button');
+      b.className = 'btn btn-primary btn-sm';
+      b.style.cssText = 'width:auto;margin:0';
+      b.textContent = '▶ Démarrer';
+      b.onclick = () => demarrer(act.id);
+      acts.appendChild(b);
+    }
+    if (act.statut === 'en_cours') {
+      const b = document.createElement('button');
+      b.className = 'btn btn-primary btn-sm';
+      b.style.cssText = 'width:auto;margin:0';
+      b.textContent = '✓ Terminer';
+      b.onclick = () => terminer(act.id);
+      acts.appendChild(b);
+    }
+    if (act.statut !== 'termine' && act.statut !== 'annule') {
+      const b2 = document.createElement('button');
+      b2.className = 'btn btn-danger btn-sm';
+      b2.style.cssText = 'width:auto;margin:0';
+      b2.textContent = '✗ Annuler';
+      b2.onclick = () => annuler(act.id);
+      acts.appendChild(b2);
+    }
+  } catch(e) {
+    toast('Erreur', 'err');
+  }
+}
+
+async function demarrer(id) {
+  try {
+    await api(`/api/ferme/activites/${id}/demarrer`, {method:'POST', body:JSON.stringify({})});
+    toast('Activité démarrée', 'ok');
+    openDetail(id);
+    loadActivites(actFilter);
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+async function terminer(id) {
+  try {
+    await api(`/api/ferme/activites/${id}/terminer`, {method:'POST', body:JSON.stringify({})});
+    toast('Activité terminée ✓', 'ok');
+    openDetail(id);
+    loadActivites(actFilter);
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+async function annuler(id) {
+  if (!confirm('Annuler cette activité ?')) return;
+  try {
+    await api(`/api/ferme/activites/${id}`, {method:'PATCH', body:JSON.stringify({statut:'annule'})});
+    toast('Activité annulée', 'ok');
+    closeSheet('ovDetail');
+    loadActivites(actFilter);
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+// ── COÛTS ──
+async function loadCouts() {
+  if (!currentAct) return;
+  try {
+    const list = await api(`/api/ferme/activites/${currentAct.id}/couts`);
+    const el = document.getElementById('coutsContent');
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">💰</div><p>Aucun coût enregistré.</p></div>';
+      return;
+    }
+    const total = list.reduce((s, c) => s + (c.montant_total_fcfa || 0), 0);
+    el.innerHTML = list.map(c => `
+      <div class="cost-row">
+        <div>
+          <div class="cr-label">${c.description}</div>
+          <div class="cr-cat">${c.categorie}${c.fournisseur ? ' · ' + c.fournisseur : ''}</div>
+        </div>
+        <div class="cr-amt">${fmtMont(c.montant_total_fcfa)}</div>
+      </div>
+    `).join('') + `<div class="cost-total"><span class="ct-l">Total</span><span class="ct-v">${fmtMont(total)}</span></div>`;
+  } catch(e) {
+    document.getElementById('coutsContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
+  }
+}
+
+function openCoutForm() {
+  document.getElementById('formCout').reset();
+  document.getElementById('ovCout').classList.add('open');
+}
+
+async function submitCout(e) {
+  e.preventDefault();
+  if (!currentAct) return;
+  const body = {
+    description: document.getElementById('cDesig').value.trim(),
+    montant_total_fcfa: parseInt(document.getElementById('cMontant').value) || null,
+    categorie: document.getElementById('cCat').value,
+    quantite: parseFloat(document.getElementById('cQte').value) || null,
+    unite: document.getElementById('cUnit').value.trim() || null,
+    fournisseur: document.getElementById('cFourn').value.trim() || null,
+  };
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/ferme/activites/${currentAct.id}/couts`, {method:'POST', body:JSON.stringify(body)});
+    toast('Coût ajouté', 'ok');
+    closeSheet('ovCout');
+    loadCouts();
+  } catch(ex) { toast(ex.detail || 'Erreur', 'err'); } finally { btn.disabled = false; }
+}
+
+// ── MAIN D'OEUVRE ──
+async function loadMO() {
+  if (!currentAct) return;
+  try {
+    const list = await api(`/api/ferme/activites/${currentAct.id}/main-oeuvre`);
+    const el = document.getElementById('moContent');
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">👥</div><p>Aucune main d\'œuvre.</p></div>';
+      return;
+    }
+    el.innerHTML = list.map(m => `
+      <div class="cost-row">
+        <div>
+          <div class="cr-label">${m.type_main_oeuvre}</div>
+          <div class="cr-cat">${m.nb_personnes||0} pers · ${m.nb_jours_homme||0} j</div>
+        </div>
+        <div class="cr-amt">${m.cout_total_fcfa ? fmtMont(m.cout_total_fcfa) : '—'}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('moContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
+  }
+}
+
+function openMOForm() {
+  document.getElementById('formMO').reset();
+  document.getElementById('ovMO').classList.add('open');
+}
+
+async function submitMO(e) {
+  e.preventDefault();
+  if (!currentAct) return;
+  const body = {
+    type_main_oeuvre: document.getElementById('moType').value,
+    nb_personnes: parseInt(document.getElementById('moNb').value) || null,
+    nb_jours_homme: parseFloat(document.getElementById('moJours').value) || null,
+    cout_total_fcfa: parseFloat(document.getElementById('moCout').value) || null,
+    note: document.getElementById('moNote').value.trim() || null,
+  };
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/ferme/activites/${currentAct.id}/main-oeuvre`, {method:'POST', body:JSON.stringify(body)});
+    toast('Main d\'œuvre ajoutée', 'ok');
+    closeSheet('ovMO');
+    loadMO();
+  } catch(ex) { toast(ex.detail || 'Erreur', 'err'); } finally { btn.disabled = false; }
+}
+
+// ── JOURNAL ──
+async function loadJournal() {
+  if (journalLoaded) return;
+  try {
+    const raw = await api('/api/ferme/journal?limit=50');
+    const list = Array.isArray(raw) ? raw : [];
+    journalLoaded = true;
+    const el = document.getElementById('journalList');
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="eico">📝</div><p>Journal vide. Notez vos observations quotidiennes.</p></div>';
+      return;
+    }
+    const JICONS = {observation:'👁️', decision:'💡', alerte:'⚠️', note_terrain:'📍', meteo:'🌤️'};
+    el.innerHTML = list.map(j => {
+      const dt = fmtDate(j.created_at);
+      return `<div class="journal-entry ${j.type}">
+        <div class="je-top">
+          <span class="je-type">${JICONS[j.type]||'📝'} ${j.type.replace('_',' ')}</span>
+          <span class="je-date">${dt}</span>
+        </div>
+        <div class="je-body">${j.contenu}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('journalList').innerHTML = '<p style="color:var(--soft);padding:20px;text-align:center">Erreur de chargement</p>';
+  }
+}
+
+function openJournalForm() {
+  document.getElementById('formJournal').reset();
+  document.getElementById('jDate').value = new Date().toISOString().split('T')[0];
+  // Sync parcelles
+  const sel = document.getElementById('jParcelle');
+  sel.innerHTML = '<option value="">— Toute la ferme —</option>';
+  parcelles.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.nom;
+    sel.appendChild(o);
+  });
+  document.getElementById('ovJournal').classList.add('open');
+}
+
+async function submitJournal(e) {
+  e.preventDefault();
+  const body = {
+    type: document.getElementById('jType').value,
+    date_entree: document.getElementById('jDate').value,
+    contenu: document.getElementById('jContenu').value.trim(),
+    parcelle_id: parseInt(document.getElementById('jParcelle').value) || null,
+  };
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api('/api/ferme/journal', {method:'POST', body:JSON.stringify(body)});
+    toast('Note enregistrée', 'ok');
+    closeSheet('ovJournal');
+    journalLoaded = false;
+    loadJournal();
+  } catch(ex) { toast(ex.detail || 'Erreur', 'err'); } finally { btn.disabled = false; }
+}
+
+// ── TAB HELPERS ──
+function switchSec(btn, paneId) {
+  document.querySelectorAll('.sec-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sec-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+  // Toggle FAB label
+  document.getElementById('fabBtn').onclick = paneId === 'sJournal'
+    ? () => openJournalForm()
+    : () => openNewAct();
+  document.getElementById('btnTopAdd').textContent = paneId === 'sJournal' ? '+ Note' : '+ Activité';
+  document.getElementById('btnTopAdd').onclick = paneId === 'sJournal' ? openJournalForm : openNewAct;
+}
+
+function switchDTab(btn, paneId) {
+  document.querySelectorAll('.d-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.d-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+}
+
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── LOAD PARCELLES ──
+async function loadParcelles() {
+  try {
+    parcelles = await api('/api/champ/parcelles?limit=50');
+    if (!Array.isArray(parcelles)) parcelles = [];
+    ['aParcelle'].forEach(sid => {
+      const sel = document.getElementById(sid);
+      parcelles.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p.id;
+        o.textContent = p.nom;
+        sel.appendChild(o);
+      });
+    });
+  } catch(e) {}
+}
+
+loadActivites();
+loadParcelles();
+</script>
+</body>
+</html>

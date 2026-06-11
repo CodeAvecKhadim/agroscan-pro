@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>Météo — AgroScan Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit}
+
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
+.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-sub{font-size:.72rem;opacity:.8}
+.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+
+/* WEATHER HERO */
+.weather-hero{background:linear-gradient(135deg,var(--gdeep),#0d9488);color:#fff;border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.weather-hero::after{content:'';position:absolute;top:-30px;right:-20px;width:120px;height:120px;background:rgba(255,255,255,.08);border-radius:50%}
+.wh-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.wh-loc{font-size:.8rem;opacity:.85}
+.wh-source{font-size:.7rem;opacity:.65;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:20px}
+.wh-main{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.wh-temp{font-family:var(--serif);font-weight:900;font-size:3.4rem;line-height:1}
+.wh-desc{font-size:.92rem;opacity:.9}
+.wh-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wh-stat{text-align:center}
+.wh-stat .ws-v{font-weight:700;font-size:.9rem}
+.wh-stat .ws-l{font-size:.68rem;opacity:.75;margin-top:1px}
+.refresh-btn{background:rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:.78rem;color:#fff;font-weight:600}
+
+/* SECTION */
+.sec-title{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title .count{background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.72rem;font-weight:700}
+.sec-title .count.ok{background:var(--g)}
+
+/* ALERTES */
+.alerte-card{background:var(--card);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;border-left:4px solid var(--g)}
+.alerte-card:active{transform:scale(.98)}
+.alerte-card.critique{border-left-color:var(--red);background:#fff8f8}
+.alerte-card.avertissement{border-left-color:var(--orange);background:#fffbf0}
+.alerte-card.info{border-left-color:var(--blue)}
+.ac-top{display:flex;align-items:flex-start;gap:10px}
+.ac-icon{font-size:1.6rem;flex-shrink:0;line-height:1.2}
+.ac-body{flex:1;min-width:0}
+.ac-title{font-weight:700;font-size:.9rem}
+.ac-sub{font-size:.75rem;color:var(--soft);margin-top:3px}
+.ac-tags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.ac-tag{font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:20px}
+.ac-tag.critique{background:#fee2e2;color:#7f1d1d}
+.ac-tag.avertissement{background:#fef3c7;color:#713f12}
+.ac-tag.info{background:#e0f2fe;color:#0c4a6e}
+.ac-tag.lu{background:#f3f4f6;color:#6b7280}
+.ac-actions{display:flex;gap:8px;margin-top:10px}
+
+/* PRÉVISIONS JOURS */
+.prev-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.prev-scroll::-webkit-scrollbar{display:none}
+.prev-day{flex-shrink:0;width:72px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.prev-day.today{background:linear-gradient(135deg,var(--g),var(--gdk));color:#fff;border-color:var(--gdk)}
+.prev-day .pd-day{font-size:.72rem;font-weight:700;opacity:.8;margin-bottom:4px}
+.prev-day .pd-ico{font-size:1.4rem;margin-bottom:4px}
+.prev-day .pd-max{font-family:var(--serif);font-weight:900;font-size:1rem}
+.prev-day .pd-min{font-size:.72rem;opacity:.7}
+.prev-day .pd-rain{font-size:.7rem;margin-top:4px}
+
+/* PLANIFICATEUR */
+.plan-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.pc-top{display:flex;gap:10px;align-items:flex-start}
+.pc-prio{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.pc-prio.haute{background:#fee2e2}
+.pc-prio.normale{background:#d1fae5}
+.pc-prio.faible{background:#f0f9ff}
+.pc-body{flex:1;min-width:0}
+.pc-title{font-weight:700;font-size:.9rem}
+.pc-sub{font-size:.76rem;color:var(--soft);margin-top:3px;line-height:1.4}
+.pc-actions{display:flex;gap:6px;margin-top:8px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--line);margin-bottom:16px}
+.tab{flex:1;padding:11px 4px;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;text-align:center;margin-bottom:-2px}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:14px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.79rem;font-weight:600;color:var(--soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:var(--paper)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--g);background:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px}
+.btn-primary{background:var(--g);color:#fff}
+.btn-ghost{background:var(--paper);color:var(--soft);margin-top:6px}
+.btn-sm{padding:8px 12px;border-radius:9px;font-size:.78rem;font-weight:600}
+.btn-sm.ok{background:#d1fae5;color:var(--gdeep)}
+.btn-sm.ignore{background:#f3f4f6;color:#6b7280}
+.btn-sm.lire{background:#e0f2fe;color:#0c4a6e}
+
+/* INFO ROW */
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:.87rem}
+.info-row:last-child{border-bottom:none}
+.info-row .irl{color:var(--soft)}
+.info-row .irv{font-weight:600}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 16px;color:var(--soft)}
+.empty .eico{font-size:2.5rem;margin-bottom:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:88%;text-align:center}
+.toast.err{background:#7f1d1d}.toast.ok{background:var(--gdeep)}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:30px;color:var(--soft)}
+
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
+.bm-item.active,.bm-item:hover{color:var(--g)}
+.bm-item .bm-icon{font-size:1.3rem;line-height:1}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <a href="/app" class="tb-back">←</a>
+    <div style="flex:1">
+      <div class="tb-title">🌤️ Météo & Alertes</div>
+      <div class="tb-sub" id="tbSub">Chargement…</div>
+    </div>
+    <button class="tb-btn" onclick="genererAlertes()">🔄 Actualiser</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO CONDITIONS -->
+  <div class="weather-hero" id="weatherHero">
+    <div class="wh-top">
+      <div>
+        <div style="font-size:1rem;font-weight:700;opacity:.95" id="heroTitle">Conditions météo</div>
+        <div class="wh-loc" id="heroLoc">Chargement…</div>
+      </div>
+      <span class="wh-source" id="heroSource">—</span>
+    </div>
+    <div class="wh-main">
+      <div class="wh-temp" id="heroTemp">—°</div>
+      <div>
+        <div style="font-size:1.8rem" id="heroIco">🌡️</div>
+        <div class="wh-desc" id="heroDesc">—</div>
+      </div>
+    </div>
+    <div class="wh-grid">
+      <div class="wh-stat"><div class="ws-v" id="hHum">—%</div><div class="ws-l">Humidité</div></div>
+      <div class="wh-stat"><div class="ws-v" id="hPluie">—mm</div><div class="ws-l">Pluie</div></div>
+      <div class="wh-stat"><div class="ws-v" id="hVent">—km/h</div><div class="ws-l">Vent</div></div>
+      <div class="wh-stat"><div class="ws-v" id="hEtp">—mm</div><div class="ws-l">ETP</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'tAlertes')">Alertes <span id="alertCount" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:.7rem;margin-left:4px;display:none">0</span></div>
+    <div class="tab" onclick="switchTab(this,'tPrevisions');loadPrevisions()">Prévisions</div>
+    <div class="tab" onclick="switchTab(this,'tPlanif');loadPlanificateur()">Planificateur</div>
+    <div class="tab" onclick="switchTab(this,'tCapteur')">Capteur</div>
+  </div>
+
+  <!-- ALERTES -->
+  <div class="tab-pane active" id="tAlertes">
+    <div id="alertesList"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- PRÉVISIONS -->
+  <div class="tab-pane" id="tPrevisions">
+    <div id="prevContent"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- PLANIFICATEUR -->
+  <div class="tab-pane" id="tPlanif">
+    <div style="margin-bottom:12px">
+      <button class="tb-btn" style="background:var(--g);color:#fff;border-radius:10px;padding:9px 16px;font-size:.84rem;font-weight:600" onclick="genererPlanif()">♻️ Regénérer</button>
+    </div>
+    <div id="planifContent"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- CAPTEUR TERRAIN -->
+  <div class="tab-pane" id="tCapteur">
+    <p style="font-size:.85rem;color:var(--soft);margin-bottom:16px">Saisissez les mesures de votre capteur de terrain pour mettre à jour les conditions locales.</p>
+    <form id="formCapteur" onsubmit="submitCapteur(event)">
+      <div class="field">
+        <label>Parcelle</label>
+        <select id="cParcelle">
+          <option value="">— Toute la ferme —</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Latitude</label>
+          <input type="number" id="cLat" step="0.0001" placeholder="14.7167">
+        </div>
+        <div class="field">
+          <label>Longitude</label>
+          <input type="number" id="cLon" step="0.0001" placeholder="-17.4677">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Temp. actuelle (°C)</label>
+          <input type="number" id="cTemp" step="0.1">
+        </div>
+        <div class="field">
+          <label>Humidité (%)</label>
+          <input type="number" id="cHum" min="0" max="100">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Pluie (mm)</label>
+          <input type="number" id="cPluie" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label>Vent (km/h)</label>
+          <input type="number" id="cVent" min="0" step="0.1">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Temp. min (°C)</label>
+          <input type="number" id="cTmin" step="0.1">
+        </div>
+        <div class="field">
+          <label>Temp. max (°C)</label>
+          <input type="number" id="cTmax" step="0.1">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Enregistrer les mesures</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- MODAL: DÉTAIL ALERTE -->
+<div class="overlay" id="ovAlerte" onclick="if(event.target===this)closeSheet('ovAlerte')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="alerteDetailTitle">Alerte</h2>
+      <button class="sheet-close" onclick="closeSheet('ovAlerte')">✕</button>
+    </div>
+    <div class="sheet-body" id="alerteDetailBody"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/sante" class="bm-item"><span class="bm-icon">🩺</span>Santé</a>
+  <a href="/ferme" class="bm-item"><span class="bm-icon">📋</span>Ferme</a>
+  <a href="/meteo" class="bm-item active"><span class="bm-icon">🌤️</span>Météo</a>
+  <a href="/ia" class="bm-item"><span class="bm-icon">🤖</span>IA</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+let alertes = [];
+let parcelles = [];
+let prevLoaded = false;
+let planifLoaded = false;
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3400);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+const METEO_ICONS = {
+  0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+  45:'🌫️', 48:'🌫️',
+  51:'🌦️', 53:'🌦️', 55:'🌧️',
+  61:'🌧️', 63:'🌧️', 65:'⛈️',
+  80:'🌦️', 81:'🌧️', 82:'⛈️',
+  95:'⛈️', 96:'⛈️'
+};
+
+const ALERTE_ICONS = {
+  meteo:'🌩️', maladie:'🦠', ravageur:'🐛',
+  fertilisation:'🌿', irrigation:'💧', calendrier:'📅', planificateur:'📋'
+};
+
+function meteoIcon(code) {
+  return METEO_ICONS[code] || '🌡️';
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'short'});
+}
+
+// ── LOAD CONDITIONS ──
+async function loadConditions() {
+  try {
+    const conds = await api('/api/meteo/conditions');
+    const list = Array.isArray(conds) ? conds : (conds.conditions || []);
+    if (list.length === 0) {
+      document.getElementById('heroTemp').textContent = '—°';
+      document.getElementById('heroLoc').textContent = 'Aucune donnée disponible';
+      document.getElementById('tbSub').textContent = 'Données météo';
+      return;
+    }
+    const c = list[0];
+    const icon = meteoIcon(c.code_meteo);
+    document.getElementById('heroTemp').textContent = c.temp_actuelle != null ? Math.round(c.temp_actuelle) + '°' : '—°';
+    document.getElementById('heroIco').textContent = icon;
+    document.getElementById('heroDesc').textContent = c.description_fr || '—';
+    document.getElementById('heroLoc').textContent = c.zone_agro || 'Votre ferme';
+    document.getElementById('heroSource').textContent = c.source || 'auto';
+    document.getElementById('hHum').textContent = c.humidite_rel != null ? c.humidite_rel + '%' : '—';
+    document.getElementById('hPluie').textContent = c.pluie_mm != null ? c.pluie_mm + 'mm' : '—';
+    document.getElementById('hVent').textContent = c.vent_kmh != null ? Math.round(c.vent_kmh) + 'km/h' : '—';
+    document.getElementById('hEtp').textContent = c.etp_mm != null ? c.etp_mm.toFixed(1) + 'mm' : '—';
+
+    const dt = c.date_releve ? new Date(c.date_releve).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'}) : '';
+    document.getElementById('tbSub').textContent = 'Mis à jour' + (dt ? ' ' + dt : '');
+  } catch(e) {
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    document.getElementById('heroDesc').textContent = 'Données indisponibles';
+    document.getElementById('tbSub').textContent = 'Erreur de chargement';
+  }
+}
+
+// ── LOAD ALERTES ──
+async function loadAlertes() {
+  try {
+    const raw = await api('/api/meteo/alertes?limit=50');
+    alertes = Array.isArray(raw) ? raw : (raw.alertes || []);
+    renderAlertes();
+    const nonLues = alertes.filter(a => !a.lu).length;
+    const cnt = document.getElementById('alertCount');
+    if (nonLues > 0) { cnt.textContent = nonLues; cnt.style.display = 'inline'; }
+    else { cnt.style.display = 'none'; }
+  } catch(e) {
+    document.getElementById('alertesList').innerHTML = '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
+  }
+}
+
+function renderAlertes() {
+  const el = document.getElementById('alertesList');
+  if (alertes.length === 0) {
+    el.innerHTML = `<div class="empty">
+      <div class="eico">✅</div>
+      <p>Aucune alerte active. Vos cultures sont en sécurité.</p>
+      <button style="margin-top:12px;padding:10px 20px;background:var(--g);color:#fff;border-radius:10px;font-weight:600;font-size:.85rem;border:none;cursor:pointer" onclick="genererAlertes()">Lancer une analyse</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = alertes.map(a => {
+    const icon = ALERTE_ICONS[a.type_alerte] || '📢';
+    const niv = a.niveau || 'info';
+    const dt = fmtDate(a.created_at);
+    const lu = a.lu ? ' · <span style="color:var(--soft)">Lu</span>' : '';
+    return `<div class="alerte-card ${niv}" onclick="openAlerte(${a.id})">
+      <div class="ac-top">
+        <div class="ac-icon">${icon}</div>
+        <div class="ac-body">
+          <div class="ac-title">${a.titre || 'Alerte'}</div>
+          <div class="ac-sub">${dt}${lu}</div>
+          <div class="ac-tags">
+            <span class="ac-tag ${niv}">${niv.toUpperCase()}</span>
+            <span class="ac-tag info">${(a.type_alerte||'').replace('_',' ')}</span>
+            ${a.parcelle_nom ? `<span class="ac-tag info">${a.parcelle_nom}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ALERTE DETAIL ──
+async function openAlerte(id) {
+  const a = alertes.find(x => x.id === id);
+  if (!a) return;
+
+  document.getElementById('alerteDetailTitle').textContent =
+    (ALERTE_ICONS[a.type_alerte]||'📢') + ' ' + (a.titre || 'Alerte');
+
+  document.getElementById('alerteDetailBody').innerHTML = `
+    <div class="info-row"><span class="irl">Niveau</span><span class="irv">${a.niveau?.toUpperCase()}</span></div>
+    <div class="info-row"><span class="irl">Type</span><span class="irv">${(a.type_alerte||'').replace('_',' ')}</span></div>
+    ${a.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${a.parcelle_nom}</span></div>` : ''}
+    <div class="info-row"><span class="irl">Date</span><span class="irv">${fmtDate(a.created_at)}</span></div>
+    ${a.description ? `<div style="margin-top:12px;padding:12px;background:var(--paper);border-radius:10px;font-size:.86rem;line-height:1.6">${a.description}</div>` : ''}
+    ${(a.recommandations || []).length > 0 ? `
+      <div style="margin-top:14px">
+        <div style="font-weight:700;font-size:.85rem;margin-bottom:8px;color:var(--gdeep)">Recommandations</div>
+        ${a.recommandations.map(r => `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:.84rem;line-height:1.4"><span style="color:var(--g)">→</span><span>${r}</span></div>`).join('')}
+      </div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:16px">
+      ${!a.lu ? `<button class="btn-sm lire" onclick="marquerLu(${a.id})">✓ Marquer lu</button>` : ''}
+      ${!a.action_prise ? `<button class="btn-sm ok" onclick="marquerAction(${a.id})">Action prise</button>` : ''}
+    </div>
+  `;
+  document.getElementById('ovAlerte').classList.add('open');
+
+  // Auto-mark as read
+  if (!a.lu) {
+    try { await api(`/api/meteo/alertes/${id}/lire`, {method:'POST'}); a.lu = true; renderAlertes(); } catch(e) {}
+  }
+}
+
+async function marquerLu(id) {
+  try {
+    await api(`/api/meteo/alertes/${id}/lire`, {method:'POST'});
+    const a = alertes.find(x => x.id === id);
+    if (a) a.lu = true;
+    renderAlertes();
+    closeSheet('ovAlerte');
+    toast('Marqué comme lu', 'ok');
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+async function marquerAction(id) {
+  try {
+    await api(`/api/meteo/alertes/${id}/action`, {method:'POST'});
+    const a = alertes.find(x => x.id === id);
+    if (a) a.action_prise = true;
+    toast('Action enregistrée', 'ok');
+    closeSheet('ovAlerte');
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+// ── GÉNÉRER ALERTES ──
+async function genererAlertes() {
+  const btn = document.querySelector('.tb-btn');
+  if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
+  try {
+    await api('/api/meteo/alertes/generer', {method:'POST'});
+    toast('Analyse terminée', 'ok');
+    await loadConditions();
+    await loadAlertes();
+    prevLoaded = false;
+    planifLoaded = false;
+  } catch(e) {
+    toast(e.detail || 'Erreur analyse', 'err');
+  } finally {
+    if (btn) { btn.textContent = '🔄 Actualiser'; btn.disabled = false; }
+  }
+}
+
+// ── PRÉVISIONS ──
+async function loadPrevisions() {
+  if (prevLoaded) return;
+  const el = document.getElementById('prevContent');
+  try {
+    // Try first parcelle with GPS, else use zone dashboard
+    let prevs = null;
+    if (parcelles.length > 0) {
+      for (const p of parcelles) {
+        try {
+          prevs = await api(`/api/meteo/parcelles/${p.id}/previsions`);
+          break;
+        } catch(e) {}
+      }
+    }
+    if (!prevs) {
+      prevs = await api('/api/meteo/dashboard');
+    }
+    const list = Array.isArray(prevs) ? prevs : (prevs.previsions || prevs.jours || []);
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="eico">📅</div><p>Prévisions non disponibles. Ajoutez des coordonnées GPS à vos parcelles.</p></div>';
+      prevLoaded = true;
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    el.innerHTML = `
+      <div class="prev-scroll">
+        ${list.slice(0,7).map((d, i) => {
+          const dt = d.date || d.jour;
+          const isToday = dt === today;
+          const jour = dt ? new Date(dt).toLocaleDateString('fr-FR', {weekday:'short'}) : `J+${i}`;
+          const icon = meteoIcon(d.code_meteo);
+          return `<div class="prev-day${isToday?' today':''}">
+            <div class="pd-day">${isToday ? 'Auj' : jour}</div>
+            <div class="pd-ico">${icon}</div>
+            <div class="pd-max">${d.temp_max != null ? Math.round(d.temp_max)+'°' : '—'}</div>
+            <div class="pd-min">${d.temp_min != null ? Math.round(d.temp_min)+'°' : '—'}</div>
+            ${d.pluie_mm != null ? `<div class="pd-rain">💧${d.pluie_mm}mm</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="padding:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm)">
+        ${list.slice(0,7).map((d, i) => {
+          const dt = d.date || d.jour;
+          const jour = dt ? new Date(dt).toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'short'}) : `Jour ${i+1}`;
+          const icon = meteoIcon(d.code_meteo);
+          return `<div class="info-row">
+            <span class="irl">${icon} ${jour}</span>
+            <span class="irv">${d.temp_min != null ? Math.round(d.temp_min)+'°' : '—'} / ${d.temp_max != null ? Math.round(d.temp_max)+'°' : '—'}${d.pluie_mm ? ' · 💧'+d.pluie_mm+'mm' : ''}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    prevLoaded = true;
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="eico">🌐</div><p>Prévisions indisponibles. Vérifiez les coordonnées GPS de vos parcelles.</p></div>';
+    prevLoaded = true;
+  }
+}
+
+// ── PLANIFICATEUR ──
+async function loadPlanificateur() {
+  if (planifLoaded) return;
+  const el = document.getElementById('planifContent');
+  try {
+    const raw = await api('/api/meteo/planificateur');
+    const list = Array.isArray(raw) ? raw : (raw.recommandations || []);
+    renderPlanif(list);
+    planifLoaded = true;
+  } catch(e) {
+    el.innerHTML = '<div class="empty"><div class="eico">📋</div><p>Erreur de chargement</p></div>';
+    planifLoaded = true;
+  }
+}
+
+function renderPlanif(list) {
+  const el = document.getElementById('planifContent');
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty">
+      <div class="eico">📋</div>
+      <p>Aucune recommandation. Cliquez sur Regénérer pour analyser vos parcelles.</p>
+    </div>`;
+    return;
+  }
+  const PICONS = {semis:'🌱', irrigation:'💧', fertilisation:'🌿', traitement:'💊', recolte:'🌾', autre:'📌'};
+  el.innerHTML = list.map(r => {
+    const prio = r.priorite || 'normale';
+    const icon = PICONS[r.type_activite] || '📌';
+    const done = r.statut === 'fait' || r.statut === 'ignore';
+    return `<div class="plan-card${done ? '" style="opacity:.5' : ''}">
+      <div class="pc-top">
+        <div class="pc-prio ${prio}">${icon}</div>
+        <div class="pc-body">
+          <div class="pc-title">${r.titre || r.type_activite || 'Recommandation'}</div>
+          <div class="pc-sub">${r.description || ''}${r.parcelle_nom ? ' · ' + r.parcelle_nom : ''}</div>
+          ${r.date_recommandee ? `<div class="pc-sub">📅 ${fmtDate(r.date_recommandee)}</div>` : ''}
+        </div>
+      </div>
+      ${!done ? `<div class="pc-actions">
+        <button class="btn-sm ok" onclick="changerStatutPlanif(${r.id},'fait')">✓ Fait</button>
+        <button class="btn-sm ignore" onclick="changerStatutPlanif(${r.id},'ignore')">Ignorer</button>
+      </div>` : `<div style="font-size:.74rem;color:var(--soft);margin-top:6px">${r.statut === 'fait' ? '✓ Fait' : 'Ignoré'}</div>`}
+    </div>`;
+  }).join('');
+}
+
+async function changerStatutPlanif(id, statut) {
+  try {
+    await api(`/api/meteo/planificateur/${id}/statut`, {method:'PATCH', body:JSON.stringify({statut})});
+    toast(statut === 'fait' ? 'Marqué comme fait ✓' : 'Ignoré', 'ok');
+    planifLoaded = false;
+    loadPlanificateur();
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+async function genererPlanif() {
+  try {
+    await api('/api/meteo/planificateur/generer', {method:'POST'});
+    toast('Planificateur mis à jour', 'ok');
+    planifLoaded = false;
+    loadPlanificateur();
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+// ── CAPTEUR ──
+async function submitCapteur(e) {
+  e.preventDefault();
+  const v = n => { const x = parseFloat(n); return isNaN(x) ? null : x; };
+  const lat = v(document.getElementById('cLat').value);
+  const lon = v(document.getElementById('cLon').value);
+  if (lat === null || lon === null) { toast('Latitude et longitude requis', 'err'); return; }
+
+  const body = {
+    parcelle_id: parseInt(document.getElementById('cParcelle').value) || null,
+    lat, lon,
+    temp_actuelle: v(document.getElementById('cTemp').value),
+    humidite_rel: parseInt(document.getElementById('cHum').value) || null,
+    pluie_mm: v(document.getElementById('cPluie').value),
+    vent_kmh: v(document.getElementById('cVent').value),
+    temp_min: v(document.getElementById('cTmin').value),
+    temp_max: v(document.getElementById('cTmax').value),
+  };
+
+  // Find parcelle_id to post to
+  const pid = body.parcelle_id;
+  if (!pid) { toast('Sélectionnez une parcelle', 'err'); return; }
+
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/meteo/parcelles/${pid}/conditions`, {method:'POST', body:JSON.stringify(body)});
+    toast('Mesures enregistrées !', 'ok');
+    e.target.reset();
+    await loadConditions();
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function switchTab(btn, paneId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+}
+
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+async function loadParcelles() {
+  try {
+    parcelles = await api('/api/champ/parcelles?limit=50');
+    if (!Array.isArray(parcelles)) parcelles = [];
+    const sel = document.getElementById('cParcelle');
+    parcelles.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.nom + (p.region ? ' · ' + p.region : '');
+      sel.appendChild(o);
+    });
+    // Auto-fill GPS from first parcelle with coords
+    const withGps = parcelles.find(p => p.centre_lat && p.centre_lon);
+    if (withGps) {
+      document.getElementById('cLat').value = withGps.centre_lat;
+      document.getElementById('cLon').value = withGps.centre_lon;
+    }
+  } catch(e) {}
+}
+
+loadConditions();
+loadAlertes();
+loadParcelles();
+</script>
+</body>
+</html>

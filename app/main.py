@@ -16,7 +16,11 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.limiter import limiter
 from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia
+from app.routers import sante_cultures as sante_cultures_router
+from app.routers import satellite
 from app.services.crop_health import identifier_maladie, CropHealthError
+import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* dans Base.metadata
+import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
 
 # Création automatique des tables (en production : utiliser Alembic pour les migrations).
 Base.metadata.create_all(bind=engine)
@@ -69,6 +73,8 @@ app.include_router(sante.router)
 app.include_router(ferme.router)
 app.include_router(meteo.router)
 app.include_router(ia.router)
+app.include_router(sante_cultures_router.router)
+app.include_router(satellite.router)
 
 
 @app.get("/api/health", tags=["Système"])
@@ -155,6 +161,11 @@ def page_mon_champ():
 def page_sante():
     """Module Santé des cultures — consultations, diagnostics, traitements."""
     return _page("sante.html")
+
+@app.get("/sante-cultures", include_in_schema=False)
+def page_sante_cultures():
+    """Module Santé des Cultures Pro — score composite, cartes, prévision, économie."""
+    return _page("sante-cultures.html")
 
 @app.get("/ferme", include_in_schema=False)
 def page_ferme():

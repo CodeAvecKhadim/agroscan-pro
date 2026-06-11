@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>Santé des Cultures — AgroScan Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;--purple:#7c3aed;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit}
+
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
+.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-sub{font-size:.72rem;opacity:.8}
+.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat .n{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdk);line-height:1}
+.stat .l{font-size:.7rem;color:var(--soft);margin-top:3px}
+.stat.warn .n{color:var(--orange)}
+.stat.danger .n{color:var(--red)}
+
+/* TYPE SELECTOR */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.type-card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s}
+.type-card:hover,.type-card.active{border-color:var(--g);background:#f0fdf4}
+.type-card .tc-ico{font-size:1.6rem;margin-bottom:4px}
+.type-card .tc-label{font-size:.75rem;font-weight:600;color:var(--ink)}
+.type-card.active .tc-label{color:var(--g)}
+
+/* FILTER CHIPS */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--soft);cursor:pointer;transition:all .15s}
+.fchip.active{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* CONSULTATION CARDS */
+.cons-list{display:flex;flex-direction:column;gap:10px}
+.cons-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s}
+.cons-card:active{transform:scale(.98)}
+.cc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cc-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.cc-icon.maladie{background:#fee2e2}
+.cc-icon.ravageur{background:#fef3c7}
+.cc-icon.fertilisation{background:#d1fae5}
+.cc-title{flex:1;font-weight:700;font-size:.92rem}
+.cc-date{font-size:.72rem;color:var(--soft)}
+.cc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.stag{padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:600}
+.stag.en_cours{background:#e0f2fe;color:#0c4a6e}
+.stag.analyse{background:#fef9c3;color:#713f12}
+.stag.confirme{background:#d1fae5;color:var(--gdeep)}
+.stag.archive{background:#f3f4f6;color:#6b7280}
+.stag.maladie{background:#fee2e2;color:#7f1d1d}
+.stag.ravageur{background:#fef3c7;color:#713f12}
+.stag.fertilisation{background:#d1fae5;color:var(--gdeep)}
+.cc-parcelle{font-size:.75rem;color:var(--soft);margin-top:4px}
+.urgence-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.urgence-dot.critique{background:var(--red)}
+.urgence-dot.elevee{background:var(--orange)}
+.urgence-dot.normale{background:var(--g)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--soft)}
+.empty .eico{font-size:2.5rem;margin-bottom:10px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:14px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+.sheet-close:hover{background:var(--paper)}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.79rem;font-weight:600;color:var(--soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:var(--paper);transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g);background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px}
+.btn-primary{background:var(--g);color:#fff}
+.btn-primary:hover{background:var(--gdk)}
+.btn-danger{background:#fef2f2;color:var(--red);margin-top:6px}
+.btn-ghost{background:var(--paper);color:var(--soft);margin-top:6px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:8px 14px;border-radius:9px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn-outline{border:1.5px solid var(--g);color:var(--g);background:none;border-radius:9px;padding:7px 13px;font-size:.82rem;font-weight:600}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* DIAGNOSTIC CARD */
+.diag-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.diag-top{display:flex;align-items:flex-start;gap:10px}
+.diag-name{font-weight:700;font-size:.92rem;flex:1}
+.diag-conf{font-size:.8rem;font-weight:700}
+.diag-conf.haute{color:var(--red)}
+.diag-conf.moyenne{color:var(--orange)}
+.diag-conf.faible{color:var(--soft)}
+.diag-desc{font-size:.8rem;color:var(--soft);margin-top:5px;line-height:1.4}
+.diag-actions{display:flex;gap:8px;margin-top:10px}
+
+/* TRAITEMENT CARD */
+.trait-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.trait-icon{font-size:1.3rem;flex-shrink:0}
+.trait-body{flex:1;min-width:0}
+.trait-name{font-weight:700;font-size:.88rem}
+.trait-sub{font-size:.76rem;color:var(--soft);margin-top:2px}
+.trait-actions{display:flex;gap:6px;margin-top:8px}
+.trait-done{opacity:.5;text-decoration:line-through}
+
+/* PHOTO UPLOAD */
+.photo-drop{border:2px dashed var(--line);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .15s;background:var(--paper)}
+.photo-drop:hover{border-color:var(--g);background:#f0fdf4}
+.photo-drop input{display:none}
+
+/* INFO ROW */
+.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.87rem}
+.info-row:last-child{border-bottom:none}
+.info-row .irl{color:var(--soft)}
+.info-row .irv{font-weight:600}
+
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:88%;text-align:center}
+.toast.err{background:#7f1d1d}.toast.ok{background:var(--gdeep)}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:30px;color:var(--soft)}
+.section-title{font-family:var(--serif);font-weight:700;font-size:.98rem;color:var(--gdeep);margin-bottom:10px}
+.badge-count{background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.75rem;font-weight:700;margin-left:6px}
+
+/* BOTTOM NAV */
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
+.bm-item.active,.bm-item:hover{color:var(--g)}
+.bm-item .bm-icon{font-size:1.3rem;line-height:1}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <a href="/app" class="tb-back">←</a>
+    <div style="flex:1">
+      <div class="tb-title">🩺 Santé des Cultures</div>
+      <div class="tb-sub" id="tbSub">Chargement…</div>
+    </div>
+    <button class="tb-btn" onclick="openNewConsultation()">+ Nouveau</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Stats -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="n">—</div><div class="l">total</div></div>
+    <div class="stat warn"><div class="n">—</div><div class="l">en cours</div></div>
+    <div class="stat"><div class="n">—</div><div class="l">confirmés</div></div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filter-bar">
+    <button class="fchip active" data-s="">Toutes</button>
+    <button class="fchip" data-s="en_cours">En cours</button>
+    <button class="fchip" data-s="analyse">Analysées</button>
+    <button class="fchip" data-s="confirme">Confirmées</button>
+    <button class="fchip" data-s="archive">Archivées</button>
+  </div>
+
+  <!-- Liste consultations -->
+  <div id="consList">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewConsultation()">＋</button>
+
+<!-- MODAL: NOUVELLE CONSULTATION -->
+<div class="overlay" id="ovNew" onclick="if(event.target===this)closeSheet('ovNew')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Nouvelle consultation</h2>
+      <button class="sheet-close" onclick="closeSheet('ovNew')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <p style="font-size:.85rem;color:var(--soft);margin-bottom:16px">Quel problème observez-vous ?</p>
+
+      <!-- Type -->
+      <div class="type-grid" id="typeGrid">
+        <div class="type-card active" data-type="maladie" onclick="selectType(this)">
+          <div class="tc-ico">🦠</div>
+          <div class="tc-label">Maladie</div>
+        </div>
+        <div class="type-card" data-type="ravageur" onclick="selectType(this)">
+          <div class="tc-ico">🐛</div>
+          <div class="tc-label">Ravageur</div>
+        </div>
+        <div class="type-card" data-type="fertilisation" onclick="selectType(this)">
+          <div class="tc-ico">🌿</div>
+          <div class="tc-label">Fertilisation</div>
+        </div>
+      </div>
+
+      <form id="formNew" onsubmit="submitNew(event)">
+        <div class="field">
+          <label>Parcelle concernée</label>
+          <select id="nParcelle">
+            <option value="">— Toute la ferme —</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Stade de la culture</label>
+            <select id="nStade">
+              <option value="">—</option>
+              <option value="germination">Germination</option>
+              <option value="jeune_plantule">Jeune plantule</option>
+              <option value="vegetatif">Végétatif</option>
+              <option value="floraison">Floraison</option>
+              <option value="fructification">Fructification</option>
+              <option value="maturite">Maturité</option>
+              <option value="recolte">Récolte</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mois</label>
+            <select id="nMois">
+              <option value="">—</option>
+              <option value="1">Janvier</option><option value="2">Février</option>
+              <option value="3">Mars</option><option value="4">Avril</option>
+              <option value="5">Mai</option><option value="6">Juin</option>
+              <option value="7">Juillet</option><option value="8">Août</option>
+              <option value="9">Septembre</option><option value="10">Octobre</option>
+              <option value="11">Novembre</option><option value="12">Décembre</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btnNewSave">Démarrer la consultation</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovNew')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DÉTAIL CONSULTATION -->
+<div class="overlay" id="ovDetail" onclick="if(event.target===this)closeSheet('ovDetail')">
+  <div class="sheet" style="max-height:93vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div style="flex:1">
+        <h2 id="detailTitle">Consultation</h2>
+        <div id="detailMeta" style="font-size:.74rem;color:var(--soft);margin-top:2px"></div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet('ovDetail')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'tResume')">Résumé</button>
+        <button class="tab" onclick="switchTab(this,'tDiag')">Diagnostics <span id="diagCount" class="badge-count" style="display:none">0</span></button>
+        <button class="tab" onclick="switchTab(this,'tTrait')">Traitements <span id="traitCount" class="badge-count" style="display:none">0</span></button>
+        <button class="tab" onclick="switchTab(this,'tPhoto')">Photos</button>
+      </div>
+
+      <!-- RÉSUMÉ -->
+      <div class="tab-pane active" id="tResume">
+        <div id="resumeContent"><div class="loading-state"><div class="spinner"></div></div></div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap" id="resumeActions"></div>
+      </div>
+
+      <!-- DIAGNOSTICS -->
+      <div class="tab-pane" id="tDiag">
+        <div id="diagContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- TRAITEMENTS -->
+      <div class="tab-pane" id="tTrait">
+        <div id="traitContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- PHOTOS -->
+      <div class="tab-pane" id="tPhoto">
+        <div class="photo-drop" onclick="document.getElementById('photoInput').click()">
+          <input type="file" id="photoInput" accept="image/*" onchange="uploadPhoto(this)">
+          <div style="font-size:2rem;margin-bottom:8px">📷</div>
+          <div style="font-weight:600;font-size:.88rem">Ajouter une photo</div>
+          <div style="font-size:.76rem;color:var(--soft);margin-top:4px">Feuille, symptôme, ravageur — JPG/PNG max 8Mo</div>
+        </div>
+        <div id="photoList" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AJOUTER OBSERVATION -->
+<div class="overlay" id="ovObs" onclick="if(event.target===this)closeSheet('ovObs')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Ajouter une observation</h2>
+      <button class="sheet-close" onclick="closeSheet('ovObs')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formObs" onsubmit="submitObs(event)">
+        <div class="field">
+          <label>Type d'observation</label>
+          <select id="oType" required onchange="updateObsFields()">
+            <option value="">— Sélectionner —</option>
+            <option value="symptome">Symptôme visuel</option>
+            <option value="ravageur_observe">Ravageur observé</option>
+            <option value="sol">Mesure sol</option>
+            <option value="meteo">Condition météo</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Partie de la plante</label>
+          <select id="oPartie">
+            <option value="">—</option>
+            <option value="feuille">Feuille</option>
+            <option value="tige">Tige</option>
+            <option value="racine">Racine</option>
+            <option value="fruit">Fruit</option>
+            <option value="graine">Graine</option>
+            <option value="plante_entiere">Plante entière</option>
+            <option value="sol">Sol</option>
+          </select>
+        </div>
+        <div id="obsFields">
+          <!-- Symptôme -->
+          <div id="obsSymptome" style="display:none">
+            <div class="field">
+              <label>Code symptôme</label>
+              <input type="text" id="oSymCode" placeholder="Ex: taches_foliaires, fletrissement…">
+            </div>
+            <div class="field">
+              <label>Intensité (0-10)</label>
+              <input type="number" id="oSymInt" min="0" max="10" step="1">
+            </div>
+          </div>
+          <!-- Ravageur -->
+          <div id="obsRavageur" style="display:none">
+            <div class="field">
+              <label>Nom du ravageur</label>
+              <input type="text" id="oRavNom" placeholder="Ex: Mouche des fruits">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Densité</label>
+                <select id="oRavDens">
+                  <option value="">—</option>
+                  <option value="faible">Faible</option>
+                  <option value="moyenne">Moyenne</option>
+                  <option value="forte">Forte</option>
+                  <option value="tres_forte">Très forte</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Stade</label>
+                <select id="oRavStade">
+                  <option value="">—</option>
+                  <option value="oeuf">Œuf</option>
+                  <option value="larve">Larve</option>
+                  <option value="adulte">Adulte</option>
+                  <option value="mixte">Mixte</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Sol -->
+          <div id="obsSol" style="display:none">
+            <div class="field-row">
+              <div class="field"><label>pH</label><input type="number" id="oSolPh" min="0" max="14" step="0.1"></div>
+              <div class="field"><label>Humidité (%)</label><input type="number" id="oSolHum" min="0" max="100" step="1"></div>
+            </div>
+          </div>
+          <!-- Météo -->
+          <div id="obsMeteo" style="display:none">
+            <div class="field-row">
+              <div class="field"><label>Temp. air (°C)</label><input type="number" id="oMeteoTemp" step="0.1"></div>
+              <div class="field"><label>Humidité (%)</label><input type="number" id="oMeteoHum" min="0" max="100"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Pluie 24h (mm)</label><input type="number" id="oMeteoPluie24" min="0" step="0.1"></div>
+              <div class="field"><label>Pluie 7j (mm)</label><input type="number" id="oMeteoPluie7j" min="0" step="0.1"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Note terrain</label>
+          <textarea id="oNote" rows="2" placeholder="Observations complémentaires…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer l'observation</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovObs')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/sante" class="bm-item active"><span class="bm-icon">🩺</span>Santé</a>
+  <a href="/ferme" class="bm-item"><span class="bm-icon">📋</span>Ferme</a>
+  <a href="/meteo" class="bm-item"><span class="bm-icon">🌤️</span>Météo</a>
+  <a href="/ia" class="bm-item"><span class="bm-icon">🤖</span>IA</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+let consultations = [];
+let currentCons = null;
+let parcelles = [];
+let selectedType = 'maladie';
+let currentFilter = '';
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3400);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+// ── LOAD ──
+async function loadConsultations(statut = '') {
+  try {
+    const q = statut ? `?statut=${statut}&limit=50` : '?limit=50';
+    const raw = await api('/api/sante/consultations' + q);
+    consultations = Array.isArray(raw) ? raw : [];
+    renderList();
+    document.getElementById('tbSub').textContent = `${consultations.length} consultation${consultations.length > 1 ? 's' : ''}`;
+  } catch(e) {
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    document.getElementById('consList').innerHTML = '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
+    toast('Erreur: ' + e.detail, 'err');
+  }
+}
+
+async function loadStats() {
+  try {
+    const s = await api('/api/sante/stats');
+    const cells = document.getElementById('statsRow').querySelectorAll('.stat');
+    cells[0].querySelector('.n').textContent = s.total_consultations || 0;
+    cells[0].querySelector('.l').textContent = 'total';
+    cells[1].querySelector('.n').textContent = s.en_cours || 0;
+    cells[1].className = 'stat ' + (s.en_cours > 0 ? 'warn' : '');
+    cells[1].querySelector('.l').textContent = 'en cours';
+    cells[2].querySelector('.n').textContent = s.confirmes || 0;
+    cells[2].querySelector('.l').textContent = 'confirmés';
+  } catch(e) {}
+}
+
+async function loadParcelles() {
+  try {
+    parcelles = await api('/api/champ/parcelles?limit=50');
+    if (!Array.isArray(parcelles)) parcelles = [];
+    const sel = document.getElementById('nParcelle');
+    parcelles.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.nom + (p.type_culture ? ` (${p.type_culture})` : '');
+      sel.appendChild(o);
+    });
+  } catch(e) {}
+}
+
+function renderList() {
+  const el = document.getElementById('consList');
+  if (consultations.length === 0) {
+    el.innerHTML = `<div class="empty">
+      <div class="eico">🩺</div>
+      <p>Aucune consultation. Signalez un problème sur vos cultures.</p>
+      <button class="btn btn-primary" style="max-width:240px;margin:0 auto" onclick="openNewConsultation()">Démarrer une consultation</button>
+    </div>`;
+    return;
+  }
+  const ICONS = {maladie:'🦠', ravageur:'🐛', fertilisation:'🌿'};
+  el.innerHTML = `<div class="cons-list">${consultations.map(c => {
+    const dt = new Date(c.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'});
+    const ctx = c.contexte || {};
+    const parc = ctx.parcelle_nom || ctx.parcelle_id && `Parcelle #${ctx.parcelle_id}` || 'Toute la ferme';
+    const cult = ctx.culture_nom || ctx.type_culture || '';
+    return `<div class="cons-card" onclick="openDetail(${c.id})">
+      <div class="cc-top">
+        <div class="cc-icon ${c.type}">${ICONS[c.type] || '🩺'}</div>
+        <div style="flex:1">
+          <div class="cc-title">${labelType(c.type)} · ${dt}</div>
+          <div class="cc-parcelle">${parc}${cult ? ' · ' + cult : ''}</div>
+        </div>
+        ${urgenceDot(c)}
+      </div>
+      <div class="cc-tags">
+        <span class="stag ${c.statut}">${labelStatut(c.statut)}</span>
+        <span class="stag ${c.type}">${labelType(c.type)}</span>
+      </div>
+      ${c.resume ? `<p style="font-size:.78rem;color:var(--soft);margin-top:6px;line-height:1.4">${c.resume.substring(0,100)}${c.resume.length>100?'…':''}</p>` : ''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function urgenceDot(c) {
+  const niv = (c.contexte && c.contexte.niveau_urgence) || '';
+  if (!niv) return '';
+  return `<div class="urgence-dot ${niv}" title="Urgence: ${niv}"></div>`;
+}
+
+function labelType(t) {
+  return {maladie:'Maladie', ravageur:'Ravageur', fertilisation:'Fertilisation'}[t] || t;
+}
+function labelStatut(s) {
+  return {en_cours:'En cours', analyse:'Analysée', confirme:'Confirmée', archive:'Archivée'}[s] || s;
+}
+
+// ── FILTRES ──
+document.querySelectorAll('.fchip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fchip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.s;
+    loadConsultations(currentFilter);
+  });
+});
+
+// ── NEW CONSULTATION ──
+function selectType(el) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedType = el.dataset.type;
+}
+
+function openNewConsultation() {
+  document.getElementById('formNew').reset();
+  // Reset type selection
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+  document.querySelector('.type-card[data-type="maladie"]').classList.add('active');
+  selectedType = 'maladie';
+  document.getElementById('ovNew').classList.add('open');
+}
+
+async function submitNew(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnNewSave');
+  btn.disabled = true;
+  const body = {
+    type: selectedType,
+    parcelle_id: parseInt(document.getElementById('nParcelle').value) || null,
+    stade_actuel: document.getElementById('nStade').value || null,
+    mois: parseInt(document.getElementById('nMois').value) || null,
+  };
+  try {
+    const cons = await api('/api/sante/consultations', {method:'POST', body:JSON.stringify(body)});
+    toast('Consultation démarrée', 'ok');
+    closeSheet('ovNew');
+    loadConsultations(currentFilter);
+    loadStats();
+    // Auto-open detail
+    setTimeout(() => openDetail(cons.id), 400);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── DETAIL ──
+async function openDetail(id) {
+  currentCons = null;
+  document.getElementById('ovDetail').classList.add('open');
+  document.getElementById('resumeContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('diagContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('traitContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('photoList').innerHTML = '';
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tResume').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+
+  try {
+    const det = await api(`/api/sante/consultations/${id}`);
+    currentCons = det;
+    const ICONS = {maladie:'🦠', ravageur:'🐛', fertilisation:'🌿'};
+    document.getElementById('detailTitle').textContent = `${ICONS[det.type]||'🩺'} ${labelType(det.type)}`;
+    const dt = new Date(det.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'});
+    document.getElementById('detailMeta').textContent = `${labelStatut(det.statut)} · ${dt}`;
+
+    // Resume tab
+    const ctx = det.contexte || {};
+    document.getElementById('resumeContent').innerHTML = `
+      <div class="info-row"><span class="irl">Type</span><span class="irv">${labelType(det.type)}</span></div>
+      <div class="info-row"><span class="irl">Statut</span><span class="irv">${labelStatut(det.statut)}</span></div>
+      ${ctx.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${ctx.parcelle_nom}</span></div>` : ''}
+      ${ctx.culture_nom || ctx.type_culture ? `<div class="info-row"><span class="irl">Culture</span><span class="irv">${ctx.culture_nom||ctx.type_culture}</span></div>` : ''}
+      ${ctx.stade_actuel ? `<div class="info-row"><span class="irl">Stade</span><span class="irv">${ctx.stade_actuel}</span></div>` : ''}
+      <div class="info-row"><span class="irl">Observations</span><span class="irv">${(det.observations||[]).length}</span></div>
+      <div class="info-row"><span class="irl">Photos</span><span class="irv">${det.nb_photos||0}</span></div>
+      ${det.resume ? `<div style="margin-top:10px;padding:12px;background:var(--paper);border-radius:10px;font-size:.84rem;line-height:1.5">${det.resume}</div>` : ''}
+    `;
+
+    // Actions
+    const acts = document.getElementById('resumeActions');
+    acts.innerHTML = '';
+    if (det.statut === 'en_cours' || det.statut === 'analyse') {
+      const btnObs = document.createElement('button');
+      btnObs.className = 'btn-outline';
+      btnObs.textContent = '+ Observation';
+      btnObs.onclick = openObsForm;
+      acts.appendChild(btnObs);
+
+      const btnAna = document.createElement('button');
+      btnAna.className = 'btn btn-primary btn-sm';
+      btnAna.style.cssText = 'width:auto;margin:0;padding:9px 16px';
+      btnAna.textContent = '🔍 Analyser';
+      btnAna.onclick = () => analyser(id, btnAna);
+      acts.appendChild(btnAna);
+    }
+
+    // Diagnostics
+    renderDiagnostics(det.diagnostics || []);
+    renderTraitements(det.traitements || []);
+    renderPhotos(det.photos || []);
+
+  } catch(e) {
+    toast('Erreur chargement', 'err');
+    document.getElementById('resumeContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
+  }
+}
+
+function renderDiagnostics(diags) {
+  const el = document.getElementById('diagContent');
+  const cnt = document.getElementById('diagCount');
+  if (diags.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="eico">🔍</div><p>Aucun diagnostic. Lancez l\'analyse depuis l\'onglet Résumé.</p></div>';
+    cnt.style.display = 'none';
+    return;
+  }
+  cnt.textContent = diags.length;
+  cnt.style.display = 'inline';
+  el.innerHTML = diags.map(d => {
+    const confPct = d.confiance_pct || 0;
+    const confLabel = confPct >= 75 ? 'haute' : confPct >= 50 ? 'moyenne' : 'faible';
+    const isDone = d.statut !== 'probable';
+    return `<div class="diag-card${isDone ? ' trait-done' : ''}">
+      <div class="diag-top">
+        <div class="diag-name">${d.nom_entite || d.entite_code || 'Pathogène inconnu'}</div>
+        <div class="diag-conf ${confLabel}">${confPct}%</div>
+      </div>
+      <div class="diag-desc">${d.explication || ''}</div>
+      ${!isDone ? `<div class="diag-actions">
+        <button class="btn-sm btn-primary btn" style="width:auto;margin:0;padding:7px 14px" onclick="confirmerDiag(${d.id},'confirme')">✓ Confirmer</button>
+        <button class="btn-sm btn-danger btn" style="width:auto;margin:0;padding:7px 14px" onclick="confirmerDiag(${d.id},'exclu')">✗ Exclure</button>
+      </div>` : `<div style="font-size:.76rem;color:var(--soft);margin-top:6px">${d.statut === 'confirme' ? '✓ Confirmé' : '✗ Exclu'}</div>`}
+    </div>`;
+  }).join('');
+}
+
+function renderTraitements(traits) {
+  const el = document.getElementById('traitContent');
+  const cnt = document.getElementById('traitCount');
+  const pending = traits.filter(t => t.statut === 'planifie').length;
+  if (traits.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="eico">💊</div><p>Aucun traitement recommandé.</p></div>';
+    cnt.style.display = 'none';
+    return;
+  }
+  if (pending > 0) { cnt.textContent = pending; cnt.style.display = 'inline'; }
+  const ICONS = {traitement_phyto:'🧪', fertilisation:'🌿', irrigation:'💧', mesure_culturale:'🔧', recolte:'🌾', surveillance:'👁️'};
+  el.innerHTML = traits.map(t => {
+    const done = t.statut !== 'planifie';
+    return `<div class="trait-card${done ? ' trait-done' : ''}">
+      <div class="trait-icon">${ICONS[t.type_traitement] || '💊'}</div>
+      <div class="trait-body">
+        <div class="trait-name">${t.produit || t.intitule || t.type_traitement.replace(/_/g,' ')}</div>
+        <div class="trait-sub">${t.dose ? `Dose: ${t.dose}` : ''}${t.frequence ? ` · ${t.frequence}` : ''}</div>
+        ${t.description ? `<div class="trait-sub" style="margin-top:2px">${t.description}</div>` : ''}
+        ${!done ? `<div class="trait-actions">
+          <button class="btn-sm btn-primary btn" style="width:auto;margin:0;padding:6px 12px;font-size:.78rem" onclick="appliquerTrait(${t.id})">Appliqué ✓</button>
+          <button class="btn-sm btn" style="width:auto;margin:0;padding:6px 12px;font-size:.78rem;background:var(--paper);color:var(--soft)" onclick="skipTrait(${t.id})">Passer</button>
+        </div>` : `<div style="font-size:.74rem;color:var(--soft);margin-top:4px">${t.statut === 'applique' ? '✓ Appliqué' : 'Passé'}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPhotos(photos) {
+  const el = document.getElementById('photoList');
+  if (photos.length === 0) {
+    el.innerHTML = '<p style="color:var(--soft);font-size:.84rem;text-align:center;margin-top:10px">Aucune photo. Ajoutez une photo pour améliorer le diagnostic.</p>';
+    return;
+  }
+  el.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">${photos.map(p =>
+    `<div style="aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--line)">
+      <img src="${p.url}" style="width:100%;height:100%;object-fit:cover">
+    </div>`
+  ).join('')}</div>`;
+}
+
+// ── ANALYSER ──
+async function analyser(id, btn) {
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyse…';
+  try {
+    const res = await api(`/api/sante/consultations/${id}/analyser`, {method:'POST'});
+    toast('Analyse terminée !', 'ok');
+    loadStats();
+    // Refresh detail
+    await openDetail(id);
+    // Switch to diagnostics tab
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tDiag').classList.add('active');
+    document.querySelectorAll('.tab')[1].classList.add('active');
+  } catch(ex) {
+    toast(ex.detail || 'Erreur analyse', 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Analyser'; }
+  }
+}
+
+// ── CONFIRMER DIAG ──
+async function confirmerDiag(diagId, statut) {
+  try {
+    await api(`/api/sante/diagnostics/${diagId}/confirmer`, {method:'POST', body:JSON.stringify({statut})});
+    toast(statut === 'confirme' ? 'Diagnostic confirmé' : 'Diagnostic exclu', 'ok');
+    if (currentCons) openDetail(currentCons.id);
+  } catch(e) {
+    toast(e.detail || 'Erreur', 'err');
+  }
+}
+
+// ── TRAITEMENTS ──
+async function appliquerTrait(tid) {
+  try {
+    await api(`/api/sante/traitements/${tid}/appliquer`, {method:'PATCH', body:JSON.stringify({date_application:new Date().toISOString().split('T')[0]})});
+    toast('Traitement marqué appliqué', 'ok');
+    if (currentCons) openDetail(currentCons.id);
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+async function skipTrait(tid) {
+  try {
+    await api(`/api/sante/traitements/${tid}/skip`, {method:'PATCH', body:JSON.stringify({raison:'Non applicable'})});
+    toast('Traitement passé', 'ok');
+    if (currentCons) openDetail(currentCons.id);
+  } catch(e) { toast(e.detail || 'Erreur', 'err'); }
+}
+
+// ── OBSERVATION ──
+function openObsForm() {
+  document.getElementById('formObs').reset();
+  updateObsFields();
+  document.getElementById('ovObs').classList.add('open');
+}
+
+function updateObsFields() {
+  const t = document.getElementById('oType').value;
+  document.getElementById('obsSymptome').style.display = t === 'symptome' ? '' : 'none';
+  document.getElementById('obsRavageur').style.display = t === 'ravageur_observe' ? '' : 'none';
+  document.getElementById('obsSol').style.display = t === 'sol' ? '' : 'none';
+  document.getElementById('obsMeteo').style.display = t === 'meteo' ? '' : 'none';
+}
+
+async function submitObs(e) {
+  e.preventDefault();
+  if (!currentCons) return;
+  const t = document.getElementById('oType').value;
+  if (!t) { toast('Sélectionnez un type', 'err'); return; }
+
+  let valeur = {};
+  if (t === 'symptome') {
+    const code = document.getElementById('oSymCode').value.trim();
+    const intensite = parseFloat(document.getElementById('oSymInt').value);
+    if (code) valeur.code = code;
+    if (!isNaN(intensite)) valeur.intensite = intensite;
+  } else if (t === 'ravageur_observe') {
+    const nom = document.getElementById('oRavNom').value.trim();
+    if (nom) valeur.nom = nom;
+    const dens = document.getElementById('oRavDens').value;
+    if (dens) valeur.densite = dens;
+    const stade = document.getElementById('oRavStade').value;
+    if (stade) valeur.stade = stade;
+  } else if (t === 'sol') {
+    const ph = parseFloat(document.getElementById('oSolPh').value);
+    const hum = parseFloat(document.getElementById('oSolHum').value);
+    if (!isNaN(ph)) valeur.pH = ph;
+    if (!isNaN(hum)) valeur.humidite = hum;
+  } else if (t === 'meteo') {
+    const temp = parseFloat(document.getElementById('oMeteoTemp').value);
+    const hum = parseFloat(document.getElementById('oMeteoHum').value);
+    const p24 = parseFloat(document.getElementById('oMeteoPluie24').value);
+    const p7j = parseFloat(document.getElementById('oMeteoPluie7j').value);
+    if (!isNaN(temp)) valeur.temp_air = temp;
+    if (!isNaN(hum)) valeur.humidite_rel = hum;
+    if (!isNaN(p24)) valeur.pluie_24h = p24;
+    if (!isNaN(p7j)) valeur.pluie_7j = p7j;
+  }
+
+  const body = {
+    type: t,
+    partie_plante: document.getElementById('oPartie').value || null,
+    valeur,
+    note_terrain: document.getElementById('oNote').value.trim() || null,
+  };
+
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/sante/consultations/${currentCons.id}/observations`, {method:'POST', body:JSON.stringify(body)});
+    toast('Observation enregistrée', 'ok');
+    closeSheet('ovObs');
+    openDetail(currentCons.id);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── PHOTO UPLOAD ──
+async function uploadPhoto(input) {
+  if (!input.files || !input.files[0] || !currentCons) return;
+  const file = input.files[0];
+  if (file.size > 8 * 1024 * 1024) { toast('Photo trop grande (max 8 Mo)', 'err'); return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  toast('Upload en cours…');
+  try {
+    await fetch(`/api/sante/consultations/${currentCons.id}/photos`, {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + TOKEN},
+      body: fd
+    });
+    toast('Photo ajoutée !', 'ok');
+    openDetail(currentCons.id);
+  } catch(e) {
+    toast('Erreur upload', 'err');
+  }
+}
+
+function switchTab(btn, paneId) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+}
+
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── BOOT ──
+loadConsultations();
+loadStats();
+loadParcelles();
+</script>
+</body>
+</html>

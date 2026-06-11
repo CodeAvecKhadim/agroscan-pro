@@ -274,7 +274,7 @@ FERTILISATION_RULES = [
         "zones_applicables": None, "stades_applicables": None, "mois_applicables": None,
         "conditions": {"operator": "AND", "clauses": [
             {"field": "sol.pH", "op": "lte", "value": 5.8},
-            {"field": "sol.conductivite", "op": "lte", "value": 100},
+            {"field": "sol.conductivite", "op": "lte", "value": 1.0},
         ]},
         "actions": {
             "alertes": [{"niveau": "elevee", "titre": "Carence calcium arachide — gousses vides",

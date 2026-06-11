@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>AgroScan Pro — Mon espace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;--purple:#7c3aed;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(150deg,var(--gold),#6ee7b7);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.brand-text h1{font-family:var(--serif);font-weight:900;font-size:1rem;line-height:1.1}
+.brand-text p{font-size:.68rem;opacity:.8}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge.premium{background:var(--gold);color:var(--gdeep)}
+.badge.cooperative{background:#6ee7b7;color:var(--gdeep)}
+.lk{color:#fff;font-size:.82rem;opacity:.8;cursor:pointer;white-space:nowrap}
+.lk:hover{opacity:1}
+
+/* MAIN */
+.wrap{max-width:560px;margin:0 auto;padding:20px 16px}
+
+/* GREETING */
+.greet{margin-bottom:22px}
+.greet h2{font-family:var(--serif);font-weight:900;font-size:1.6rem;color:var(--gdeep);line-height:1.2}
+.greet p{color:var(--soft);font-size:.9rem;margin-top:4px}
+
+/* ALERT BANNER */
+.alert-banner{display:none;background:linear-gradient(110deg,#7f1d1d,var(--red));color:#fff;border-radius:var(--r-sm);padding:12px 16px;margin-bottom:16px;font-size:.9rem;cursor:pointer}
+.alert-banner .ab-head{font-weight:700;margin-bottom:2px}
+
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat .n{font-family:var(--serif);font-weight:900;font-size:1.6rem;color:var(--gdk);line-height:1}
+.stat .l{font-size:.72rem;color:var(--soft);margin-top:3px}
+.stat.warn .n{color:var(--orange)}
+.stat.danger .n{color:var(--red)}
+
+/* MODULE TILES */
+.modules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.mod{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 16px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.mod:active{transform:scale(.97)}
+.mod:hover{transform:translateY(-2px);box-shadow:0 8px 30px -10px rgba(0,60,20,.25)}
+.mod-icon{font-size:2rem;line-height:1}
+.mod-name{font-weight:700;font-size:.95rem;line-height:1.2}
+.mod-sub{font-size:.76rem;color:var(--soft);line-height:1.3}
+.mod-badge{position:absolute;top:12px;right:12px;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.mod-badge.ok{background:var(--g)}
+.mod-badge.warn{background:var(--orange)}
+.mod.highlight{border-color:var(--gold);background:linear-gradient(135deg,#f0fdf4,#fff)}
+
+/* QUICK ALERTS */
+.section-title{font-family:var(--serif);font-weight:700;font-size:1.1rem;color:var(--gdeep);margin-bottom:12px}
+.alert-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.alerte{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow)}
+.alerte.critique{border-left:4px solid var(--red)}
+.alerte.avertissement{border-left:4px solid var(--orange)}
+.alerte.info{border-left:4px solid var(--blue)}
+.alerte-icon{font-size:1.4rem;flex-shrink:0;line-height:1.2}
+.alerte-body .ab-t{font-weight:700;font-size:.88rem;line-height:1.2}
+.alerte-body .ab-s{font-size:.78rem;color:var(--soft);margin-top:3px}
+
+/* EMPTY */
+.empty{text-align:center;padding:30px 20px;color:var(--soft)}
+.empty .eico{font-size:2.5rem;margin-bottom:10px}
+.empty p{font-size:.9rem}
+
+/* BOTTOM MENU */
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;box-shadow:0 -4px 20px -8px rgba(0,60,20,.12)}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;cursor:pointer;transition:color .15s;border:none;background:none;font-family:inherit}
+.bm-item.active,.bm-item:hover{color:var(--g)}
+.bm-item .bm-icon{font-size:1.3rem;line-height:1}
+.bm-item .bm-dot{width:5px;height:5px;background:var(--red);border-radius:50%;position:absolute;top:8px;right:calc(50% - 16px)}
+
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:90%;text-align:center}
+.toast.err{background:#7f1d1d}.toast.ok{background:var(--gdeep)}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+
+/* PLAN CARD */
+.plan-card{background:linear-gradient(135deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:16px 18px;margin-bottom:22px;display:flex;align-items:center;gap:14px}
+.plan-card .pc-text{flex:1}
+.plan-card .pc-title{font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.plan-card .pc-sub{font-size:.8rem;opacity:.9;margin-top:2px}
+.btn-sm{padding:8px 16px;border-radius:10px;font-weight:600;font-size:.82rem;background:var(--gold);color:var(--gdeep);white-space:nowrap}
+
+/* Loading */
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:40px;color:var(--soft)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <div class="brand">
+      <div class="mark">🌾</div>
+      <div class="brand-text">
+        <h1>AgroScan Pro</h1>
+        <p>Mon espace producteur</p>
+      </div>
+    </div>
+    <div class="tb-right">
+      <span class="badge" id="planBadge">—</span>
+      <span class="lk" onclick="logout()">Sortir</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Greeting -->
+  <div class="greet">
+    <h2 id="greetText">Bonjour 👋</h2>
+    <p id="greetSub">Chargement de vos données…</p>
+  </div>
+
+  <!-- Alert banner (critique only) -->
+  <div class="alert-banner" id="alertBanner" onclick="location.href='/meteo'">
+    <div class="ab-head" id="alertBannerHead">🚨 Alerte critique</div>
+    <div id="alertBannerBody">Touchez pour voir les détails</div>
+  </div>
+
+  <!-- Stats rapides -->
+  <div class="stats">
+    <div class="stat" id="statParcelles">
+      <div class="n">—</div>
+      <div class="l">parcelles</div>
+    </div>
+    <div class="stat warn" id="statAlertes">
+      <div class="n">—</div>
+      <div class="l">alertes</div>
+    </div>
+    <div class="stat" id="statActivites">
+      <div class="n">—</div>
+      <div class="l">activités</div>
+    </div>
+  </div>
+
+  <!-- 5 Modules -->
+  <p class="section-title">Mes modules</p>
+  <div class="modules">
+    <a href="/mon-champ" class="mod highlight" id="modChamp">
+      <div class="mod-icon">🌾</div>
+      <div class="mod-name">Mon Champ</div>
+      <div class="mod-sub">Parcelles · Sol · GPS</div>
+    </a>
+    <a href="/sante" class="mod" id="modSante">
+      <div class="mod-icon">🩺</div>
+      <div class="mod-name">Santé</div>
+      <div class="mod-sub">Maladies · Ravageurs</div>
+    </a>
+    <a href="/ferme" class="mod" id="modFerme">
+      <div class="mod-icon">📋</div>
+      <div class="mod-name">Ma Ferme</div>
+      <div class="mod-sub">Activités · Coûts</div>
+    </a>
+    <a href="/meteo" class="mod" id="modMeteo">
+      <div class="mod-icon">🌤️</div>
+      <div class="mod-name">Météo</div>
+      <div class="mod-sub">Alertes · Prévisions</div>
+    </a>
+    <a href="/ia" class="mod" style="grid-column:span 2" id="modIA">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="mod-icon">🤖</div>
+        <div>
+          <div class="mod-name">Assistant IA</div>
+          <div class="mod-sub">Posez vos questions agronomiques</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Plan card (gratuit only) -->
+  <div class="plan-card" id="planCard" style="display:none">
+    <div class="pc-text">
+      <div class="pc-title">Passez au Premium</div>
+      <div class="pc-sub">Débloquez l'IA complète, analyses illimitées et alertes SMS.</div>
+    </div>
+    <a href="/" class="btn-sm">Voir →</a>
+  </div>
+
+  <!-- Alertes récentes -->
+  <p class="section-title">Alertes récentes</p>
+  <div id="alertesRecentes">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+
+</div>
+
+<!-- Bottom menu -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item active">
+    <span class="bm-icon">🏠</span>Accueil
+  </a>
+  <a href="/mon-champ" class="bm-item">
+    <span class="bm-icon">🌾</span>Champ
+  </a>
+  <a href="/sante" class="bm-item">
+    <span class="bm-icon">🩺</span>Santé
+  </a>
+  <a href="/ferme" class="bm-item">
+    <span class="bm-icon">📋</span>Ferme
+  </a>
+  <a href="/meteo" class="bm-item">
+    <span class="bm-icon">🌤️</span>Météo
+  </a>
+  <a href="/ia" class="bm-item">
+    <span class="bm-icon">🤖</span>IA
+  </a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+function logout() {
+  localStorage.removeItem('agro_token');
+  location.href = '/';
+}
+
+const ALERTE_ICONS = {
+  maladie: '🦠', ravageur: '🐛', fertilisation: '🌿',
+  irrigation: '💧', meteo: '🌩️', secheresse: '☀️'
+};
+const ALERTE_NIVEAUX = {
+  critique: 'critique', avertissement: 'avertissement', info: 'info'
+};
+
+async function boot() {
+  try {
+    // Auth check
+    const me = await api('/api/auth/me');
+    const prenom = (me.full_name || '').split(' ')[0];
+    document.getElementById('greetText').textContent = `Bonjour, ${prenom} 👋`;
+
+    // Plan
+    const sub = await api('/api/billing/me');
+    const badge = document.getElementById('planBadge');
+    badge.textContent = sub.plan;
+    badge.className = 'badge ' + sub.plan;
+    document.getElementById('greetSub').textContent =
+      sub.plan === 'gratuit' ? 'Plan Gratuit — fonctionnalités de base actives' :
+      sub.plan === 'premium' ? 'Plan Premium — toutes les fonctionnalités actives' :
+      'Plan Coopérative — accès multi-exploitation';
+
+    if (sub.plan === 'gratuit') {
+      document.getElementById('planCard').style.display = 'flex';
+    }
+
+    // Load data in parallel
+    const [parcelles, alertes, activites] = await Promise.allSettled([
+      api('/api/champ/parcelles?limit=50'),
+      api('/api/meteo/alertes?limit=10'),
+      api('/api/ferme/activites?limit=20'),
+    ]);
+
+    // Parcelles count
+    const nbParc = parcelles.status === 'fulfilled'
+      ? (parcelles.value || []).length : 0;
+    const statParc = document.getElementById('statParcelles');
+    statParc.querySelector('.n').textContent = nbParc;
+    if (nbParc === 0) statParc.querySelector('.l').textContent = 'aucune parcelle';
+
+    // Module badge
+    if (nbParc > 0) {
+      document.getElementById('modChamp').querySelector('.mod-sub').textContent =
+        `${nbParc} parcelle${nbParc > 1 ? 's' : ''} enregistrée${nbParc > 1 ? 's' : ''}`;
+    }
+
+    // Alertes
+    let nbAlertes = 0, nbCrit = 0;
+    let alertesList = [];
+    if (alertes.status === 'fulfilled') {
+      const raw = alertes.value;
+      alertesList = raw.alertes || raw || [];
+      nbAlertes = alertesList.filter(a => !a.lu).length;
+      nbCrit = alertesList.filter(a => a.niveau === 'critique' && !a.lu).length;
+    }
+    const statAl = document.getElementById('statAlertes');
+    statAl.querySelector('.n').textContent = nbAlertes;
+    statAl.querySelector('.l').textContent = nbAlertes === 1 ? 'alerte' : 'alertes';
+    if (nbCrit > 0) statAl.className = 'stat danger';
+    else if (nbAlertes > 0) statAl.className = 'stat warn';
+    else statAl.className = 'stat';
+
+    // Alert banner for critique
+    if (nbCrit > 0) {
+      const crit = alertesList.find(a => a.niveau === 'critique' && !a.lu);
+      document.getElementById('alertBanner').style.display = 'block';
+      document.getElementById('alertBannerBody').textContent = crit.titre || 'Alerte critique détectée';
+    }
+
+    // Alerte badge on meteo module
+    if (nbAlertes > 0) {
+      const b = document.createElement('span');
+      b.className = 'mod-badge' + (nbCrit > 0 ? '' : ' warn');
+      b.textContent = nbAlertes;
+      document.getElementById('modMeteo').appendChild(b);
+    }
+
+    // Activités planifiées
+    let nbActs = 0;
+    if (activites.status === 'fulfilled') {
+      const acts = activites.value;
+      const list = Array.isArray(acts) ? acts : (acts.activites || []);
+      nbActs = list.filter(a => a.statut === 'planifie').length;
+    }
+    const statAct = document.getElementById('statActivites');
+    statAct.querySelector('.n').textContent = nbActs;
+    statAct.querySelector('.l').textContent = nbActs === 1 ? 'activité à faire' : 'activités à faire';
+
+    // Render alert list
+    renderAlertes(alertesList.slice(0, 5));
+
+    // Consultations badge on sante
+    try {
+      const cons = await api('/api/sante/consultations?limit=10');
+      const enCours = (cons || []).filter(c => c.statut === 'en_cours').length;
+      if (enCours > 0) {
+        const b = document.createElement('span');
+        b.className = 'mod-badge warn';
+        b.textContent = enCours;
+        document.getElementById('modSante').appendChild(b);
+      }
+    } catch(e) {}
+
+  } catch(e) {
+    if (e.status === 401) {
+      localStorage.removeItem('agro_token');
+      location.href = '/';
+    }
+    toast('Erreur de chargement', 'err');
+    document.getElementById('greetSub').textContent = 'Erreur — vérifiez votre connexion';
+    document.getElementById('alertesRecentes').innerHTML =
+      '<div class="empty"><div class="eico">⚠️</div><p>Impossible de charger les données.</p></div>';
+  }
+}
+
+function renderAlertes(list) {
+  const el = document.getElementById('alertesRecentes');
+  if (!list || list.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="eico">✅</div><p>Aucune alerte active. Vos cultures vont bien !</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const icon = ALERTE_ICONS[a.type_alerte] || '📢';
+    const niv = a.niveau || 'info';
+    const parc = a.parcelle_nom ? `· ${a.parcelle_nom}` : '';
+    const date = a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'short'}) : '';
+    return `<div class="alerte ${niv}" onclick="location.href='/meteo'">
+      <div class="alerte-icon">${icon}</div>
+      <div class="alerte-body">
+        <div class="ab-t">${a.titre || 'Alerte'}</div>
+        <div class="ab-s">${niv.toUpperCase()} ${parc} · ${date}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+boot();
+</script>
+</body>
+</html>

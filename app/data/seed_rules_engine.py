@@ -12,12 +12,20 @@ from app.models.agronomie import Culture, Maladie, Ravageur
 from app.models import rules_engine as re_models
 from app.core.database import Base
 from app.data.rules.maladies_rules import MALADIES_RULES
+from app.data.rules.maladies_rules_v2 import MALADIES_RULES_V2
 from app.data.rules.ravageurs_rules import RAVAGEURS_RULES
 from app.data.rules.fertilisation_rules import FERTILISATION_RULES
 from app.data.rules.irrigation_rules import IRRIGATION_RULES
 from app.data.rules.meteo_rules import METEO_RULES
 from app.data.rules.calendrier_rules import CALENDRIER_RULES
 from app.data.rules.rendement_rules import RENDEMENT_RULES
+from app.data.rules.ravageurs_rules_v2 import RAVAGEURS_RULES_V2
+from app.data.rules.general_rules import GENERAL_RULES
+from app.data.rules.fertilisation_rules_v2 import FERTILISATION_RULES_V2
+from app.data.rules.irrigation_rules_v2 import IRRIGATION_RULES_V2
+from app.data.rules.meteo_rules_v2 import METEO_RULES_V2
+from app.data.rules.calendrier_rules_v2 import CALENDRIER_RULES_V2
+from app.data.rules.rendement_rules_v2 import RENDEMENT_RULES_V2
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -120,13 +128,14 @@ def main():
             _reset(db)
 
         all_categories = [
-            ("maladies",      MALADIES_RULES),
-            ("ravageurs",     RAVAGEURS_RULES),
-            ("fertilisation", FERTILISATION_RULES),
-            ("irrigation",    IRRIGATION_RULES),
-            ("meteo",         METEO_RULES),
-            ("calendrier",    CALENDRIER_RULES),
-            ("rendement",     RENDEMENT_RULES),
+            ("maladies",        MALADIES_RULES + MALADIES_RULES_V2),
+            ("ravageurs",       RAVAGEURS_RULES + RAVAGEURS_RULES_V2),
+            ("fertilisation",   FERTILISATION_RULES + FERTILISATION_RULES_V2),
+            ("irrigation",      IRRIGATION_RULES + IRRIGATION_RULES_V2),
+            ("meteo",           METEO_RULES + METEO_RULES_V2),
+            ("calendrier",      CALENDRIER_RULES + CALENDRIER_RULES_V2),
+            ("rendement",       RENDEMENT_RULES + RENDEMENT_RULES_V2),
+            ("general",         GENERAL_RULES),
         ]
 
         total_created = 0

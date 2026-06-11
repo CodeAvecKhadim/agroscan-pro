@@ -34,7 +34,7 @@ class RulesContext(BaseModel):
     sol_humidite: Optional[float] = Field(None, ge=0, le=100, description="%")
     sol_temperature: Optional[float] = Field(None, description="°C")
     sol_matiere_organique: Optional[float] = Field(None, ge=0, description="%")
-    sol_conductivite: Optional[float] = Field(None, ge=0, description="µS/cm")
+    sol_conductivite: Optional[float] = Field(None, ge=0, description="dS/m — ex: 1.0=normal, 4.0=salin, 8.0=très salin")
 
     # Météo
     meteo_temp_air: Optional[float] = Field(None, description="°C")

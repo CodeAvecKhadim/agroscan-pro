@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>Santé des Cultures Pro — AgroScan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;--purple:#7c3aed;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
+.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-sub{font-size:.72rem;opacity:.8}
+.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+.tb-btn:hover{background:rgba(255,255,255,.3)}
+
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+
+/* HERO BANNER */
+.hero{background:linear-gradient(135deg,var(--gdeep),var(--g));border-radius:var(--r);padding:20px;color:#fff;margin-bottom:18px;position:relative;overflow:hidden}
+.hero::after{content:'🌱';position:absolute;right:16px;bottom:-6px;font-size:4rem;opacity:.18}
+.hero-label{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8;margin-bottom:4px}
+.hero-title{font-family:var(--serif);font-weight:900;font-size:1.5rem;line-height:1.2;margin-bottom:6px}
+.hero-desc{font-size:.82rem;opacity:.85;line-height:1.4}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:var(--serif);font-weight:900;font-size:1rem}
+.sec-link{font-size:.8rem;color:var(--g);font-weight:600}
+
+/* PARCELLE CARDS */
+.parc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.parc-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;display:flex;gap:12px;align-items:center}
+.parc-card:hover{transform:translateY(-1px);border-color:var(--g)}
+.parc-card:active{transform:scale(.98)}
+.pc-ico{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
+.pc-body{flex:1;min-width:0}
+.pc-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
+.pc-arr{color:var(--soft);font-size:1.1rem}
+
+/* SCORE RING */
+.score-ring{width:48px;height:48px;position:relative;flex-shrink:0}
+.score-ring svg{transform:rotate(-90deg);width:48px;height:48px}
+.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:.85rem}
+.score-ring .val.excellent{color:#059669}
+.score-ring .val.bon{color:#84cc16}
+.score-ring .val.moyen{color:#d97706}
+.score-ring .val.faible{color:#dc2626}
+
+/* BTN */
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s}
+.btn-primary{background:var(--g);color:#fff}
+.btn-primary:hover{background:var(--gdk)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{border:1.5px solid var(--g);color:var(--g);background:none;border-radius:12px;padding:11px;font-size:.9rem;font-weight:700;width:100%;transition:all .15s}
+.btn-outline:hover{background:#f0fdf4}
+.btn-ghost{background:var(--paper);color:var(--soft);border-radius:12px;padding:11px;font-size:.9rem;font-weight:700;width:100%}
+.btn-sm{padding:7px 14px;border-radius:9px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.btn-g{background:var(--g);color:#fff}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.79rem;font-weight:600;color:var(--soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:var(--paper);transition:border .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--g);background:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-toggle{display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;padding:12px;background:var(--paper);border:1.5px solid var(--line);border-radius:10px}
+.field-toggle input[type=checkbox]{width:18px;height:18px;accent-color:var(--g)}
+.field-toggle span{font-size:.88rem;font-weight:600;flex:1}
+.field-toggle small{font-size:.76rem;color:var(--soft)}
+
+/* CAPTEUR SECTION */
+.capteur-section{background:#f0fdf4;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;display:none}
+.capteur-section.open{display:block}
+.capteur-title{font-size:.82rem;font-weight:700;color:var(--gdk);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+/* NIVEAU BADGE */
+.niveau-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+.niveau-badge.n1{background:#e0f2fe;color:#0c4a6e}
+.niveau-badge.n2{background:#fef3c7;color:#713f12}
+.niveau-badge.n3{background:#d1fae5;color:var(--gdeep)}
+
+/* LOADING */
+.loading-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:32px 20px;text-align:center;box-shadow:var(--shadow)}
+.spinner{width:48px;height:48px;border:4px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-family:var(--serif);font-weight:900;font-size:1.1rem;margin-bottom:6px}
+.loading-sub{font-size:.83rem;color:var(--soft)}
+.loading-steps{margin-top:16px;text-align:left;padding:0 20px}
+.step-item{display:flex;align-items:center;gap:8px;font-size:.82rem;padding:5px 0;color:var(--soft)}
+.step-item.done{color:var(--g)}
+.step-item.active{color:var(--ink);font-weight:600}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex-shrink:0}
+.step-item.done .step-dot{background:var(--g)}
+.step-item.active .step-dot{background:var(--orange);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* SCORE PRINCIPAL */
+.score-hero{background:linear-gradient(135deg,var(--gdeep),var(--g));border-radius:var(--r);padding:24px 20px;color:#fff;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.score-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.1),transparent 60%)}
+.score-num{font-family:var(--serif);font-weight:900;font-size:4rem;line-height:1;display:block}
+.score-etat{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.9;margin-bottom:4px}
+.score-culture{font-size:.88rem;opacity:.8;margin-top:6px}
+.score-niveau{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:.74rem;font-weight:600;margin-top:8px}
+
+/* SCORE BARRES 5 DIMENSIONS */
+.scores-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.score-row{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;box-shadow:var(--shadow)}
+.score-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.score-row-label{display:flex;align-items:center;gap:7px;font-size:.88rem;font-weight:600}
+.score-row-ico{font-size:1.1rem}
+.score-row-val{font-family:var(--serif);font-weight:900;font-size:1rem}
+.score-bar-track{height:7px;background:var(--line);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.fill-excellent{background:linear-gradient(90deg,#22c55e,#059669)}
+.fill-bon{background:linear-gradient(90deg,#84cc16,#65a30d)}
+.fill-moyen{background:linear-gradient(90deg,#f59e0b,#d97706)}
+.fill-faible{background:linear-gradient(90deg,#ef4444,#dc2626)}
+
+/* INDICES SATELLITAIRES */
+.indices-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.indice-cell{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;text-align:center;box-shadow:var(--shadow)}
+.indice-name{font-size:.7rem;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.indice-label{font-size:.82rem;font-weight:700}
+.indice-label.excellent{color:#059669}
+.indice-label.bon{color:#65a30d}
+.indice-label.moyen{color:#d97706}
+.indice-label.faible{color:#dc2626}
+.indice-label.na{color:var(--soft)}
+
+/* ALERTES */
+.alertes-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.alerte-card{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;box-shadow:var(--shadow)}
+.alerte-card.critique{border-left:4px solid var(--red);background:#fff8f8}
+.alerte-card.elevee{border-left:4px solid var(--orange);background:#fffbf0}
+.alerte-card.moyenne{border-left:4px solid #eab308;background:#fefce8}
+.alerte-ico{font-size:1.2rem;flex-shrink:0}
+.alerte-body{flex:1;min-width:0}
+.alerte-titre{font-weight:700;font-size:.88rem}
+.alerte-msg{font-size:.8rem;color:var(--soft);margin-top:2px;line-height:1.4}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* CARTE MAP */
+#map{height:340px;border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
+.carte-types{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.carte-types::-webkit-scrollbar{display:none}
+.ctype{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--soft);cursor:pointer;transition:all .15s}
+.ctype.active{background:var(--g);color:#fff;border-color:var(--g)}
+.carte-legende{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--soft)}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+/* PRÉVISION */
+.prev-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:10px}
+.prev-title{font-family:var(--serif);font-weight:900;font-size:.95rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.prev-bars{display:flex;flex-direction:column;gap:10px}
+.prev-row{display:flex;align-items:center;gap:10px}
+.prev-label{font-size:.8rem;color:var(--soft);width:70px;flex-shrink:0}
+.prev-bar-wrap{flex:1}
+.prev-bar-track{height:16px;background:#f3f4f6;border-radius:8px;overflow:hidden;position:relative}
+.prev-bar-fill{height:100%;border-radius:8px;position:absolute;left:0;top:0;transition:width .7s ease}
+.prev-bar-fill.estime{background:linear-gradient(90deg,#34d399,#059669)}
+.prev-bar-fill.potentiel{background:linear-gradient(90deg,#60a5fa,#3b82f6)}
+.prev-val{font-family:var(--serif);font-weight:900;font-size:.88rem;width:55px;flex-shrink:0;text-align:right}
+.prev-ecart{display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:10px;margin-top:10px}
+.prev-ecart.positif{background:#d1fae5;color:var(--gdeep)}
+.prev-ecart.negatif{background:#fef2f2;color:#7f1d1d}
+.prev-ecart.neutre{background:#f3f4f6;color:#374151}
+.prev-ecart-ico{font-size:1.1rem}
+.prev-ecart-txt{font-size:.83rem;font-weight:600;flex:1}
+.facteur-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.83rem}
+.facteur-item:last-child{border:none}
+.facteur-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0}
+.facteur-name{flex:1}
+.facteur-impact{font-weight:700;color:var(--red);font-size:.82rem}
+
+/* ÉCONOMIE */
+.eco-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:10px}
+.eco-title{font-family:var(--serif);font-weight:900;font-size:.95rem;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.eco-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eco-item{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.eco-val{font-family:var(--serif);font-weight:900;font-size:1.1rem;color:var(--gdk);line-height:1;margin-bottom:3px}
+.eco-val.red{color:var(--red)}
+.eco-val.green{color:var(--g)}
+.eco-val.orange{color:var(--orange)}
+.eco-lbl{font-size:.7rem;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.roi-banner{background:linear-gradient(135deg,#064e3b,#059669);border-radius:12px;padding:16px;color:#fff;text-align:center;margin-top:10px}
+.roi-label{font-size:.78rem;opacity:.8;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.roi-val{font-family:var(--serif);font-weight:900;font-size:2.2rem}
+.roi-sub{font-size:.8rem;opacity:.8;margin-top:2px}
+
+/* RECOMMANDATIONS */
+.reco-list{display:flex;flex-direction:column;gap:8px}
+.reco-card{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;box-shadow:var(--shadow)}
+.reco-num{width:24px;height:24px;border-radius:8px;background:var(--g);color:#fff;display:grid;place-items:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.reco-body{flex:1;min-width:0}
+.reco-titre{font-weight:700;font-size:.88rem}
+.reco-detail{font-size:.8rem;color:var(--soft);margin-top:3px;line-height:1.4}
+.reco-produit{display:inline-block;margin-top:5px;padding:2px 8px;background:#e0f2fe;color:#0c4a6e;border-radius:20px;font-size:.74rem;font-weight:600}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:14px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+.sheet-close:hover{background:var(--paper)}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--soft)}
+.empty-ico{font-size:2.5rem;margin-bottom:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* VUE STATES */
+.view{display:none}
+.view.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb">
+    <a href="/app" class="tb-back">←</a>
+    <div class="tb-title">
+      Santé des Cultures
+      <div class="tb-sub">Agriculture de précision</div>
+    </div>
+    <button class="tb-btn" onclick="showView('v-home')">🏠</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ VUE ACCUEIL ══════════════════════════════════════════════════════ -->
+  <div class="view active" id="v-home">
+
+    <div class="hero">
+      <div class="hero-label">AgroScan Pro</div>
+      <div class="hero-title">Santé des cultures<br>& Agriculture de précision</div>
+      <div class="hero-desc">Score composite • Cartes de précision • Prévision rendement • Analyse économique</div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">Vos parcelles</div>
+      <span class="sec-link" id="nb-parcelles"></span>
+    </div>
+
+    <div id="parc-list" class="parc-list">
+      <div class="loading-card" style="padding:20px;text-align:center">
+        <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+        <p style="margin-top:10px;font-size:.85rem;color:var(--soft)">Chargement des parcelles…</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ VUE FORMULAIRE ANALYSE ═══════════════════════════════════════════ -->
+  <div class="view" id="v-form">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="showView('v-home')" style="color:var(--soft);font-size:1.2rem">←</button>
+      <div style="font-family:var(--serif);font-weight:900;font-size:1rem;flex:1" id="form-parcelle-name"></div>
+      <span id="form-niveau-badge" class="niveau-badge n1">Niveau 1</span>
+    </div>
+
+    <div class="field">
+      <label>Culture cultivée *</label>
+      <select id="f-culture" onchange="updateNiveauBadge()">
+        <option value="">Sélectionner une culture…</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Stade phénologique</label>
+        <select id="f-stade">
+          <option value="">Non précisé</option>
+          <option>Germination</option>
+          <option>Levée</option>
+          <option>Tallage</option>
+          <option>Montaison</option>
+          <option>Floraison</option>
+          <option>Fructification</option>
+          <option>Maturité</option>
+          <option>Récolte</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mois en cours</label>
+        <select id="f-mois">
+          <option value="">Auto</option>
+          <option value="1">Janvier</option>
+          <option value="2">Février</option>
+          <option value="3">Mars</option>
+          <option value="4">Avril</option>
+          <option value="5">Mai</option>
+          <option value="6">Juin</option>
+          <option value="7">Juillet</option>
+          <option value="8">Août</option>
+          <option value="9">Septembre</option>
+          <option value="10">Octobre</option>
+          <option value="11">Novembre</option>
+          <option value="12">Décembre</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="field-toggle" onclick="toggleCapteur()">
+      <input type="checkbox" id="toggle-capteur">
+      <div style="flex:1">
+        <span>Ajouter données capteur 8-en-1</span><br>
+        <small>Améliore la précision (Niveau 2 / Niveau 3)</small>
+      </div>
+      <span style="font-size:1.1rem">📡</span>
+    </label>
+
+    <div class="capteur-section" id="capteur-section">
+      <div class="capteur-title">📡 Données capteur (optionnelles)</div>
+      <div class="field-row">
+        <div class="field">
+          <label>pH sol</label>
+          <input type="number" id="c-ph" placeholder="ex: 6.5" step="0.1" min="0" max="14" oninput="updateNiveauBadge()">
+        </div>
+        <div class="field">
+          <label>Humidité sol (%)</label>
+          <input type="number" id="c-hum" placeholder="ex: 55" step="1" min="0" max="100" oninput="updateNiveauBadge()">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>EC (dS/m)</label>
+          <input type="number" id="c-ec" placeholder="ex: 1.2" step="0.1" min="0">
+        </div>
+        <div class="field">
+          <label>Temp. sol (°C)</label>
+          <input type="number" id="c-temp" placeholder="ex: 28" step="0.5">
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--soft);margin-bottom:10px;padding:8px;background:#e0fdf4;border-radius:8px">
+        💡 Ajoutez N, P, K pour atteindre le <strong>Niveau 3</strong> (données laboratoire)
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Azote (mg/kg)</label>
+          <input type="number" id="c-n" placeholder="ex: 45" step="1" min="0" oninput="updateNiveauBadge()">
+        </div>
+        <div class="field">
+          <label>Phosphore (mg/kg)</label>
+          <input type="number" id="c-p" placeholder="ex: 18" step="1" min="0" oninput="updateNiveauBadge()">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Potassium (mg/kg)</label>
+          <input type="number" id="c-k" placeholder="ex: 140" step="1" min="0" oninput="updateNiveauBadge()">
+        </div>
+        <div class="field">
+          <label>M.O. (%)</label>
+          <input type="number" id="c-mo" placeholder="ex: 2.1" step="0.1" min="0">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-analyser" onclick="lancerAnalyse()">
+      🔬 Lancer l'analyse santé
+    </button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="showView('v-home')">Annuler</button>
+  </div>
+
+  <!-- ══ VUE CHARGEMENT ═══════════════════════════════════════════════════ -->
+  <div class="view" id="v-loading">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-title">Analyse en cours…</div>
+      <div class="loading-sub">Environ 15 secondes</div>
+      <div class="loading-steps" id="loading-steps">
+        <div class="step-item active" id="step-sat">
+          <div class="step-dot"></div>
+          Récupération indices satellitaires (Sentinel-2)
+        </div>
+        <div class="step-item" id="step-re">
+          <div class="step-dot"></div>
+          Évaluation moteur de règles agronomiques
+        </div>
+        <div class="step-item" id="step-score">
+          <div class="step-dot"></div>
+          Calcul scores 5 dimensions
+        </div>
+        <div class="step-item" id="step-carte">
+          <div class="step-dot"></div>
+          Génération cartes de précision
+        </div>
+        <div class="step-item" id="step-prev">
+          <div class="step-dot"></div>
+          Prévision rendement + analyse économique
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VUE RÉSULTATS ════════════════════════════════════════════════════ -->
+  <div class="view" id="v-result">
+
+    <!-- Score principal -->
+    <div class="score-hero" id="result-hero">
+      <div class="score-etat" id="r-etat">—</div>
+      <span class="score-num" id="r-score">—</span>
+      <div class="score-culture" id="r-culture"></div>
+      <div><span class="score-niveau" id="r-niveau">Niveau 1</span></div>
+    </div>
+
+    <!-- Tabs navigation -->
+    <div class="tabs">
+      <div class="tab active" onclick="setTab('t-scores')">📊 Scores</div>
+      <div class="tab" onclick="setTab('t-indices')">🛰 Satellite</div>
+      <div class="tab" onclick="setTab('t-carte')">🗺 Carte</div>
+      <div class="tab" onclick="setTab('t-prevision')">📈 Prévision</div>
+      <div class="tab" onclick="setTab('t-economie')">💰 Économie</div>
+      <div class="tab" onclick="setTab('t-alertes')">⚠️ Alertes</div>
+    </div>
+
+    <!-- TAB: SCORES 5 DIMENSIONS -->
+    <div class="tab-pane active" id="t-scores">
+      <div class="scores-grid" id="scores-grid">
+        <!-- généré par JS -->
+      </div>
+      <div id="reco-preview"></div>
+    </div>
+
+    <!-- TAB: INDICES SATELLITAIRES -->
+    <div class="tab-pane" id="t-indices">
+      <div style="background:#e0f2fe;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.81rem;color:#0c4a6e;display:flex;gap:6px">
+        <span>🛰</span>
+        <span>Indices Sentinel-2 traduits en niveau de qualité. Les valeurs brutes ne sont pas affichées.</span>
+      </div>
+      <div class="indices-grid" id="indices-grid">
+        <!-- généré par JS -->
+      </div>
+      <div style="font-size:.78rem;color:var(--soft);padding:8px;background:var(--paper);border-radius:8px" id="indices-meta"></div>
+    </div>
+
+    <!-- TAB: CARTE DE PRÉCISION -->
+    <div class="tab-pane" id="t-carte">
+      <div class="carte-types">
+        <button class="ctype active" onclick="chargerCarte('sante',this)">🌿 Santé</button>
+        <button class="ctype" onclick="chargerCarte('hydrique',this)">💧 Hydrique</button>
+        <button class="ctype" onclick="chargerCarte('fertilite',this)">🌱 Fertilité</button>
+        <button class="ctype" onclick="chargerCarte('risques',this)">⚠️ Risques</button>
+      </div>
+      <div id="map"></div>
+      <div class="carte-legende">
+        <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Excellent (≥80)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#84cc16"></div>Bon (60–79)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Moyen (40–59)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Faible (&lt;40)</div>
+      </div>
+      <div style="font-size:.78rem;color:var(--soft)" id="carte-meta"></div>
+    </div>
+
+    <!-- TAB: PRÉVISION RENDEMENT -->
+    <div class="tab-pane" id="t-prevision">
+      <div class="prev-card" id="prev-card">
+        <!-- généré par JS -->
+      </div>
+    </div>
+
+    <!-- TAB: ANALYSE ÉCONOMIQUE -->
+    <div class="tab-pane" id="t-economie">
+      <div class="eco-card" id="eco-card">
+        <!-- généré par JS -->
+      </div>
+    </div>
+
+    <!-- TAB: ALERTES & RECOMMANDATIONS -->
+    <div class="tab-pane" id="t-alertes">
+      <div id="alertes-content"><!-- généré par JS --></div>
+      <div style="margin-top:16px">
+        <div class="sec-title" style="margin-bottom:10px">💡 Recommandations</div>
+        <div id="recos-content" class="reco-list"><!-- généré par JS --></div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <button class="btn btn-outline" onclick="showView('v-form')">🔄 Nouvelle analyse</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="showView('v-home')">← Retour aux parcelles</button>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+
+const TOKEN = localStorage.getItem('agro_token') || '';
+let currentParcelle = null;
+let currentAnalyseId = null;
+let pollingTimer = null;
+let mapInstance = null;
+let mapLayer = null;
+let carteAnalyseId = null;
+
+// ── API helper ─────────────────────────────────────────────────────────────
+async function api(url, opts = {}) {
+  opts.headers = opts.headers || {};
+  if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  if (opts.body && !opts.headers['Content-Type'])
+    opts.headers['Content-Type'] = 'application/json';
+  const r = await fetch(url, opts);
+  if (r.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw { status: r.status, detail: err.detail || r.statusText };
+  }
+  return r.json();
+}
+
+function toast(msg, dur = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ── Vues ───────────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 't-carte' || id === 'v-result') {
+    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 300);
+  }
+}
+
+function setTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['t-scores','t-indices','t-carte','t-prevision','t-economie','t-alertes'].indexOf(id);
+  document.querySelectorAll('.tab')[idx]?.classList.add('active');
+  if (id === 't-carte') {
+    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 200);
+  }
+}
+
+// ── Chargement parcelles ───────────────────────────────────────────────────
+async function chargerParcelles() {
+  try {
+    const data = await api('/api/champ/parcelles?limit=50');
+    const parcelles = data.items || data || [];
+    document.getElementById('nb-parcelles').textContent = parcelles.length + ' parcelle' + (parcelles.length > 1 ? 's' : '');
+    renderParcelles(parcelles);
+    chargerCultures();
+  } catch (e) {
+    document.getElementById('parc-list').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div><p>Erreur de chargement. Vérifiez votre connexion.</p></div>';
+  }
+}
+
+function renderParcelles(parcelles) {
+  const el = document.getElementById('parc-list');
+  if (!parcelles.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">🌾</div><p>Aucune parcelle enregistrée.<br>Créez d\'abord une parcelle dans Mon Champ.</p></div>';
+    return;
+  }
+
+  el.innerHTML = parcelles.map(p => {
+    const score = p.score_sante || null;
+    const etatClass = score >= 80 ? 'excellent' : score >= 60 ? 'bon' : score >= 40 ? 'moyen' : 'faible';
+    const ringHtml = score != null ? `
+      <div class="score-ring">
+        <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="none" stroke="#d1fae5" stroke-width="5"/>
+        <circle cx="24" cy="24" r="18" fill="none" stroke="${etatClass==='excellent'?'#059669':etatClass==='bon'?'#84cc16':etatClass==='moyen'?'#d97706':'#dc2626'}" stroke-width="5"
+          stroke-dasharray="${2*Math.PI*18}" stroke-dashoffset="${2*Math.PI*18*(1-score/100)}" stroke-linecap="round"/></svg>
+        <div class="val ${etatClass}">${Math.round(score)}</div>
+      </div>` : `<div style="font-size:1.4rem">→</div>`;
+
+    return `<div class="parc-card" onclick="selectParcelle(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+      <div class="pc-ico">🌾</div>
+      <div class="pc-body">
+        <div class="pc-name">${p.nom}</div>
+        <div class="pc-meta">${p.superficie_ha ? p.superficie_ha.toFixed(2) + ' ha' : ''} ${p.zone_agro ? '· ' + p.zone_agro : ''} ${p.type_culture ? '· ' + p.type_culture : ''}</div>
+      </div>
+      ${ringHtml}
+    </div>`;
+  }).join('');
+}
+
+async function chargerCultures() {
+  try {
+    const data = await api('/api/agronomie/cultures?limit=100');
+    const cultures = data.items || data || [];
+    const sel = document.getElementById('f-culture');
+    cultures.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.nom;
+      opt.textContent = c.nom;
+      sel.appendChild(opt);
+    });
+  } catch (_) {}
+}
+
+function selectParcelle(p) {
+  currentParcelle = p;
+  document.getElementById('form-parcelle-name').textContent = '🌾 ' + p.nom;
+  // Pré-remplir culture si définie
+  if (p.type_culture) {
+    const sel = document.getElementById('f-culture');
+    for (let o of sel.options) { if (o.value === p.type_culture) { sel.value = p.type_culture; break; } }
+  }
+  updateNiveauBadge();
+  showView('v-form');
+}
+
+// ── Niveau badge ───────────────────────────────────────────────────────────
+function updateNiveauBadge() {
+  const badge = document.getElementById('form-niveau-badge');
+  const n = document.getElementById('c-n').value;
+  const p = document.getElementById('c-p').value;
+  const k = document.getElementById('c-k').value;
+  const capteurOpen = document.getElementById('toggle-capteur').checked;
+  let niveau = 1;
+  if (capteurOpen) {
+    niveau = 2;
+    if (n && p && k) niveau = 3;
+  }
+  badge.className = 'niveau-badge n' + niveau;
+  badge.textContent = 'Niveau ' + niveau;
+}
+
+function toggleCapteur() {
+  setTimeout(() => {
+    const checked = document.getElementById('toggle-capteur').checked;
+    document.getElementById('capteur-section').classList.toggle('open', checked);
+    updateNiveauBadge();
+  }, 10);
+}
+
+// ── Lancement analyse ──────────────────────────────────────────────────────
+async function lancerAnalyse() {
+  const culture = document.getElementById('f-culture').value;
+  if (!culture) { toast('⚠️ Sélectionnez une culture'); return; }
+  if (!currentParcelle) { toast('⚠️ Aucune parcelle sélectionnée'); return; }
+
+  const body = {
+    culture_nom:  culture,
+    parcelle_id:  currentParcelle.id,
+    stade_actuel: document.getElementById('f-stade').value || null,
+    mois: parseInt(document.getElementById('f-mois').value) || null,
+  };
+
+  const capteurChecked = document.getElementById('toggle-capteur').checked;
+  if (capteurChecked) {
+    const cap = {};
+    const add = (key, id, parse) => {
+      const v = document.getElementById(id).value;
+      if (v !== '') cap[key] = parse(v);
+    };
+    add('sol_pH',              'c-ph',   parseFloat);
+    add('sol_humidite',        'c-hum',  parseFloat);
+    add('sol_conductivite',    'c-ec',   parseFloat);
+    add('sol_temperature',     'c-temp', parseFloat);
+    add('sol_azote',           'c-n',    parseFloat);
+    add('sol_phosphore',       'c-p',    parseFloat);
+    add('sol_potassium',       'c-k',    parseFloat);
+    add('sol_matiere_organique','c-mo',  parseFloat);
+    if (Object.keys(cap).length) body.capteur = cap;
+  }
+
+  document.getElementById('btn-analyser').disabled = true;
+  showView('v-loading');
+  animateLoadingSteps();
+
+  try {
+    const resp = await api('/api/sante-cultures/analyser', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    currentAnalyseId = resp.analyse_id;
+    carteAnalyseId = resp.analyse_id;
+    demarrerPolling();
+  } catch (e) {
+    showView('v-form');
+    document.getElementById('btn-analyser').disabled = false;
+    toast('❌ ' + (e.detail || 'Erreur lors du lancement'));
+  }
+}
+
+function animateLoadingSteps() {
+  const steps = ['step-sat','step-re','step-score','step-carte','step-prev'];
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i > 0) {
+      document.getElementById(steps[i-1]).classList.remove('active');
+      document.getElementById(steps[i-1]).classList.add('done');
+    }
+    if (i < steps.length) {
+      document.getElementById(steps[i]).classList.add('active');
+      i++;
+    } else {
+      clearInterval(iv);
+    }
+  }, 2500);
+}
+
+// ── Polling ────────────────────────────────────────────────────────────────
+function demarrerPolling() {
+  if (pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(async () => {
+    try {
+      const res = await api('/api/sante-cultures/analyse/' + currentAnalyseId);
+      if (res.statut === 'termine') {
+        clearInterval(pollingTimer);
+        document.getElementById('btn-analyser').disabled = false;
+        afficherResultats(res);
+      } else if (res.statut === 'erreur') {
+        clearInterval(pollingTimer);
+        document.getElementById('btn-analyser').disabled = false;
+        showView('v-form');
+        toast('❌ ' + (res.erreur_message || 'Erreur analyse'));
+      }
+    } catch (e) {
+      clearInterval(pollingTimer);
+      document.getElementById('btn-analyser').disabled = false;
+      showView('v-form');
+      toast('❌ Erreur réseau');
+    }
+  }, 2000);
+}
+
+// ── Affichage résultats ────────────────────────────────────────────────────
+function scoreColor(s) {
+  if (s >= 80) return '#059669';
+  if (s >= 60) return '#84cc16';
+  if (s >= 40) return '#d97706';
+  return '#dc2626';
+}
+function scoreFill(s) {
+  if (s >= 80) return 'fill-excellent';
+  if (s >= 60) return 'fill-bon';
+  if (s >= 40) return 'fill-moyen';
+  return 'fill-faible';
+}
+
+function afficherResultats(res) {
+  // Hero score
+  const score = Math.round(res.score_sante || 0);
+  const etat = (res.etat_general || 'moyen');
+  const etatLabel = {excellent:'Excellent',bon:'Bon',moyen:'Moyen',faible:'Faible'}[etat] || etat;
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-etat').textContent = etatLabel;
+  document.getElementById('r-culture').textContent = res.culture_evaluee || '';
+  document.getElementById('r-niveau').textContent = 'Niveau ' + res.niveau_donnees;
+  // Couleur hero selon état
+  const heroColors = {excellent:'linear-gradient(135deg,#064e3b,#059669)',bon:'linear-gradient(135deg,#1a3a0f,#65a30d)',moyen:'linear-gradient(135deg,#431407,#d97706)',faible:'linear-gradient(135deg,#450a0a,#dc2626)'};
+  document.getElementById('result-hero').style.background = heroColors[etat] || heroColors.moyen;
+
+  // Scores 5 dimensions
+  const scores = res.scores || {};
+  const dims = [
+    {key:'vigueur',   label:'Vigueur végétale',  ico:'🌿', val: scores.vigueur},
+    {key:'hydrique',  label:'Stress hydrique',    ico:'💧', val: scores.hydrique},
+    {key:'fertilite', label:'Fertilité estimée',  ico:'🌱', val: scores.fertilite},
+    {key:'maladie',   label:'Risque maladies',    ico:'🔴', val: scores.maladie},
+    {key:'ravageur',  label:'Risque ravageurs',   ico:'🐛', val: scores.ravageur},
+  ];
+  document.getElementById('scores-grid').innerHTML = dims.map(d => {
+    const v = d.val != null ? Math.round(d.val) : null;
+    const fill = v != null ? scoreFill(v) : 'fill-moyen';
+    const lbl = v >= 80 ? 'Excellent' : v >= 60 ? 'Bon' : v >= 40 ? 'Moyen' : 'Faible';
+    return `<div class="score-row">
+      <div class="score-row-top">
+        <div class="score-row-label"><span class="score-row-ico">${d.ico}</span>${d.label}</div>
+        <div class="score-row-val" style="color:${v!=null?scoreColor(v):'var(--soft)'}">${v != null ? v : '—'}</div>
+      </div>
+      <div class="score-bar-track"><div class="score-bar-fill ${fill}" style="width:${v||0}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Indices satellitaires
+  const idx = res.indices || {};
+  const indicesItems = [
+    {key:'vigueur',         label:'Vigueur (NDVI)'},
+    {key:'chlorophylle',    label:'Chlorophylle (NDRE)'},
+    {key:'stress_hydrique', label:'Hydrique (NDWI)'},
+    {key:'vigueur_detail',  label:'EVI'},
+  ];
+  document.getElementById('indices-grid').innerHTML = indicesItems.map(i => {
+    const val = idx[i.key];
+    const cls = val ? val.toLowerCase() : 'na';
+    return `<div class="indice-cell">
+      <div class="indice-name">${i.label}</div>
+      <div class="indice-label ${cls}">${val || '—'}</div>
+    </div>`;
+  }).join('');
+  if (idx.date_image) {
+    document.getElementById('indices-meta').textContent = '📅 Image satellite du ' + idx.date_image + (idx.couverture_nuages != null ? ' · ☁️ Couverture nuageuse : ' + Math.round(idx.couverture_nuages) + '%' : '');
+  }
+
+  // Alertes
+  const alertes = res.alertes || [];
+  const alertesEl = document.getElementById('alertes-content');
+  if (!alertes.length) {
+    alertesEl.innerHTML = '<div class="empty"><div class="empty-ico">✅</div><p>Aucune alerte déclenchée</p></div>';
+  } else {
+    alertesEl.innerHTML = `<div class="sec-title" style="margin-bottom:10px">⚠️ Alertes (${alertes.length})</div>
+    <div class="alertes-list">` + alertes.slice(0,10).map(a => {
+      const ico = a.niveau === 'critique' ? '🔴' : a.niveau === 'elevee' ? '🟠' : '🟡';
+      return `<div class="alerte-card ${a.niveau||''}">
+        <span class="alerte-ico">${ico}</span>
+        <div class="alerte-body">
+          <div class="alerte-titre">${a.titre || a.niveau || 'Alerte'}</div>
+          <div class="alerte-msg">${a.message || ''}</div>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Recommandations
+  const recos = res.recommandations || [];
+  const recosEl = document.getElementById('recos-content');
+  if (!recos.length) {
+    recosEl.innerHTML = '<div class="empty"><div class="empty-ico">💡</div><p>Aucune recommandation spécifique</p></div>';
+  } else {
+    recosEl.innerHTML = recos.slice(0,8).map((r, i) =>
+      `<div class="reco-card">
+        <div class="reco-num">${i+1}</div>
+        <div class="reco-body">
+          <div class="reco-titre">${r.titre || r.type || 'Recommandation'}</div>
+          ${r.detail ? `<div class="reco-detail">${r.detail}</div>` : ''}
+          ${r.produit ? `<span class="reco-produit">💊 ${r.produit}</span>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  // Preview recos dans onglet Scores
+  document.getElementById('reco-preview').innerHTML = recos.length ?
+    `<div style="margin-top:10px;padding:10px 12px;background:#f0fdf4;border-radius:10px;font-size:.82rem;color:var(--gdk)">
+      💡 ${recos.length} recommandation${recos.length>1?'s':''} disponible${recos.length>1?'s':''}
+      <button onclick="setTab('t-alertes')" style="color:var(--g);font-weight:700;font-size:.82rem;margin-left:6px">Voir →</button>
+    </div>` : '';
+
+  // Prévision rendement
+  afficherPrevision(res.prevision_rendement);
+
+  // Économie
+  afficherEconomie(res.analyse_economique);
+
+  showView('v-result');
+
+  // Carte (Leaflet) — init après affichage
+  setTimeout(() => {
+    initMap();
+    chargerCarte('sante', document.querySelector('.ctype.active'));
+  }, 300);
+}
+
+function afficherPrevision(prev) {
+  const el = document.getElementById('prev-card');
+  if (!prev || !prev.rendement_estime) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">📈</div><p>Prévision non disponible</p></div>';
+    return;
+  }
+  const estime = prev.rendement_estime || 0;
+  const potentiel = prev.rendement_potentiel || 1;
+  const ecart = prev.ecart_performance || 0;
+  const conf = Math.round((prev.confiance || 0.7) * 100);
+  const ecartSign = ecart >= 0 ? '+' : '';
+  const ecartClass = ecart >= 0 ? 'positif' : 'negatif';
+
+  const facteurs = (prev.facteurs_limitants || []).map(f =>
+    `<div class="facteur-item"><div class="facteur-dot"></div><span class="facteur-name">${f.facteur}</span><span class="facteur-impact">-${Math.abs(f.impact_pct).toFixed(1)}%</span></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="prev-title">📈 Prévision de rendement</div>
+    <div class="prev-bars">
+      <div class="prev-row">
+        <div class="prev-label">Estimé</div>
+        <div class="prev-bar-wrap">
+          <div class="prev-bar-track">
+            <div class="prev-bar-fill estime" style="width:${Math.min(100,estime/potentiel*100)}%"></div>
+          </div>
+        </div>
+        <div class="prev-val" style="color:var(--g)">${estime.toFixed(1)} t/ha</div>
+      </div>
+      <div class="prev-row">
+        <div class="prev-label">Potentiel</div>
+        <div class="prev-bar-wrap">
+          <div class="prev-bar-track">
+            <div class="prev-bar-fill potentiel" style="width:100%"></div>
+          </div>
+        </div>
+        <div class="prev-val" style="color:var(--blue)">${potentiel.toFixed(1)} t/ha</div>
+      </div>
+    </div>
+    <div class="prev-ecart ${ecartClass}">
+      <span class="prev-ecart-ico">${ecart < 0 ? '📉' : '📈'}</span>
+      <span class="prev-ecart-txt">${ecartSign}${ecart.toFixed(1)}% par rapport au potentiel · Confiance ${conf}%</span>
+    </div>
+    ${facteurs ? `<div style="margin-top:12px"><div style="font-size:.82rem;font-weight:700;color:var(--soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Facteurs limitants</div>${facteurs}</div>` : ''}
+  `;
+}
+
+function afficherEconomie(eco) {
+  const el = document.getElementById('eco-card');
+  if (!eco || !eco.perte_potentielle_fcfa_ha) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">💰</div><p>Analyse économique non disponible</p></div>';
+    return;
+  }
+  const fmt = v => v != null ? Math.round(v).toLocaleString('fr-FR') : '—';
+  const roi = eco.roi_estime;
+
+  el.innerHTML = `
+    <div class="eco-title">💰 Analyse économique</div>
+    <div class="eco-grid">
+      <div class="eco-item">
+        <div class="eco-val red">${fmt(eco.perte_potentielle_fcfa_ha)}</div>
+        <div class="eco-lbl">Perte potentielle FCFA/ha</div>
+      </div>
+      <div class="eco-item">
+        <div class="eco-val orange">${fmt(eco.cout_correction_estime_fcfa_ha)}</div>
+        <div class="eco-lbl">Coût correction FCFA/ha</div>
+      </div>
+      <div class="eco-item">
+        <div class="eco-val green">${fmt(eco.gain_potentiel_fcfa_ha)}</div>
+        <div class="eco-lbl">Gain potentiel FCFA/ha</div>
+      </div>
+      <div class="eco-item">
+        <div class="eco-val">${eco.superficie_ha ? eco.superficie_ha.toFixed(2) : '—'}</div>
+        <div class="eco-lbl">Superficie (ha)</div>
+      </div>
+    </div>
+    ${roi != null ? `<div class="roi-banner">
+      <div class="roi-label">ROI estimé si correction</div>
+      <div class="roi-val">${roi > 0 ? '+' : ''}${roi.toFixed(0)}%</div>
+      <div class="roi-sub">${roi >= 100 ? '✅ Excellent investissement' : roi >= 30 ? '✅ Investissement rentable' : '⚠️ Rentabilité à évaluer'}</div>
+    </div>` : ''}
+  `;
+}
+
+// ── Carte de précision (Leaflet + GeoJSON) ─────────────────────────────────
+function initMap() {
+  if (mapInstance) return;
+  mapInstance = L.map('map', {zoomControl: true});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(mapInstance);
+}
+
+async function chargerCarte(type, btn) {
+  if (!carteAnalyseId) return;
+
+  document.querySelectorAll('.ctype').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.getElementById('carte-meta').textContent = 'Chargement…';
+
+  try {
+    const geojson = await api(`/api/sante-cultures/carte/${carteAnalyseId}/${type}`);
+
+    if (mapLayer) { mapInstance.removeLayer(mapLayer); mapLayer = null; }
+
+    if (!geojson.features || !geojson.features.length) {
+      document.getElementById('carte-meta').textContent = '⚠️ Pas de données cartographiques pour cette parcelle.';
+      return;
+    }
+
+    mapLayer = L.geoJSON(geojson, {
+      style: feat => ({
+        fillColor:   feat.properties.couleur,
+        fillOpacity: 0.65,
+        color:       feat.properties.couleur,
+        weight:      0.3,
+        opacity:     0.6,
+      }),
+      onEachFeature: (feat, layer) => {
+        layer.bindPopup(`<b>${feat.properties.label}</b><br>Score : ${feat.properties.score}`);
+      },
+    }).addTo(mapInstance);
+
+    mapInstance.fitBounds(mapLayer.getBounds(), {padding:[10,10]});
+
+    const meta = geojson._meta || {};
+    document.getElementById('carte-meta').textContent =
+      `📐 ${meta.nb_cellules || 0} cellules · résolution ${meta.resolution_m || 10}m · score moyen ${meta.score_moyen || '—'}`;
+
+  } catch (e) {
+    document.getElementById('carte-meta').textContent = '❌ ' + (e.detail || 'Erreur chargement carte');
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+chargerParcelles();
+</script>
+</body>
+</html>

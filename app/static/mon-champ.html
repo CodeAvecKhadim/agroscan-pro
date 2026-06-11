@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>Mon Champ — AgroScan Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#059669;--gdk:#047857;--gdeep:#065f46;
+  --gold:#34d399;--paper:#f5faf7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --red:#dc2626;--orange:#d97706;--blue:#2563eb;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
+  --r:18px;--r-sm:12px;
+  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
+.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
+.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-sub{font-size:.72rem;opacity:.8}
+.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+.tb-btn:hover{background:rgba(255,255,255,.3)}
+
+/* MAIN */
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--soft);cursor:pointer;transition:all .15s}
+.fchip.active{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* PARCELLE CARDS */
+.parc-list{display:flex;flex-direction:column;gap:10px}
+.parc-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;display:flex;gap:12px;align-items:flex-start}
+.parc-card:active{transform:scale(.98)}
+.parc-card:hover{transform:translateY(-1px)}
+.pc-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
+.pc-body{flex:1;min-width:0}
+.pc-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
+.pc-score{flex-shrink:0;text-align:right}
+.score-ring{width:44px;height:44px;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:.85rem;color:var(--gdk)}
+.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
+.tag.active{background:#d1fae5;color:var(--gdeep)}
+.tag.en_repos{background:#fef9c3;color:#713f12}
+.tag.en_preparation{background:#e0f2fe;color:#0c4a6e}
+.tag.archive{background:#f3f4f6;color:#6b7280}
+.tag.culture{background:#ede9fe;color:#4c1d95}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--soft)}
+.empty .eico{font-size:3rem;margin-bottom:12px}
+.empty h3{font-family:var(--serif);font-weight:700;color:var(--gdk);margin-bottom:8px}
+.empty p{font-size:.88rem;margin-bottom:20px}
+
+/* FAB */
+.fab{position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30;transition:transform .15s}
+.fab:active{transform:scale(.92)}
+
+/* MODAL / SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:90vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.2rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+.sheet-close:hover{background:var(--paper)}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:var(--paper);transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g);background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px}
+.btn-primary{background:var(--g);color:#fff}
+.btn-primary:hover{background:var(--gdk)}
+.btn-danger{background:#fef2f2;color:var(--red);margin-top:8px}
+.btn-danger:hover{background:#fee2e2}
+.btn-ghost{background:var(--paper);color:var(--soft);margin-top:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:8px 14px;border-radius:9px;font-size:.82rem;font-weight:600}
+
+/* DETAIL SHEET */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* INFO ROWS */
+.info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.info-row:last-child{border-bottom:none}
+.info-row .irl{color:var(--soft);flex-shrink:0;margin-right:8px}
+.info-row .irv{font-weight:600;text-align:right}
+
+/* SCORE BAR */
+.score-bar-wrap{margin:14px 0}
+.score-bar-label{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:6px}
+.score-bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--g));transition:width .8s}
+
+/* SOL GRID */
+.sol-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.sol-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.sol-card .sv{font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)}
+.sol-card .sl{font-size:.73rem;color:var(--soft)}
+
+/* MINI CARDS */
+.mini-list{display:flex;flex-direction:column;gap:8px}
+.mini-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.mini-icon{font-size:1.4rem;flex-shrink:0}
+.mini-body{flex:1;min-width:0}
+.mini-name{font-weight:600;font-size:.88rem}
+.mini-sub{font-size:.75rem;color:var(--soft)}
+.mini-del{color:var(--red);font-size:1.1rem;padding:4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:88%;text-align:center}
+.toast.err{background:#7f1d1d}.toast.ok{background:var(--gdeep)}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:40px;color:var(--soft)}
+
+/* BOTTOM NAV */
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
+.bm-item.active,.bm-item:hover{color:var(--g)}
+.bm-item .bm-icon{font-size:1.3rem;line-height:1}
+
+/* Section add btn */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-family:var(--serif);font-weight:700;font-size:.98rem;color:var(--gdeep)}
+.add-btn{font-size:.78rem;font-weight:600;color:var(--g);padding:5px 10px;border-radius:8px;background:#d1fae5}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <a href="/app" class="tb-back">←</a>
+    <div style="flex:1">
+      <div class="tb-title">🌾 Mon Champ</div>
+      <div class="tb-sub" id="tbSub">Chargement…</div>
+    </div>
+    <button class="tb-btn" onclick="openAdd()">+ Ajouter</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Filtres -->
+  <div class="filter-bar">
+    <button class="fchip active" data-s="">Toutes</button>
+    <button class="fchip" data-s="active">Actives</button>
+    <button class="fchip" data-s="en_preparation">En prépa</button>
+    <button class="fchip" data-s="en_repos">En repos</button>
+    <button class="fchip" data-s="archive">Archivées</button>
+  </div>
+
+  <!-- Liste parcelles -->
+  <div id="parcelleList">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openAdd()" title="Ajouter une parcelle">＋</button>
+
+<!-- MODAL: AJOUTER / MODIFIER PARCELLE -->
+<div class="overlay" id="ovAdd" onclick="if(event.target===this)closeAdd()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="addTitle">Nouvelle parcelle</h2>
+      <button class="sheet-close" onclick="closeAdd()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formAdd" onsubmit="submitAdd(event)">
+        <div class="field">
+          <label>Nom de la parcelle *</label>
+          <input type="text" id="fNom" required maxlength="200" placeholder="Ex: Champ Nord Kédougou">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Culture</label>
+            <select id="fCulture">
+              <option value="">— Sélectionner —</option>
+              <option value="Papaye">Papaye</option>
+              <option value="Oignon">Oignon</option>
+              <option value="Maïs">Maïs</option>
+              <option value="Tomate">Tomate</option>
+              <option value="Manioc">Manioc</option>
+              <option value="Arachide">Arachide</option>
+              <option value="Mil">Mil</option>
+              <option value="Sorgho">Sorgho</option>
+              <option value="Gombo">Gombo</option>
+              <option value="Aubergine">Aubergine</option>
+              <option value="Chou">Chou</option>
+              <option value="Concombre">Concombre</option>
+              <option value="Pastèque">Pastèque</option>
+              <option value="Haricot vert">Haricot vert</option>
+              <option value="Poivron">Poivron</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Statut</label>
+            <select id="fStatut">
+              <option value="active">Active</option>
+              <option value="en_preparation">En préparation</option>
+              <option value="en_repos">En repos</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Région</label>
+            <select id="fRegion">
+              <option value="">— Région —</option>
+              <option>Dakar</option><option>Thiès</option>
+              <option>Kaolack</option><option>Ziguinchor</option>
+              <option>Saint-Louis</option><option>Tambacounda</option>
+              <option>Kédougou</option><option>Kolda</option>
+              <option>Fatick</option><option>Kaffrine</option>
+              <option>Louga</option><option>Matam</option>
+              <option>Sédhiou</option><option>Diourbel</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Zone agro</label>
+            <select id="fZone">
+              <option value="">— Zone —</option>
+              <option value="soudano_sahelien">Soudano-sahélien</option>
+              <option value="soudanien">Soudanien</option>
+              <option value="subguineen">Sub-guinéen</option>
+              <option value="littoral">Littoral</option>
+              <option value="niayes">Niayes</option>
+              <option value="bassin_arachidier">Bassin arachidier</option>
+              <option value="delta_fleuve">Delta du fleuve</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Localité / Village</label>
+          <input type="text" id="fLocalite" maxlength="200" placeholder="Nom du village ou quartier">
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="fDesc" rows="2" placeholder="Notes sur la parcelle…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btnAddSave">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeAdd()">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DÉTAIL PARCELLE -->
+<div class="overlay" id="ovDetail" onclick="if(event.target===this)closeDetail()">
+  <div class="sheet" style="max-height:92vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div style="flex:1">
+        <h2 id="detailNom">Parcelle</h2>
+        <div id="detailMeta" style="font-size:.75rem;color:var(--soft);margin-top:2px"></div>
+      </div>
+      <button class="sheet-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="sheet-body" id="detailBody">
+      <!-- tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'tInfo')">Infos</button>
+        <button class="tab" onclick="switchTab(this,'tSol')">Sol</button>
+        <button class="tab" onclick="switchTab(this,'tEau')">Eau</button>
+        <button class="tab" onclick="switchTab(this,'tInfra')">Infra</button>
+      </div>
+
+      <!-- INFO -->
+      <div class="tab-pane active" id="tInfo">
+        <div class="score-bar-wrap">
+          <div class="score-bar-label">
+            <span style="font-weight:600">Complétude</span>
+            <span id="dScore" style="font-family:var(--serif);font-weight:900;color:var(--g)">—%</span>
+          </div>
+          <div class="score-bar"><div class="score-bar-fill" id="dScoreFill" style="width:0%"></div></div>
+        </div>
+        <div id="dInfoRows"></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-sm btn-primary" style="flex:1" onclick="editCurrent()">Modifier</button>
+          <button class="btn btn-sm btn-danger" style="flex:1" onclick="archiveCurrent()">Archiver</button>
+        </div>
+      </div>
+
+      <!-- SOL -->
+      <div class="tab-pane" id="tSol">
+        <div id="dSolContent">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="openSolForm()">Saisir analyse de sol</button>
+      </div>
+
+      <!-- EAU -->
+      <div class="tab-pane" id="tEau">
+        <div class="sec-header">
+          <span class="sec-title">Sources d'eau</span>
+          <button class="add-btn" onclick="openEauForm()">+ Ajouter</button>
+        </div>
+        <div id="dEauContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- INFRA -->
+      <div class="tab-pane" id="tInfra">
+        <div class="sec-header">
+          <span class="sec-title">Infrastructures</span>
+          <button class="add-btn" onclick="openInfraForm()">+ Ajouter</button>
+        </div>
+        <div id="dInfraContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ANALYSE SOL -->
+<div class="overlay" id="ovSol" onclick="if(event.target===this)closeSheet('ovSol')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Analyse de sol</h2>
+      <button class="sheet-close" onclick="closeSheet('ovSol')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formSol" onsubmit="submitSol(event)">
+        <div class="field-row">
+          <div class="field">
+            <label>Texture</label>
+            <select id="sTex">
+              <option value="">—</option>
+              <option value="sableux">Sableux</option>
+              <option value="limoneux">Limoneux</option>
+              <option value="argileux">Argileux</option>
+              <option value="argilo_limoneux">Argilo-limoneux</option>
+              <option value="sablo_limoneux">Sablo-limoneux</option>
+              <option value="limon_argileux">Limon-argileux</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Érosion</label>
+            <select id="sEro">
+              <option value="">—</option>
+              <option value="nulle">Nulle</option>
+              <option value="faible">Faible</option>
+              <option value="moderee">Modérée</option>
+              <option value="forte">Forte</option>
+              <option value="tres_forte">Très forte</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>pH eau</label>
+            <input type="number" id="sPhEau" min="0" max="14" step="0.1" placeholder="6.5">
+          </div>
+          <div class="field">
+            <label>pH KCl</label>
+            <input type="number" id="sPhKcl" min="0" max="14" step="0.1" placeholder="5.8">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>M.O. (%)</label>
+            <input type="number" id="sMo" min="0" max="100" step="0.01" placeholder="2.5">
+          </div>
+          <div class="field">
+            <label>Conductivité (dS/m)</label>
+            <input type="number" id="sCond" min="0" step="0.01" placeholder="0.8">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Azote total (g/kg)</label>
+            <input type="number" id="sAz" min="0" step="0.01">
+          </div>
+          <div class="field">
+            <label>Phosphore (mg/kg)</label>
+            <input type="number" id="sPhos" min="0" step="0.1">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Potassium (cmol/kg)</label>
+            <input type="number" id="sKal" min="0" step="0.01">
+          </div>
+          <div class="field">
+            <label>Prof. labour (cm)</label>
+            <input type="number" id="sProf" min="0" max="200" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label>Date d'analyse</label>
+          <input type="date" id="sDt">
+        </div>
+        <div class="field">
+          <label>Laboratoire</label>
+          <input type="text" id="sLab" placeholder="Ex: ISRA, CNRA…">
+        </div>
+        <div class="field">
+          <label>Observations</label>
+          <textarea id="sObs" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer l'analyse</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovSol')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SOURCE EAU -->
+<div class="overlay" id="ovEau" onclick="if(event.target===this)closeSheet('ovEau')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Source d'eau</h2>
+      <button class="sheet-close" onclick="closeSheet('ovEau')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formEau" onsubmit="submitEau(event)">
+        <div class="field">
+          <label>Type de source *</label>
+          <select id="eType" required>
+            <option value="">— Sélectionner —</option>
+            <option value="forage">Forage</option>
+            <option value="puits_traditionnel">Puits traditionnel</option>
+            <option value="cours_eau">Cours d'eau</option>
+            <option value="mare_permanente">Mare permanente</option>
+            <option value="mare_temporaire">Mare temporaire</option>
+            <option value="reservoir">Réservoir</option>
+            <option value="eau_de_pluie">Eau de pluie</option>
+            <option value="canal_irrigation">Canal d'irrigation</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Qualité</label>
+            <select id="eQual">
+              <option value="">—</option>
+              <option value="bonne">Bonne</option>
+              <option value="acceptable">Acceptable</option>
+              <option value="traitee_requise">Traitement requis</option>
+              <option value="impropre">Impropre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Disponibilité</label>
+            <select id="eDisp">
+              <option value="">—</option>
+              <option value="permanente">Permanente</option>
+              <option value="saisonniere">Saisonnière</option>
+              <option value="irreguliere">Irrégulière</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Débit (m³/h)</label>
+          <input type="number" id="eDebit" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label>Distance à la parcelle (m)</label>
+          <input type="number" id="eDist" min="0" step="1">
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="eNotes" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovEau')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INFRASTRUCTURE -->
+<div class="overlay" id="ovInfra" onclick="if(event.target===this)closeSheet('ovInfra')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Infrastructure</h2>
+      <button class="sheet-close" onclick="closeSheet('ovInfra')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <form id="formInfra" onsubmit="submitInfra(event)">
+        <div class="field">
+          <label>Type *</label>
+          <select id="iType" required>
+            <option value="">— Sélectionner —</option>
+            <option value="batiment">Bâtiment</option>
+            <option value="hangar">Hangar</option>
+            <option value="serre">Serre</option>
+            <option value="cloture">Clôture</option>
+            <option value="piste">Piste d'accès</option>
+            <option value="canal">Canal</option>
+            <option value="digue">Digue</option>
+            <option value="forage">Forage</option>
+            <option value="puits">Puits</option>
+            <option value="reservoir">Réservoir</option>
+            <option value="compostiere">Compostière</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nom</label>
+          <input type="text" id="iNom" maxlength="200" placeholder="Ex: Hangar principal">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>État</label>
+            <select id="iEtat">
+              <option value="">—</option>
+              <option value="bon">Bon</option>
+              <option value="moyen">Moyen</option>
+              <option value="mauvais">Mauvais</option>
+              <option value="a_reparer">À réparer</option>
+              <option value="hors_service">Hors service</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Année construction</label>
+            <input type="number" id="iAnnee" min="1900" max="2100">
+          </div>
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="iDesc" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovInfra')">Annuler</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item active"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/sante" class="bm-item"><span class="bm-icon">🩺</span>Santé</a>
+  <a href="/ferme" class="bm-item"><span class="bm-icon">📋</span>Ferme</a>
+  <a href="/meteo" class="bm-item"><span class="bm-icon">🌤️</span>Météo</a>
+  <a href="/ia" class="bm-item"><span class="bm-icon">🤖</span>IA</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+let parcelles = [];
+let currentParcelle = null;
+let editingId = null;
+let currentFilter = '';
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+// ── SCORE RING ──
+function scoreSVG(score) {
+  const r = 18, c = 2 * Math.PI * r;
+  const col = score >= 80 ? '#059669' : score >= 50 ? '#d97706' : '#dc2626';
+  const dash = (score / 100) * c;
+  return `<div class="score-ring">
+    <svg width="44" height="44" viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="${r}" fill="none" stroke="#d1fae5" stroke-width="4"/>
+      <circle cx="22" cy="22" r="${r}" fill="none" stroke="${col}" stroke-width="4"
+        stroke-dasharray="${dash} ${c}" stroke-linecap="round"/>
+    </svg>
+    <div class="val">${score}%</div>
+  </div>`;
+}
+
+// ── LOAD PARCELLES ──
+async function loadParcelles(statut = '') {
+  try {
+    const q = statut ? `?statut=${statut}` : '';
+    parcelles = await api('/api/champ/parcelles' + q);
+    if (!Array.isArray(parcelles)) parcelles = [];
+    renderList();
+    document.getElementById('tbSub').textContent =
+      `${parcelles.length} parcelle${parcelles.length > 1 ? 's' : ''}`;
+  } catch(e) {
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    document.getElementById('parcelleList').innerHTML =
+      '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
+    toast('Erreur: ' + e.detail, 'err');
+  }
+}
+
+function renderList() {
+  const el = document.getElementById('parcelleList');
+  if (parcelles.length === 0) {
+    el.innerHTML = `<div class="empty">
+      <div class="eico">🌾</div>
+      <h3>Aucune parcelle</h3>
+      <p>Commencez par créer votre première parcelle.</p>
+      <button class="btn btn-primary" style="max-width:220px;margin:0 auto" onclick="openAdd()">+ Créer une parcelle</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = parcelles.map(p => {
+    const ha = p.superficie_ha ? `${p.superficie_ha.toFixed(2)} ha` : 'Surface non définie';
+    const cult = p.type_culture || 'Culture inconnue';
+    const reg = p.region || '';
+    return `<div class="parc-card" onclick="openDetail(${p.id})">
+      <div class="pc-icon">🌾</div>
+      <div class="pc-body">
+        <div class="pc-name">${p.nom}</div>
+        <div class="pc-meta">${cult} · ${ha}${reg ? ' · ' + reg : ''}</div>
+        <div class="pc-tags">
+          <span class="tag ${p.statut}">${statutLabel(p.statut)}</span>
+          ${p.type_culture ? `<span class="tag culture">${p.type_culture}</span>` : ''}
+        </div>
+      </div>
+      <div class="pc-score">${scoreSVG(p.score_completude || 0)}</div>
+    </div>`;
+  }).join('');
+}
+
+function statutLabel(s) {
+  const M = {active:'Active', en_repos:'En repos', en_preparation:'En préparation', archive:'Archivée'};
+  return M[s] || s;
+}
+
+// ── FILTER ──
+document.querySelectorAll('.fchip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fchip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.s;
+    loadParcelles(currentFilter);
+  });
+});
+
+// ── ADD / EDIT ──
+function openAdd() {
+  editingId = null;
+  document.getElementById('addTitle').textContent = 'Nouvelle parcelle';
+  document.getElementById('formAdd').reset();
+  document.getElementById('ovAdd').classList.add('open');
+}
+
+function editCurrent() {
+  if (!currentParcelle) return;
+  editingId = currentParcelle.id;
+  document.getElementById('addTitle').textContent = 'Modifier la parcelle';
+  document.getElementById('fNom').value = currentParcelle.nom || '';
+  document.getElementById('fCulture').value = currentParcelle.type_culture || '';
+  document.getElementById('fStatut').value = currentParcelle.statut || 'active';
+  document.getElementById('fRegion').value = currentParcelle.region || '';
+  document.getElementById('fZone').value = currentParcelle.zone_agro || '';
+  document.getElementById('fLocalite').value = currentParcelle.localite || '';
+  document.getElementById('fDesc').value = currentParcelle.description || '';
+  closeDetail();
+  document.getElementById('ovAdd').classList.add('open');
+}
+
+function closeAdd() {
+  document.getElementById('ovAdd').classList.remove('open');
+  editingId = null;
+}
+
+async function submitAdd(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnAddSave');
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement…';
+
+  const body = {
+    nom: document.getElementById('fNom').value.trim(),
+    type_culture: document.getElementById('fCulture').value || null,
+    statut: document.getElementById('fStatut').value,
+    region: document.getElementById('fRegion').value || null,
+    zone_agro: document.getElementById('fZone').value || null,
+    localite: document.getElementById('fLocalite').value.trim() || null,
+    description: document.getElementById('fDesc').value.trim() || null,
+  };
+
+  try {
+    if (editingId) {
+      await api(`/api/champ/parcelles/${editingId}`, {method:'PUT', body:JSON.stringify(body)});
+      toast('Parcelle modifiée', 'ok');
+    } else {
+      await api('/api/champ/parcelles', {method:'POST', body:JSON.stringify(body)});
+      toast('Parcelle créée !', 'ok');
+    }
+    closeAdd();
+    loadParcelles(currentFilter);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer';
+  }
+}
+
+// ── DETAIL ──
+async function openDetail(id) {
+  currentParcelle = parcelles.find(p => p.id === id) || null;
+  if (!currentParcelle) return;
+
+  // Reset tabs
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tInfo').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+
+  document.getElementById('detailNom').textContent = currentParcelle.nom;
+  document.getElementById('detailMeta').textContent =
+    (currentParcelle.type_culture || 'Culture inconnue') + (currentParcelle.region ? ' · ' + currentParcelle.region : '');
+
+  // Score
+  const sc = currentParcelle.score_completude || 0;
+  document.getElementById('dScore').textContent = sc + '%';
+  document.getElementById('dScoreFill').style.width = sc + '%';
+
+  // Info rows
+  document.getElementById('dInfoRows').innerHTML = [
+    ['Code', currentParcelle.code_parcelle || '—'],
+    ['Statut', statutLabel(currentParcelle.statut)],
+    ['Zone agro', currentParcelle.zone_agro || '—'],
+    ['Localité', currentParcelle.localite || '—'],
+    ['Superficie', currentParcelle.superficie_ha ? currentParcelle.superficie_ha.toFixed(2) + ' ha' : '—'],
+    ['Périmètre', currentParcelle.perimetre_m ? currentParcelle.perimetre_m.toFixed(0) + ' m' : '—'],
+  ].map(([l, v]) => `<div class="info-row"><span class="irl">${l}</span><span class="irv">${v}</span></div>`).join('');
+
+  // Load sol/eau/infra in background
+  document.getElementById('dSolContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('dEauContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('dInfraContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+
+  document.getElementById('ovDetail').classList.add('open');
+
+  // Load async
+  loadSol(id);
+  loadEau(id);
+  loadInfra(id);
+}
+
+function closeDetail() {
+  document.getElementById('ovDetail').classList.remove('open');
+}
+
+function switchTab(btn, paneId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+}
+
+async function archiveCurrent() {
+  if (!currentParcelle) return;
+  if (!confirm(`Archiver "${currentParcelle.nom}" ?`)) return;
+  try {
+    await api(`/api/champ/parcelles/${currentParcelle.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({statut: 'archive'})
+    });
+    toast('Parcelle archivée', 'ok');
+    closeDetail();
+    loadParcelles(currentFilter);
+  } catch(e) {
+    toast(e.detail || 'Erreur', 'err');
+  }
+}
+
+// ── SOL ──
+async function loadSol(id) {
+  try {
+    const sol = await api(`/api/champ/parcelles/${id}/sol`);
+    const el = document.getElementById('dSolContent');
+    if (!sol || !sol.id) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">🧪</div><p>Aucune analyse de sol.</p></div>';
+      return;
+    }
+    el.innerHTML = `
+      <div class="sol-grid">
+        ${sol.pH_eau != null ? `<div class="sol-card"><div class="sv">${sol.pH_eau.toFixed(1)}</div><div class="sl">pH eau</div></div>` : ''}
+        ${sol.pH_kcl != null ? `<div class="sol-card"><div class="sv">${sol.pH_kcl.toFixed(1)}</div><div class="sl">pH KCl</div></div>` : ''}
+        ${sol.matiere_organique != null ? `<div class="sol-card"><div class="sv">${sol.matiere_organique.toFixed(1)}%</div><div class="sl">M.O.</div></div>` : ''}
+        ${sol.conductivite_ds_m != null ? `<div class="sol-card"><div class="sv">${sol.conductivite_ds_m.toFixed(2)}</div><div class="sl">Cond. dS/m</div></div>` : ''}
+        ${sol.azote_total != null ? `<div class="sol-card"><div class="sv">${sol.azote_total.toFixed(2)}</div><div class="sl">N total</div></div>` : ''}
+        ${sol.phosphore_assim != null ? `<div class="sol-card"><div class="sv">${sol.phosphore_assim.toFixed(0)}</div><div class="sl">P (mg/kg)</div></div>` : ''}
+      </div>
+      <div class="info-row"><span class="irl">Texture</span><span class="irv">${sol.texture || '—'}</span></div>
+      <div class="info-row"><span class="irl">Érosion</span><span class="irv">${sol.erosion || '—'}</span></div>
+      ${sol.laboratoire ? `<div class="info-row"><span class="irl">Labo</span><span class="irv">${sol.laboratoire}</span></div>` : ''}
+      ${sol.date_analyse ? `<div class="info-row"><span class="irl">Date</span><span class="irv">${new Date(sol.date_analyse).toLocaleDateString('fr-FR')}</span></div>` : ''}
+      ${sol.observations ? `<p style="font-size:.82rem;color:var(--soft);margin-top:8px">${sol.observations}</p>` : ''}
+    `;
+  } catch(e) {
+    document.getElementById('dSolContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur de chargement</p>';
+  }
+}
+
+async function loadEau(id) {
+  try {
+    const list = await api(`/api/champ/parcelles/${id}/sources-eau`);
+    const el = document.getElementById('dEauContent');
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">💧</div><p>Aucune source d\'eau.</p></div>';
+      return;
+    }
+    const ICONS = {forage:'🔩', puits_traditionnel:'⛏️', cours_eau:'🌊', mare_permanente:'🏞️',
+      mare_temporaire:'💦', reservoir:'🪣', eau_de_pluie:'🌧️', canal_irrigation:'🏞️'};
+    el.innerHTML = `<div class="mini-list">${list.map(s =>
+      `<div class="mini-card">
+        <div class="mini-icon">${ICONS[s.type] || '💧'}</div>
+        <div class="mini-body">
+          <div class="mini-name">${s.type.replace(/_/g,' ')}</div>
+          <div class="mini-sub">${s.qualite || ''} · ${s.disponibilite || ''}</div>
+        </div>
+      </div>`
+    ).join('')}</div>`;
+  } catch(e) {
+    document.getElementById('dEauContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur</p>';
+  }
+}
+
+async function loadInfra(id) {
+  try {
+    const list = await api(`/api/champ/parcelles/${id}/infrastructures`);
+    const el = document.getElementById('dInfraContent');
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">🏗️</div><p>Aucune infrastructure.</p></div>';
+      return;
+    }
+    const ICONS = {batiment:'🏠', hangar:'🏚️', serre:'🌿', cloture:'🔒', piste:'🛤️',
+      canal:'💧', digue:'🏔️', forage:'🔩', puits:'⛏️', reservoir:'🪣', compostiere:'♻️', autre:'🔧'};
+    el.innerHTML = `<div class="mini-list">${list.map(i =>
+      `<div class="mini-card">
+        <div class="mini-icon">${ICONS[i.type] || '🏗️'}</div>
+        <div class="mini-body">
+          <div class="mini-name">${i.nom || i.type.replace(/_/g,' ')}</div>
+          <div class="mini-sub">${i.etat || '—'}</div>
+        </div>
+      </div>`
+    ).join('')}</div>`;
+  } catch(e) {
+    document.getElementById('dInfraContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur</p>';
+  }
+}
+
+// ── SOL FORM ──
+function openSolForm() {
+  document.getElementById('formSol').reset();
+  document.getElementById('ovSol').classList.add('open');
+}
+
+async function submitSol(e) {
+  e.preventDefault();
+  if (!currentParcelle) return;
+  const v = n => { const x = parseFloat(n); return isNaN(x) ? null : x; };
+  const vi = n => { const x = parseInt(n); return isNaN(x) ? null : x; };
+  const body = {
+    texture: document.getElementById('sTex').value || null,
+    erosion: document.getElementById('sEro').value || null,
+    pH_eau: v(document.getElementById('sPhEau').value),
+    pH_kcl: v(document.getElementById('sPhKcl').value),
+    matiere_organique: v(document.getElementById('sMo').value),
+    conductivite_ds_m: v(document.getElementById('sCond').value),
+    azote_total: v(document.getElementById('sAz').value),
+    phosphore_assim: v(document.getElementById('sPhos').value),
+    potassium_echang: v(document.getElementById('sKal').value),
+    profondeur_labour_cm: vi(document.getElementById('sProf').value),
+    date_analyse: document.getElementById('sDt').value || null,
+    laboratoire: document.getElementById('sLab').value.trim() || null,
+    observations: document.getElementById('sObs').value.trim() || null,
+  };
+
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/champ/parcelles/${currentParcelle.id}/sol`, {method:'POST', body:JSON.stringify(body)});
+    toast('Analyse de sol enregistrée !', 'ok');
+    closeSheet('ovSol');
+    loadSol(currentParcelle.id);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── EAU FORM ──
+function openEauForm() {
+  document.getElementById('formEau').reset();
+  document.getElementById('ovEau').classList.add('open');
+}
+
+async function submitEau(e) {
+  e.preventDefault();
+  if (!currentParcelle) return;
+  const v = n => { const x = parseFloat(n); return isNaN(x) ? null : x; };
+  const body = {
+    type: document.getElementById('eType').value,
+    qualite: document.getElementById('eQual').value || null,
+    disponibilite: document.getElementById('eDisp').value || null,
+    debit_m3h: v(document.getElementById('eDebit').value),
+    distance_m: v(document.getElementById('eDist').value),
+    notes: document.getElementById('eNotes').value.trim() || null,
+  };
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/champ/parcelles/${currentParcelle.id}/sources-eau`, {method:'POST', body:JSON.stringify(body)});
+    toast('Source d\'eau ajoutée', 'ok');
+    closeSheet('ovEau');
+    loadEau(currentParcelle.id);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── INFRA FORM ──
+function openInfraForm() {
+  document.getElementById('formInfra').reset();
+  document.getElementById('ovInfra').classList.add('open');
+}
+
+async function submitInfra(e) {
+  e.preventDefault();
+  if (!currentParcelle) return;
+  const body = {
+    type: document.getElementById('iType').value,
+    nom: document.getElementById('iNom').value.trim() || null,
+    etat: document.getElementById('iEtat').value || null,
+    annee_construction: parseInt(document.getElementById('iAnnee').value) || null,
+    description: document.getElementById('iDesc').value.trim() || null,
+  };
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  try {
+    await api(`/api/champ/parcelles/${currentParcelle.id}/infrastructures`, {method:'POST', body:JSON.stringify(body)});
+    toast('Infrastructure ajoutée', 'ok');
+    closeSheet('ovInfra');
+    loadInfra(currentParcelle.id);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── BOOT ──
+loadParcelles();
+</script>
+</body>
+</html>
