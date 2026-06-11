@@ -23,7 +23,9 @@ import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* da
 import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
 
 # Création automatique des tables (en production : utiliser Alembic pour les migrations).
-Base.metadata.create_all(bind=engine)
+# Ne pas créer automatiquement les tables pendant les tests (DB isolation)
+if getattr(settings, 'ENV', 'development') != 'test':
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=f"{settings.APP_NAME} API",

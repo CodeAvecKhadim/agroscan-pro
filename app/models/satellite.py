@@ -19,7 +19,13 @@ from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Enum, Text, JSON, Date, Index
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSONB
+from app.core.config import settings
+
+# Use JSONB for PostgreSQL, fallback to JSON for SQLite/testing
+if settings.DATABASE_URL.startswith("postgres"):
+    from sqlalchemy.dialects.postgresql import JSONB as JSONType
+else:
+    JSONType = JSON
 
 from app.core.database import Base
 
@@ -78,7 +84,7 @@ class SatelliteProduct(Base):
     snow_cover          = Column(Float, default=0.0)
     
     # Géométrie
-    footprint           = Column(JSONB)  # GeoJSON Polygon de la coverage
+    footprint           = Column(JSONType)  # GeoJSON Polygon de la coverage
     
     # URLs
     product_url         = Column(String(500))  # URL Sentinel Hub
@@ -121,10 +127,10 @@ class SatelliteJob(Base):
     status              = Column(String(20), nullable=False, default=JobStatus.QUEUED.value, index=True)
     
     # Paramètres d'entrée
-    params              = Column(JSONB)  # {bbox, date_range, sensor, cloud_cover_max, ...}
+    params              = Column(JSONType)  # {bbox, date_range, sensor, cloud_cover_max, ...}
     
     # Résultats / Erreurs
-    result              = Column(JSONB)  # Résultat du job (si succès)
+    result              = Column(JSONType)  # Résultat du job (si succès)
     error_message       = Column(Text)   # Message d'erreur (si erreur)
     error_code          = Column(String(50))  # Code erreur Sentinel Hub (si applicable)
     
@@ -163,7 +169,7 @@ class SatelliteConfig(Base):
     key                 = Column(String(100), nullable=False, unique=True, index=True)
     
     # Valeur (peut être JSON, texte, booléen, nombre)
-    value               = Column(JSONB, nullable=False)
+    value               = Column(JSONType, nullable=False)
     
     # Description
     description         = Column(Text)
