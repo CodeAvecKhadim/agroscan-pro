@@ -1,0 +1,24 @@
+[0;1;32m●[0m agroscan.service - AgroScan Pro - API FastAPI (Social Technologie)
+     Loaded: loaded (]8;;file://srv1719988/etc/systemd/system/agroscan.service/etc/systemd/system/agroscan.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Fri 2026-06-12 13:47:31 UTC; 4h 32min ago
+   Main PID: 213200 (gunicorn)
+     Status: "[0;1;36mGunicorn arbiter booted[0m"
+      Tasks: 11 (limit: 4653)
+     Memory: 369.3M (peak: 369.6M)
+        CPU: 1min 13.859s
+     CGroup: /system.slice/agroscan.service
+             ├─[0;38;5;245m213200 /opt/agroscan/.venv/bin/python3 /opt/agroscan/.venv/bin/gunicorn app.main:app --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 --timeout 120 --access-logfile - --error-logfile -[0m
+             ├─[0;38;5;245m213203 /opt/agroscan/.venv/bin/python3 /opt/agroscan/.venv/bin/gunicorn app.main:app --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 --timeout 120 --access-logfile - --error-logfile -[0m
+             ├─[0;38;5;245m213204 /opt/agroscan/.venv/bin/python3 /opt/agroscan/.venv/bin/gunicorn app.main:app --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 --timeout 120 --access-logfile - --error-logfile -[0m
+             └─[0;38;5;245m213205 /opt/agroscan/.venv/bin/python3 /opt/agroscan/.venv/bin/gunicorn app.main:app --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 --timeout 120 --access-logfile - --error-logfile -[0m
+
+Jun 12 17:26:07 srv1719988 gunicorn[213203]: 202.8.41.29:0 - "GET /static/i18n.js HTTP/1.0" 200
+Jun 12 17:26:07 srv1719988 gunicorn[213203]: 202.8.41.29:0 - "GET /static/i18n/fr.json HTTP/1.0" 200
+Jun 12 17:27:39 srv1719988 gunicorn[213205]: 15.235.96.75:0 - "GET /static/css/agroscan.css HTTP/1.0" 200
+Jun 12 17:35:07 srv1719988 gunicorn[213205]: 104.23.217.96:0 - "GET /wp-admin/install.php?step=1 HTTP/1.0" 404
+Jun 12 17:46:01 srv1719988 gunicorn[213205]: 172.71.148.46:0 - "GET /wp-admin/install.php?step=1 HTTP/1.0" 404
+Jun 12 17:49:08 srv1719988 gunicorn[213203]: 138.226.69.126:0 - "GET / HTTP/1.0" 200
+Jun 12 17:53:47 srv1719988 gunicorn[213205]: 162.158.94.86:0 - "GET /wp-admin/install.php?step=1 HTTP/1.0" 404
+Jun 12 17:53:53 srv1719988 gunicorn[213204]: 175.194.2.232:0 - "GET / HTTP/1.0" 200
+Jun 12 18:03:05 srv1719988 gunicorn[213203]: 104.23.217.96:0 - "GET /wp-admin/install.php?step=1 HTTP/1.0" 404
+Jun 12 18:15:54 srv1719988 gunicorn[213205]: 162.158.94.86:0 - "GET /wp-admin/install.php?step=1 HTTP/1.0" 404

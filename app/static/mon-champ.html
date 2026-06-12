@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#047857">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 <title>Mon Champ — AgroScan Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -153,6 +155,16 @@ select,input,textarea{font-family:inherit}
 .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .sec-title{font-family:var(--serif);font-weight:700;font-size:.98rem;color:var(--gdeep)}
 .add-btn{font-size:.78rem;font-weight:600;color:var(--g);padding:5px 10px;border-radius:8px;background:#d1fae5}
+
+/* SATELLITE */
+.sat-card{background:var(--paper);border-radius:12px;padding:16px 14px;border-left:4px solid var(--g);margin-bottom:10px}
+.sat-card.orange{border-left-color:var(--orange)}
+.sat-card.rouge{border-left-color:var(--red)}
+.sat-msg{font-size:.9rem;font-weight:500;line-height:1.5;color:var(--ink)}
+.sat-meta{font-size:.72rem;color:var(--soft);margin-top:8px}
+.sat-dot{width:10px;height:10px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px;flex-shrink:0}
+.sat-dot.vert{background:#059669}.sat-dot.orange{background:#d97706}.sat-dot.rouge{background:#dc2626}
+.tag.stade{background:#e0f2fe;color:#0c4a6e}
 </style>
 </head>
 <body>
@@ -235,6 +247,16 @@ select,input,textarea{font-family:inherit}
         </div>
         <div class="field-row">
           <div class="field">
+            <label>Date de semis</label>
+            <input type="date" id="fDateSemis">
+          </div>
+          <div class="field">
+            <label>Variété</label>
+            <input type="text" id="fVariete" maxlength="200" placeholder="Ex: Souna III, IR64">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
             <label>Région</label>
             <select id="fRegion">
               <option value="">— Région —</option>
@@ -294,6 +316,7 @@ select,input,textarea{font-family:inherit}
         <button class="tab" onclick="switchTab(this,'tSol')">Sol</button>
         <button class="tab" onclick="switchTab(this,'tEau')">Eau</button>
         <button class="tab" onclick="switchTab(this,'tInfra')">Infra</button>
+        <button class="tab" onclick="switchTab(this,'tSat')">📡 Satellite</button>
       </div>
 
       <!-- INFO -->
@@ -306,9 +329,10 @@ select,input,textarea{font-family:inherit}
           <div class="score-bar"><div class="score-bar-fill" id="dScoreFill" style="width:0%"></div></div>
         </div>
         <div id="dInfoRows"></div>
-        <div style="margin-top:16px;display:flex;gap:8px">
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-sm btn-primary" style="flex:1" onclick="editCurrent()">Modifier</button>
           <button class="btn btn-sm btn-danger" style="flex:1" onclick="archiveCurrent()">Archiver</button>
+          <button class="btn btn-sm btn-ghost" style="width:100%" onclick="telechargerPDF()">⬇ Télécharger rapport PDF</button>
         </div>
       </div>
 
@@ -336,6 +360,12 @@ select,input,textarea{font-family:inherit}
           <button class="add-btn" onclick="openInfraForm()">+ Ajouter</button>
         </div>
         <div id="dInfraContent"><div class="loading-state"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- SATELLITE -->
+      <div class="tab-pane" id="tSat">
+        <div id="dSatContent"><div class="loading-state"><div class="spinner"></div></div></div>
+        <button class="btn btn-ghost" id="btnSatForce" style="margin-top:10px;display:none" onclick="forcerSatellite()">Actualiser l'analyse</button>
       </div>
     </div>
   </div>
@@ -577,6 +607,7 @@ let parcelles = [];
 let currentParcelle = null;
 let editingId = null;
 let currentFilter = '';
+let _satLoaded = false;
 
 function toast(msg, type) {
   const t = document.createElement('div');
@@ -651,6 +682,7 @@ function renderList() {
         <div class="pc-tags">
           <span class="tag ${p.statut}">${statutLabel(p.statut)}</span>
           ${p.type_culture ? `<span class="tag culture">${p.type_culture}</span>` : ''}
+          ${p.stade_culture ? `<span class="tag stade">${p.stade_culture}</span>` : ''}
         </div>
       </div>
       <div class="pc-score">${scoreSVG(p.score_completude || 0)}</div>
@@ -692,6 +724,8 @@ function editCurrent() {
   document.getElementById('fZone').value = currentParcelle.zone_agro || '';
   document.getElementById('fLocalite').value = currentParcelle.localite || '';
   document.getElementById('fDesc').value = currentParcelle.description || '';
+  document.getElementById('fDateSemis').value = currentParcelle.date_semis || '';
+  document.getElementById('fVariete').value = currentParcelle.variete || '';
   closeDetail();
   document.getElementById('ovAdd').classList.add('open');
 }
@@ -715,6 +749,8 @@ async function submitAdd(e) {
     zone_agro: document.getElementById('fZone').value || null,
     localite: document.getElementById('fLocalite').value.trim() || null,
     description: document.getElementById('fDesc').value.trim() || null,
+    date_semis: document.getElementById('fDateSemis').value || null,
+    variete: document.getElementById('fVariete').value.trim() || null,
   };
 
   try {
@@ -756,9 +792,14 @@ async function openDetail(id) {
   document.getElementById('dScoreFill').style.width = sc + '%';
 
   // Info rows
+  const dateStr = currentParcelle.date_semis
+    ? new Date(currentParcelle.date_semis + 'T00:00:00').toLocaleDateString('fr-FR') : '—';
   document.getElementById('dInfoRows').innerHTML = [
     ['Code', currentParcelle.code_parcelle || '—'],
     ['Statut', statutLabel(currentParcelle.statut)],
+    ['Stade', currentParcelle.stade_culture || '—'],
+    ['Variété', currentParcelle.variete || '—'],
+    ['Date semis', dateStr],
     ['Zone agro', currentParcelle.zone_agro || '—'],
     ['Localité', currentParcelle.localite || '—'],
     ['Superficie', currentParcelle.superficie_ha ? currentParcelle.superficie_ha.toFixed(2) + ' ha' : '—'],
@@ -769,6 +810,9 @@ async function openDetail(id) {
   document.getElementById('dSolContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
   document.getElementById('dEauContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
   document.getElementById('dInfraContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('dSatContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('btnSatForce').style.display = 'none';
+  _satLoaded = false;
 
   document.getElementById('ovDetail').classList.add('open');
 
@@ -787,6 +831,48 @@ function switchTab(btn, paneId) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(paneId).classList.add('active');
+  if (paneId === 'tSat' && currentParcelle && !_satLoaded) {
+    loadSatellite(currentParcelle.id);
+  }
+}
+
+async function loadSatellite(id) {
+  const el = document.getElementById('dSatContent');
+  const btnForce = document.getElementById('btnSatForce');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div><p style="margin-top:8px;font-size:.82rem">Analyse satellite en cours…</p></div>';
+  try {
+    const sat = await api(`/api/app/satellite/${id}`);
+    _satLoaded = true;
+    const couleur = sat.couleur || 'vert';
+    const dateSat = sat.date ? new Date(sat.date + 'T00:00:00').toLocaleDateString('fr-FR') : '—';
+    const src = (sat.source || '').startsWith('simule') ? 'estimation saisonnière' : 'Sentinel-2';
+    el.innerHTML = `<div class="sat-card ${couleur}">
+      <div class="sat-msg"><span class="sat-dot ${couleur}"></span>${sat.message_simple || '—'}</div>
+      <div class="sat-meta">Analyse du ${dateSat} · ${src}</div>
+    </div>`;
+    btnForce.style.display = 'block';
+  } catch(e) {
+    _satLoaded = false;
+    el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">📡</div><p>Impossible de récupérer les données satellite.</p></div>';
+    btnForce.style.display = 'block';
+  }
+}
+
+async function forcerSatellite() {
+  if (!currentParcelle) return;
+  const btnForce = document.getElementById('btnSatForce');
+  btnForce.disabled = true;
+  btnForce.textContent = 'Analyse en cours…';
+  try {
+    await api(`/api/app/satellite/${currentParcelle.id}/analyser`, {method: 'POST'});
+    _satLoaded = false;
+    loadSatellite(currentParcelle.id);
+  } catch(e) {
+    toast(e.detail || 'Erreur analyse satellite', 'err');
+  } finally {
+    btnForce.disabled = false;
+    btnForce.textContent = "Actualiser l'analyse";
+  }
 }
 
 async function archiveCurrent() {
@@ -803,6 +889,26 @@ async function archiveCurrent() {
   } catch(e) {
     toast(e.detail || 'Erreur', 'err');
   }
+}
+
+function telechargerPDF() {
+  if (!currentParcelle) return;
+  const a = document.createElement('a');
+  a.href = `/api/app/parcelles/${currentParcelle.id}/export-pdf`;
+  a.download = `rapport_${currentParcelle.nom || currentParcelle.id}.pdf`;
+  a.setAttribute('data-auth', TOKEN);
+  // Fetch avec auth puis déclencher téléchargement
+  fetch(a.href, {headers: {Authorization: 'Bearer ' + TOKEN}})
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = a.download;
+      link.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch(() => toast('Erreur génération PDF', 'err'));
 }
 
 // ── SOL ──

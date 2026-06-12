@@ -73,6 +73,33 @@ _SEMIS_DIRECT = {"Riz", "Mil", "Maïs", "Sorgho", "Arachide", "Sésame", "Coton"
                  "Courgette", "Navet chinois", "Manioc", "Patate douce", "Pomme de terre"}
 
 
+def deriver_stade(culture: str, date_semis: date) -> str:
+    """Stade cultural actuel déduit du calendrier et de la date du jour."""
+    try:
+        cal = generer_calendrier(culture, date_semis)
+        if "error" in cal:
+            return "Culture inconnue"
+        etapes = cal.get("etapes", [])
+        if not etapes:
+            return "Stade inconnu"
+
+        today = date.today()
+        premiere_date = date.fromisoformat(etapes[0]["date"])
+        if today < premiere_date:
+            return f"Semis prévu le {date_semis.strftime('%d/%m/%Y')}"
+
+        stade_courant = etapes[0]["titre"]
+        for etape in etapes:
+            if today >= date.fromisoformat(etape["date"]):
+                stade_courant = etape["titre"]
+            else:
+                break
+
+        return stade_courant
+    except Exception:
+        return "Stade inconnu"
+
+
 def generer_calendrier(culture: str, date_semis: date) -> Dict[str, Any]:
     """
     Renvoie le calendrier cultural d'une culture à partir d'une date de semis.

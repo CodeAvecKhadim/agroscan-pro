@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#047857">
+<title>AgroScan Pro — Envoyer une photo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/agroscan.css">
+<style>
+.photo-zone{background:var(--card);border:2px dashed var(--line);border-radius:var(--r);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:border-color .15s;position:relative;overflow:hidden;margin-bottom:16px}
+.photo-zone:hover,.photo-zone.drag{border-color:var(--g);background:#f0fdf4}
+.photo-zone .pz-icon{font-size:3rem;line-height:1}
+.photo-zone .pz-text{font-size:.9rem;color:var(--soft);text-align:center}
+.photo-zone .pz-sub{font-size:.78rem;color:var(--soft);opacity:.7}
+.photo-preview{width:100%;height:200px;object-fit:cover;border-radius:var(--r);display:none;margin-bottom:16px}
+#fileInput{display:none}
+
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:20px;text-align:center}
+.result-card .etat{font-family:var(--serif);font-weight:900;font-size:1.2rem;margin-bottom:8px;line-height:1.3}
+.result-card .etat.ok{color:var(--gdk)}
+.result-card .etat.anomalie{color:var(--red)}
+.result-card .etat.neutre{color:var(--ink)}
+.result-card .etat-icon{font-size:3rem;margin-bottom:10px}
+.result-card .ref{font-size:.78rem;color:var(--soft);margin-top:8px}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.82rem;font-weight:600;color:var(--soft);margin-bottom:5px}
+.field select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);font-size:.95rem;color:var(--ink);background:#fff}
+.field select:focus{outline:none;border-color:var(--g)}
+
+.as-btn{width:100%;padding:14px;border-radius:var(--r);font-family:var(--sans);font-size:1rem;font-weight:700;cursor:pointer;border:none;transition:opacity .15s;margin-bottom:10px}
+.as-btn-primary{background:var(--g);color:#fff}
+.as-btn-secondary{background:var(--card);border:1.5px solid var(--line);color:var(--ink)}
+.as-btn:disabled{opacity:.5;cursor:not-allowed}
+.as-btn:active{opacity:.85}
+
+.obs-hist{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.obs-item{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;display:flex;gap:12px;align-items:flex-start}
+.obs-item.anomalie{border-left:4px solid var(--red)}
+.obs-item.ok{border-left:4px solid var(--g)}
+.obs-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--line)}
+.obs-body{flex:1;min-width:0}
+.obs-body .ob-etat{font-weight:700;font-size:.88rem;line-height:1.3}
+.obs-body .ob-meta{font-size:.75rem;color:var(--soft);margin-top:3px}
+.obs-body .ob-val{font-size:.78rem;color:var(--g);margin-top:4px;font-style:italic}
+
+.section-title{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:12px;margin-top:6px}
+.empty{text-align:center;padding:24px;color:var(--soft);font-size:.88rem}
+
+.spinner{display:inline-block;width:22px;height:22px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:90%;text-align:center}
+.toast.ok{background:var(--gdeep)}.toast.err{background:#7f1d1d}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb">
+    <button class="tb-back" onclick="history.back()">←</button>
+    <div class="brand">
+      <div class="mark">📸</div>
+      <div class="brand-text">
+        <h1>Envoyer une photo</h1>
+        <p>Diagnostic de vos cultures</p>
+      </div>
+    </div>
+    <span class="lk" onclick="logout()">Sortir</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Zone de capture -->
+  <div id="uploadSection">
+    <div class="photo-zone" id="photoZone" onclick="document.getElementById('fileInput').click()">
+      <div class="pz-icon">📷</div>
+      <div class="pz-text">Touchez pour prendre ou choisir une photo</div>
+      <div class="pz-sub">JPEG, PNG ou WebP · max 8 Mo</div>
+    </div>
+    <img id="photoPreview" class="photo-preview" alt="Aperçu">
+    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" capture="environment">
+
+    <div class="field">
+      <label>Parcelle concernée (facultatif)</label>
+      <select id="selectParcelle">
+        <option value="">— Aucune parcelle sélectionnée —</option>
+      </select>
+    </div>
+
+    <button class="as-btn as-btn-primary" id="btnEnvoyer" onclick="envoyer()" disabled>
+      Analyser la photo
+    </button>
+  </div>
+
+  <!-- Résultat -->
+  <div id="resultSection" style="display:none">
+    <div class="result-card" id="resultCard">
+      <div class="etat-icon" id="resultIcon">🔍</div>
+      <div class="etat" id="resultEtat">Analyse en cours…</div>
+      <div class="ref" id="resultRef"></div>
+    </div>
+    <button class="as-btn as-btn-primary" onclick="resetForm()">📷 Envoyer une autre photo</button>
+  </div>
+
+  <!-- Historique -->
+  <p class="section-title">Mes envois récents</p>
+  <div id="obsHist" class="obs-hist">
+    <div class="empty">Chargement…</div>
+  </div>
+
+</div>
+
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/app/photo" class="bm-item active"><span class="bm-icon">📸</span>Photo</a>
+  <a href="/app/activites" class="bm-item"><span class="bm-icon">📋</span>Activités</a>
+  <a href="/app/exploitation" class="bm-item"><span class="bm-icon">📊</span>Exploitation</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+let _selectedFile = null;
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+async function api(path, opts = {}) {
+  if (!opts.headers) opts.headers = {};
+  opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+function logout() {
+  localStorage.removeItem('agro_token');
+  location.href = '/';
+}
+
+// Sélection fichier
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  _selectedFile = file;
+  const preview = document.getElementById('photoPreview');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  document.getElementById('photoZone').style.display = 'none';
+  document.getElementById('btnEnvoyer').disabled = false;
+});
+
+async function envoyer() {
+  if (!_selectedFile) return;
+  const btn = document.getElementById('btnEnvoyer');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const fd = new FormData();
+    fd.append('photo', _selectedFile);
+    const sel = document.getElementById('selectParcelle').value;
+    if (sel) fd.append('parcelle_id', sel);
+
+    const obs = await api('/api/app/photo', {method: 'POST', body: fd});
+
+    // Afficher résultat
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+
+    const icon = obs.anomalie ? '🔴' : '✅';
+    const cls  = obs.anomalie ? 'anomalie' : 'ok';
+    document.getElementById('resultIcon').textContent = icon;
+    const etatEl = document.getElementById('resultEtat');
+    etatEl.textContent = obs.etat_simple || 'Analyse terminée.';
+    etatEl.className = 'etat ' + cls;
+    if (obs.parcelle_nom) {
+      document.getElementById('resultRef').textContent = `Parcelle : ${obs.parcelle_nom}`;
+    }
+
+    loadHistorique();
+
+  } catch(e) {
+    toast('Erreur : ' + (e.detail || 'réessayez'), 'err');
+    btn.disabled = false;
+    btn.textContent = 'Analyser la photo';
+  }
+}
+
+function resetForm() {
+  _selectedFile = null;
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPreview').src = '';
+  document.getElementById('photoZone').style.display = 'flex';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('btnEnvoyer').disabled = true;
+  document.getElementById('uploadSection').style.display = 'block';
+  document.getElementById('resultSection').style.display = 'none';
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+
+async function loadHistorique() {
+  try {
+    const obs = await api('/api/app/observations?limit=10');
+    const el = document.getElementById('obsHist');
+    if (!obs || !obs.length) {
+      el.innerHTML = '<div class="empty">Aucun envoi pour le moment.</div>';
+      return;
+    }
+    el.innerHTML = obs.map(o => {
+      const cls = o.anomalie ? 'anomalie' : 'ok';
+      const valHtml = o.validation_conseiller
+        ? `<div class="ob-val">✔ Conseiller : ${o.validation_conseiller}</div>` : '';
+      const imgHtml = o.chemin
+        ? `<img class="obs-thumb" src="${o.chemin}" alt="Photo" onerror="this.style.display='none'">`
+        : `<div class="obs-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem">📷</div>`;
+      return `<div class="obs-item ${cls}">
+        ${imgHtml}
+        <div class="obs-body">
+          <div class="ob-etat">${o.anomalie ? '🔴' : '✅'} ${o.etat_simple || '—'}</div>
+          <div class="ob-meta">${o.parcelle_nom ? o.parcelle_nom + ' · ' : ''}${formatDate(o.created_at)}</div>
+          ${valHtml}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('obsHist').innerHTML = '<div class="empty">Impossible de charger l\'historique.</div>';
+  }
+}
+
+async function boot() {
+  try {
+    // Charger parcelles pour le sélecteur
+    const parcs = await api('/api/champ/parcelles?limit=50');
+    const sel = document.getElementById('selectParcelle');
+    (parcs || []).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nom + (p.type_culture ? ` · ${p.type_culture}` : '');
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+  loadHistorique();
+}
+
+boot();
+</script>
+</body>
+</html>

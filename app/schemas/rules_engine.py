@@ -3,7 +3,7 @@ Schémas Pydantic — Rules Engine AgroScan Pro.
 """
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ── Contexte d'entrée ────────────────────────────────────────────────────────
@@ -49,19 +49,18 @@ class RulesContext(BaseModel):
     obs_ravageurs: List[str] = Field(default_factory=list, description="Ravageurs observés")
     obs_densite_ravageur: Optional[str] = Field(None, description="faible | moyenne | elevee")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "culture_nom": "Riz",
-                "zone_agro": "vallee_fleuve",
-                "stade_actuel": "tallage",
-                "mois": 8,
-                "meteo_temp_air": 27.0,
-                "meteo_humidite_rel": 92.0,
-                "meteo_pluie_24h": 18.0,
-                "meteo_pluie_7j": 68.0,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "culture_nom": "Riz",
+            "zone_agro": "vallee_fleuve",
+            "stade_actuel": "tallage",
+            "mois": 8,
+            "meteo_temp_air": 27.0,
+            "meteo_humidite_rel": 92.0,
+            "meteo_pluie_24h": 18.0,
+            "meteo_pluie_7j": 68.0,
         }
+    })
 
 
 # ── Résultats d'évaluation ───────────────────────────────────────────────────
@@ -128,8 +127,7 @@ class RegleListItem(BaseModel):
     active: bool
     nb_cultures: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RegleDetail(RegleListItem):

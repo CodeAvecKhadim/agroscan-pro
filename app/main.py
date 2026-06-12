@@ -15,12 +15,16 @@ import os
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.limiter import limiter
-from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia
+from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin
 from app.routers import sante_cultures as sante_cultures_router
 from app.routers import satellite
+from app.routers import app_activites, app_exploitation, app_photo, app_satellite, app_export_pdf, app_export_excel
 from app.services.crop_health import identifier_maladie, CropHealthError
 import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* dans Base.metadata
 import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
+import app.models.exploitation   # noqa: F401 — enregistre la table exploitations dans Base.metadata
+import app.models.observations      # noqa: F401 — enregistre la table observations dans Base.metadata
+import app.models.analyses_satellite  # noqa: F401 — enregistre la table analyses_satellite dans Base.metadata
 
 # Création automatique des tables (en production : utiliser Alembic pour les migrations).
 # Ne pas créer automatiquement les tables pendant les tests (DB isolation)
@@ -77,6 +81,13 @@ app.include_router(meteo.router)
 app.include_router(ia.router)
 app.include_router(sante_cultures_router.router)
 app.include_router(satellite.router)
+app.include_router(app_activites.router)
+app.include_router(app_exploitation.router)
+app.include_router(app_photo.router)
+app.include_router(app_satellite.router)
+app.include_router(app_export_pdf.router)
+app.include_router(app_export_excel.router)
+app.include_router(admin.router)
 
 
 @app.get("/api/health", tags=["Système"])
@@ -189,6 +200,30 @@ def page_ia():
 def page_conseiller():
     """Espace conseiller — tableau de bord technique (Phase 6)."""
     return _page("conseiller.html")
+
+
+@app.get("/app/activites", include_in_schema=False)
+def page_activites():
+    """Module Activités producteur — liste et suivi."""
+    return _page("activites.html")
+
+
+@app.get("/app/exploitation", include_in_schema=False)
+def page_exploitation():
+    """Module Exploitation — surface, production, coûts, revenus."""
+    return _page("exploitation.html")
+
+
+@app.get("/app/photo", include_in_schema=False)
+def page_photo():
+    """Module Photo — diagnostic maladie par photo (producteur)."""
+    return _page("photo.html")
+
+
+@app.get("/admin", include_in_schema=False)
+def page_admin():
+    """Tableau de bord administration — accès profil admin uniquement."""
+    return _page("admin.html")
 
 
 @app.post("/api/scan-maladie", tags=["Diagnostic"])

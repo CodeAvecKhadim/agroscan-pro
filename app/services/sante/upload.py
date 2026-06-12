@@ -18,6 +18,7 @@ _SOUS_DOSSIERS = {
     "parcelle":     BASE_UPLOAD / "parcelles",
     "activite":     BASE_UPLOAD / "activites",
     "rapport":      BASE_UPLOAD / "rapports",
+    "observation":  BASE_UPLOAD / "observations",
 }
 
 _MIME_AUTORISE = {"image/jpeg", "image/png", "image/webp"}

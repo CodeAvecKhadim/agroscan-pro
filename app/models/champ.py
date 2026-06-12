@@ -135,6 +135,11 @@ class Parcelle(Base):
     centre_lat = Column(Float)
     centre_lon = Column(Float)
 
+    # Agronomie
+    date_semis = Column(Date, nullable=True)
+    variete = Column(String(200), nullable=True)
+    stade_culture = Column(String(200), nullable=True)
+
     # Score complétude
     score_completude = Column(SmallInteger, default=0)
     score_detail = Column(JSONB)

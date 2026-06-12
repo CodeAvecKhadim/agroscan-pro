@@ -4,7 +4,7 @@ Séparer les schémas des modèles SQL est une bonne pratique (sécurité + clar
 """
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models import PlanType, SubStatus, UserRole
 
@@ -40,8 +40,7 @@ class UserOut(BaseModel):
     profil: str = "producteur"
     org_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InviteMemberIn(BaseModel):
@@ -66,8 +65,7 @@ class FarmOut(FarmIn):
     id: int
     org_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Analyses ----------
@@ -89,8 +87,7 @@ class AnalysisOut(BaseModel):
     diagnostic: Optional[List[Dict[str, Any]]] = None   # détail par paramètre (calculé)
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Abonnements ----------
@@ -100,21 +97,30 @@ class SubscriptionOut(BaseModel):
     seats: int
     current_period_end: Optional[datetime]
     auto_renew: bool
+    campaign_billing: Optional[str] = "monthly"
+    remaining_days: Optional[int] = None  # calculé dynamiquement
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChangePlanIn(BaseModel):
     plan: PlanType
     seats: int = 1                        # nb de membres pour la coopérative
+    billing: str = "monthly"              # "monthly" | "annual" (coopérative)
 
 
 class UsageOut(BaseModel):
     period: str
-    analyses_used: int
-    analyses_limit: Optional[int]         # None = illimité
-    history_days: Optional[int]           # None = illimité
+    # IA : quotidien (plan gratuit) ou None (illimité)
+    daily_ai_used: int = 0
+    daily_ai_limit: Optional[int] = None
+    # Satellite : hebdomadaire (plan gratuit) ou None (illimité)
+    weekly_satellite_used: int = 0
+    weekly_satellite_limit: Optional[int] = None
+    # Legacy
+    analyses_used: int = 0
+    analyses_limit: Optional[int] = None
+    history_days: Optional[int] = None
     plan: PlanType
 
 

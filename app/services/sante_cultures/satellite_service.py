@@ -15,6 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from app.core.config import settings
+from app.services.satellite.client import coordonnees_to_bbox  # noqa: F401 — re-exporté pour compatibilité
 
 log = logging.getLogger(__name__)
 
@@ -42,18 +43,6 @@ function evaluatePixel(s) {
   return [ndvi, ndre, savi, evi, msavi, ndwi, cloud];
 }
 """
-
-
-def coordonnees_to_bbox(coordonnees: list[dict]) -> tuple[float, float, float, float]:
-    """Convertit polygon [{lat, lon}, ...] en bbox (min_lon, min_lat, max_lon, max_lat).
-
-    Sentinel Hub attend (west, south, east, north) = (min_lon, min_lat, max_lon, max_lat).
-    """
-    if not coordonnees:
-        raise ValueError("Coordonnées vides — impossible de calculer le bbox")
-    lats = [c["lat"] for c in coordonnees]
-    lons = [c["lon"] for c in coordonnees]
-    return (min(lons), min(lats), max(lons), max(lats))
 
 
 def resolution_adaptative(superficie_ha: float) -> int:

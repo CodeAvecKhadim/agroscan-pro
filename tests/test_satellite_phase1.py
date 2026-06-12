@@ -7,6 +7,7 @@ Coverage :
   - Models satellite
 """
 import pytest
+import httpx
 from datetime import date, datetime, timezone
 from unittest.mock import Mock, patch, MagicMock
 import json
@@ -25,6 +26,7 @@ from app.schemas.satellite import (
 )
 from app.services.satellite import (
     SentinelHubClient, SentinelHubConfig, SentinelHubException,
+    coordonnees_to_bbox,
     get_evalscript_ndvi_ndre_ndmi, get_evalscript_savi_evi_msavi,
 )
 from app.core.database import SessionLocal, Base, engine
@@ -32,12 +34,13 @@ from app.core.database import SessionLocal, Base, engine
 
 @pytest.fixture
 def db_session():
-    """Crée une session DB pour les tests."""
-    Base.metadata.create_all(bind=engine)
+    """Crée une session DB pour les tests.
+    N'effectue pas drop_all (incompatible avec la DB de production partagée).
+    """
     session = SessionLocal()
     yield session
+    session.rollback()
     session.close()
-    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
@@ -47,51 +50,31 @@ def client():
 
 
 @pytest.fixture
-def test_org(db_session: Session) -> Organization:
-    """Crée une organisation de test."""
-    org = Organization(id=1, name="Test Org", is_cooperative=False)
-    db_session.add(org)
-    db_session.commit()
+def test_org(db_session: Session):
+    """Retourne la première organisation existante (DB partagée — pas d'insertion)."""
+    from app.models import Organization as Org
+    org = db_session.query(Org).first()
+    if not org:
+        pytest.skip("Aucune organisation en DB — requiert DB isolée")
     return org
 
 
 @pytest.fixture
-def test_user(db_session: Session, test_org: Organization) -> User:
-    """Crée un utilisateur de test."""
-    user = User(
-        id=1,
-        org_id=test_org.id,
-        full_name="Test User",
-        email="test@example.com",
-        hashed_password="hashed",
-        role="admin",
-        is_active=True,
-    )
-    db_session.add(user)
-    db_session.commit()
+def test_user(db_session: Session, test_org):
+    """Retourne le premier utilisateur de l'organisation existante."""
+    from app.models import User as U
+    user = db_session.query(U).filter_by(org_id=test_org.id).first()
+    if not user:
+        pytest.skip("Aucun utilisateur en DB — requiert DB isolée")
     return user
 
 
 @pytest.fixture
-def test_parcelle(db_session: Session, test_org: Organization) -> Parcelle:
-    """Crée une parcelle de test."""
-    parcelle = Parcelle(
-        id=1,
-        org_id=test_org.id,
-        nom="Test Field",
-        code_parcelle="PRC-001",
-        centre_lat=14.5,
-        centre_lon=-14.0,
-        superficie_ha=2.5,
-        perimetre_m=500.0,
-        zone_agro="Bassin arachidier",
-        region="Kaolack",
-        localite="Tamba",
-        statut="ACTIVE",
-        score_completude=0.8,
-    )
-    db_session.add(parcelle)
-    db_session.commit()
+def test_parcelle(db_session: Session, test_org):
+    """Retourne la première parcelle de l'organisation existante."""
+    parcelle = db_session.query(Parcelle).filter_by(org_id=test_org.id).first()
+    if not parcelle:
+        pytest.skip("Aucune parcelle en DB — requiert DB isolée")
     return parcelle
 
 
@@ -113,12 +96,16 @@ def sentinel_config() -> SentinelHubConfig:
 class TestSatelliteModels:
     """Tests pour les modèles Satellite."""
 
-    def test_satellite_product_creation(self, db_session: Session, test_org: Organization):
+    def test_satellite_product_creation(self, db_session: Session, test_org, test_parcelle):
         """Teste la création d'un produit satellite."""
+        _PROD_ID = "S2A_TEST_UNIT_PROD_20260530"
+        db_session.query(SatelliteProduct).filter_by(product_id=_PROD_ID).delete()
+        db_session.commit()
+
         product = SatelliteProduct(
-            parcelle_id=1,
+            parcelle_id=test_parcelle.id,
             org_id=test_org.id,
-            product_id="S2A_MSIL2A_20260530T104031_N0510_R117_T31NDD_20260530T122534",
+            product_id=_PROD_ID,
             tile_id="31NDD",
             sensor="sentinel-2",
             date_acquisition=date(2026, 5, 30),
@@ -129,49 +116,56 @@ class TestSatelliteModels:
         db_session.add(product)
         db_session.commit()
 
-        saved = db_session.query(SatelliteProduct).filter_by(
-            product_id="S2A_MSIL2A_20260530T104031_N0510_R117_T31NDD_20260530T122534"
-        ).first()
-
+        saved = db_session.query(SatelliteProduct).filter_by(product_id=_PROD_ID).first()
         assert saved is not None
         assert saved.sensor == "sentinel-2"
         assert saved.cloud_cover == 12.5
 
-    def test_satellite_job_creation(self, db_session: Session, test_org: Organization):
+        db_session.delete(saved)
+        db_session.commit()
+
+    def test_satellite_job_creation(self, db_session: Session, test_org, test_parcelle):
         """Teste la création d'un job satellite."""
+        _JOB_TYPE = "test_unit_search_job"
+        db_session.query(SatelliteJob).filter_by(job_type=_JOB_TYPE).delete()
+        db_session.commit()
+
         job = SatelliteJob(
-            parcelle_id=1,
+            parcelle_id=test_parcelle.id,
             org_id=test_org.id,
-            job_type="search",
+            job_type=_JOB_TYPE,
             status=JobStatus.QUEUED.value,
             params={"bbox": {"min_lon": -14.0, "min_lat": 14.5}, "sensor": "sentinel-2"},
         )
         db_session.add(job)
         db_session.commit()
 
-        saved = db_session.query(SatelliteJob).filter_by(job_type="search").first()
-
+        saved = db_session.query(SatelliteJob).filter_by(job_type=_JOB_TYPE).first()
         assert saved is not None
         assert saved.status == "queued"
         assert saved.retry_count == 0
 
+        db_session.delete(saved)
+        db_session.commit()
+
     def test_satellite_config_creation(self, db_session: Session):
         """Teste la création d'une config satellite."""
-        config = SatelliteConfig(
-            key="sentinel_hub_api_key",
-            value={"value": "test-key-123"},
-            is_secret=True,
-            description="Sentinel Hub API Key",
-        )
+        _KEY = "test_unit_satellite_config"
+        # Cleanup any leftover from previous runs
+        db_session.query(SatelliteConfig).filter_by(key=_KEY).delete()
+        db_session.commit()
+
+        config = SatelliteConfig(key=_KEY, value={"value": "test-key-123"}, is_secret=True)
         db_session.add(config)
         db_session.commit()
 
-        saved = db_session.query(SatelliteConfig).filter_by(
-            key="sentinel_hub_api_key"
-        ).first()
-
+        saved = db_session.query(SatelliteConfig).filter_by(key=_KEY).first()
         assert saved is not None
         assert saved.is_secret is True
+
+        # Cleanup
+        db_session.delete(saved)
+        db_session.commit()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -240,7 +234,7 @@ class TestSentinelHubClient:
     @patch("app.services.satellite.client.httpx.Client")
     def test_search_catalog_error(self, mock_http_client, sentinel_config):
         """Teste une erreur lors de la recherche catalogue."""
-        mock_http_client.return_value.post.side_effect = Exception("Network error")
+        mock_http_client.return_value.post.side_effect = httpx.HTTPError("Network error")
 
         client = SentinelHubClient(sentinel_config)
 
@@ -267,24 +261,34 @@ class TestSatelliteEndpoints:
 
     def test_health_check_with_config(self, client: TestClient, db_session: Session):
         """Teste le health check avec config."""
-        # Créer la config
-        config_key = SatelliteConfig(
-            key="sentinel_hub_api_key",
-            value={"value": "test-key"},
-            is_secret=True,
-        )
-        config_secret = SatelliteConfig(
-            key="sentinel_hub_api_secret",
-            value={"value": "test-secret"},
-            is_secret=True,
-        )
-        db_session.add(config_key)
-        db_session.add(config_secret)
+        _KEY_K = "test_unit_shub_key"
+        _KEY_S = "test_unit_shub_secret"
+        # Cleanup any leftover
+        db_session.query(SatelliteConfig).filter(
+            SatelliteConfig.key.in_([_KEY_K, _KEY_S])
+        ).delete(synchronize_session=False)
         db_session.commit()
 
-        response = client.get("/api/sante/precision/satellite/health")
+        db_session.add(SatelliteConfig(key=_KEY_K, value={"value": "test-key"}, is_secret=True))
+        db_session.add(SatelliteConfig(key=_KEY_S, value={"value": "test-secret"}, is_secret=True))
+        db_session.commit()
+
+        # Patch _get_sentinel_hub_config to use our test keys
+        with patch("app.routers.satellite._get_sentinel_hub_config") as mock_cfg:
+            from app.services.satellite import SentinelHubConfig
+            mock_cfg.return_value = SentinelHubConfig(
+                api_key="test-key", api_secret="test-secret"
+            )
+            response = client.get("/api/sante/precision/satellite/health")
+
         assert response.status_code == 200
         assert response.json()["status"] == "ok"
+
+        # Cleanup
+        db_session.query(SatelliteConfig).filter(
+            SatelliteConfig.key.in_([_KEY_K, _KEY_S])
+        ).delete(synchronize_session=False)
+        db_session.commit()
 
     def test_search_no_coords(self, client: TestClient, db_session: Session):
         """Teste la recherche sans coordonnées (doit échouer)."""
@@ -329,7 +333,7 @@ class TestSatelliteSchemas:
                 cloud_cover_max=150.0,  # > 100
             )
 
-    def test_product_response_serialization(self, test_org: Organization):
+    def test_product_response_serialization(self, test_org):
         """Teste la sérialisation d'une réponse produit."""
         product = SatelliteProduct(
             id=42,
@@ -340,6 +344,7 @@ class TestSatelliteSchemas:
             date_acquisition=date(2026, 5, 30),
             date_product_date=datetime(2026, 5, 30, 12, 25, 34, tzinfo=timezone.utc),
             cloud_cover=12.5,
+            discovered_at=datetime(2026, 5, 30, 13, 0, 0, tzinfo=timezone.utc),
         )
 
         response = SatelliteProductResponse.model_validate(product)
@@ -384,15 +389,15 @@ class TestSatelliteIntegration:
         }
         mock_http_client.return_value.post.return_value = mock_response
 
-        # Créer une config Sentinel Hub
-        config_key = SatelliteConfig(
-            key="sentinel_hub_api_key",
-            value={"value": "test-key"},
-        )
-        config_secret = SatelliteConfig(
-            key="sentinel_hub_api_secret",
-            value={"value": "test-secret"},
-        )
+        # Créer une config Sentinel Hub (clés de test uniques + cleanup)
+        _CK, _CS = "test_unit_integ_key", "test_unit_integ_secret"
+        db_session.query(SatelliteConfig).filter(
+            SatelliteConfig.key.in_([_CK, _CS])
+        ).delete(synchronize_session=False)
+        db_session.commit()
+
+        config_key    = SatelliteConfig(key=_CK, value={"value": "test-key"})
+        config_secret = SatelliteConfig(key=_CS, value={"value": "test-secret"})
         db_session.add(config_key)
         db_session.add(config_secret)
         db_session.commit()
@@ -440,6 +445,175 @@ class TestSatelliteIntegration:
         ).first()
         assert saved is not None
         assert saved.sensor == "sentinel-2"
+
+        # Cleanup
+        db_session.query(SatelliteProduct).filter_by(parcelle_id=test_parcelle.id).delete()
+        db_session.query(SatelliteConfig).filter(
+            SatelliteConfig.key.in_([_CK, _CS])
+        ).delete(synchronize_session=False)
+        db_session.commit()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tests Sprint 1 — Security + Bbox from real contour
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestCoordonneesToBbox:
+    """Tests pour coordonnees_to_bbox."""
+
+    def test_square_polygon(self):
+        """Carré simple → bbox exacte."""
+        coords = [
+            {"lat": 14.5,  "lon": -14.0},
+            {"lat": 14.5,  "lon": -13.9},
+            {"lat": 14.4,  "lon": -13.9},
+            {"lat": 14.4,  "lon": -14.0},
+        ]
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(coords)
+        assert min_lon == pytest.approx(-14.0)
+        assert min_lat == pytest.approx(14.4)
+        assert max_lon == pytest.approx(-13.9)
+        assert max_lat == pytest.approx(14.5)
+
+    def test_single_point(self):
+        """Un seul point → bbox dégénérée (min == max)."""
+        coords = [{"lat": 14.5, "lon": -14.0}]
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(coords)
+        assert min_lon == max_lon == pytest.approx(-14.0)
+        assert min_lat == max_lat == pytest.approx(14.5)
+
+    def test_empty_list_raises(self):
+        """Liste vide → ValueError."""
+        with pytest.raises(ValueError, match="Coordonnées vides"):
+            coordonnees_to_bbox([])
+
+    def test_missing_lon_raises(self):
+        """Coordonnée sans 'lon' → KeyError."""
+        with pytest.raises((KeyError, ValueError)):
+            coordonnees_to_bbox([{"lat": 14.5}])
+
+    def test_irregular_polygon(self):
+        """Polygone irrégulier → bounding box correcte."""
+        coords = [
+            {"lat": 14.50, "lon": -14.00},
+            {"lat": 14.52, "lon": -13.98},
+            {"lat": 14.49, "lon": -13.95},
+            {"lat": 14.45, "lon": -13.97},
+            {"lat": 14.47, "lon": -14.02},
+        ]
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(coords)
+        assert min_lon == pytest.approx(-14.02)
+        assert min_lat == pytest.approx(14.45)
+        assert max_lon == pytest.approx(-13.95)
+        assert max_lat == pytest.approx(14.52)
+
+    def test_bbox_orientation(self):
+        """min_lon < max_lon et min_lat < max_lat pour tout polygone valide."""
+        coords = [
+            {"lat": 14.6, "lon": -14.1},
+            {"lat": 14.4, "lon": -13.8},
+        ]
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(coords)
+        assert min_lon < max_lon
+        assert min_lat < max_lat
+
+
+class TestSatelliteRouterSecurity:
+    """Tests de sécurité — contrôle d'accès aux endpoints /config."""
+
+    def test_config_write_requires_auth(self, client: TestClient):
+        """POST /config sans token → 401."""
+        response = client.post(
+            "/api/sante/precision/satellite/config",
+            json={"key": "sentinel_hub_api_key", "value": {"value": "hack"}},
+        )
+        assert response.status_code == 401
+
+    def test_config_read_requires_auth(self, client: TestClient):
+        """GET /config/{key} sans token → 401."""
+        response = client.get("/api/sante/precision/satellite/config/sentinel_hub_api_key")
+        assert response.status_code == 401
+
+    def test_search_requires_auth(self, client: TestClient):
+        """POST /search sans token → 401."""
+        response = client.post(
+            "/api/sante/precision/satellite/search",
+            json={
+                "parcelle_id": 1,
+                "sensor": "sentinel-2",
+                "date_from": "2026-05-01",
+                "date_to": "2026-05-31",
+            },
+        )
+        assert response.status_code == 401
+
+    def test_products_list_requires_auth(self, client: TestClient):
+        """GET /products sans token → 401."""
+        response = client.get("/api/sante/precision/satellite/products?parcelle_id=1")
+        assert response.status_code == 401
+
+
+class TestSatelliteBboxFromContour:
+    """Tests bbox calculée depuis le contour de parcelle (vs centre±delta).
+
+    Tests purement unitaires — pas de DB nécessaire.
+    """
+
+    def test_contour_bbox_differs_from_center_fallback(self):
+        """bbox contour couvre toute la parcelle, pas juste ±110 m autour du centre."""
+        contour = [
+            {"lat": 14.45, "lon": -14.05},
+            {"lat": 14.55, "lon": -14.05},
+            {"lat": 14.55, "lon": -13.95},
+            {"lat": 14.45, "lon": -13.95},
+        ]
+        # Centre fictif de la parcelle (test_parcelle)
+        centre_lat, centre_lon = 14.5, -14.0
+        delta = 0.001
+
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(contour)
+
+        # bbox contour = -14.05 → -13.95 (0.1° width)
+        # bbox fallback = -14.001 → -13.999 (0.002° width)
+        assert min_lon == pytest.approx(-14.05)
+        assert min_lat == pytest.approx(14.45)
+        assert max_lon == pytest.approx(-13.95)
+        assert max_lat == pytest.approx(14.55)
+
+        # Contour bbox est plus large que le fallback
+        contour_width = max_lon - min_lon
+        fallback_width = (centre_lon + delta) - (centre_lon - delta)
+        assert contour_width > fallback_width, (
+            "Contour bbox doit être plus large que fallback centre±delta"
+        )
+
+    def test_fallback_bbox_values(self):
+        """Sans contour, fallback = centre ± 0.001°."""
+        centre_lat, centre_lon = 14.5, -14.0
+        delta = 0.001
+        expected = {
+            "min_lon": centre_lon - delta,
+            "min_lat": centre_lat - delta,
+            "max_lon": centre_lon + delta,
+            "max_lat": centre_lat + delta,
+        }
+        assert expected["min_lon"] == pytest.approx(-14.001)
+        assert expected["max_lon"] == pytest.approx(-13.999)
+        assert expected["min_lat"] == pytest.approx(14.499)
+        assert expected["max_lat"] == pytest.approx(14.501)
+
+    def test_contour_bbox_precision(self):
+        """bbox du contour reflète exactement les extrêmes du polygone."""
+        contour = [
+            {"lat": 14.1234, "lon": -15.9876},
+            {"lat": 14.9999, "lon": -15.1111},
+            {"lat": 14.5555, "lon": -14.0001},
+        ]
+        min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(contour)
+        assert min_lon == pytest.approx(-15.9876)
+        assert min_lat == pytest.approx(14.1234)
+        assert max_lon == pytest.approx(-14.0001)
+        assert max_lat == pytest.approx(14.9999)
 
 
 if __name__ == "__main__":

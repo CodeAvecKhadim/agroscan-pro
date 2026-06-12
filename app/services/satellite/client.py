@@ -317,6 +317,21 @@ class SentinelHubException(Exception):
     pass
 
 
+def coordonnees_to_bbox(coordonnees: list[dict]) -> tuple[float, float, float, float]:
+    """Convertit polygon [{lat, lon}, ...] en bbox (min_lon, min_lat, max_lon, max_lat).
+
+    Sentinel Hub attend (west, south, east, north).
+    Lève ValueError si la liste est vide ou mal formée.
+    """
+    if not coordonnees:
+        raise ValueError("Coordonnées vides — impossible de calculer le bbox")
+    lats = [c["lat"] for c in coordonnees]
+    lons = [c["lon"] for c in coordonnees]
+    if not lats or not lons:
+        raise ValueError("Coordonnées mal formées — lat/lon manquants")
+    return (min(lons), min(lats), max(lons), max(lats))
+
+
 def get_evalscript_ndvi_ndre_ndmi() -> str:
     """
     Retourne un evalscript pour calculer NDVI, NDRE, NDMI.

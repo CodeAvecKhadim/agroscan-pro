@@ -2,14 +2,16 @@
 Router — Module MON CHAMP.
 18 endpoints sur /api/champ.
 """
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.database import get_db
-from app.core.deps import current_user
+from app.core.deps import (current_user, current_subscription, enforce_parcelle_limit,
+                            effective_plan)
+from app.models import Subscription
 from app.models import User
 from app.models.champ import (
     Parcelle, Cartographie, AnalyseSol, Infrastructure, SourceEau,
@@ -25,6 +27,8 @@ from app.schemas.champ import (
 )
 from app.services.geo import calcul_complet
 from app.services.score_champ import calculer_score, maj_score_parcelle
+from app.services.calendrier import deriver_stade
+from app.services.activites import generer_activites_calendrier
 
 router = APIRouter(prefix="/api/champ", tags=["Mon Champ"])
 
@@ -79,15 +83,33 @@ def _build_carto_out(carto: Cartographie, parcelle: Parcelle) -> CartographieOut
 @router.post("/parcelles", response_model=ParcelleOut, status_code=201)
 def creer_parcelle(
     data: ParcelleCreate,
-    user: User = Depends(current_user),
+    user: User = Depends(enforce_parcelle_limit),  # vérifie quota parcelles
+    sub: Subscription = Depends(current_subscription),
     db: Session = Depends(get_db),
 ):
     """Créer une nouvelle parcelle."""
+    # Vérifier limite hectares par parcelle selon le plan
+    from app.services.plans import features_for
+    if data.superficie_ha is not None and data.superficie_ha > 0:
+        plan = effective_plan(sub)
+        max_ha = features_for(plan)["max_ha_per_parcelle"]
+        if max_ha is not None and data.superficie_ha > max_ha:
+            from fastapi import status as http_status
+            raise HTTPException(
+                status_code=http_status.HTTP_402_PAYMENT_REQUIRED,
+                detail=(f"Superficie {data.superficie_ha} ha dépasse la limite de {max_ha} ha "
+                        f"sur le plan {plan.value}. Passez au plan Premium."),
+            )
+
     code = data.code_parcelle or _gen_code(db, user.org_id)
 
     # Vérifier unicité code
     if db.query(Parcelle).filter_by(code_parcelle=code).first():
         raise HTTPException(status_code=409, detail=f"Code parcelle '{code}' déjà utilisé.")
+
+    stade = data.stade_culture
+    if not stade and data.type_culture and data.date_semis:
+        stade = deriver_stade(data.type_culture, data.date_semis)
 
     p = Parcelle(
         org_id=user.org_id,
@@ -100,11 +122,23 @@ def creer_parcelle(
         localite=data.localite,
         statut=data.statut,
         description=data.description,
+        date_semis=data.date_semis,
+        variete=data.variete,
+        stade_culture=stade,
     )
     db.add(p)
     db.commit()
     db.refresh(p)
     maj_score_parcelle(db, p)
+
+    # Générer activités depuis calendrier si culture + date_semis fournis
+    if p.type_culture and p.date_semis:
+        generer_activites_calendrier(
+            db=db, parcelle_id=p.id, org_id=p.org_id,
+            culture=p.type_culture, date_semis=p.date_semis,
+            created_by_id=user.id,
+        )
+
     return p
 
 
@@ -164,7 +198,16 @@ def modifier_parcelle(
 ):
     """Modifier les informations d'une parcelle."""
     p = _get_parcelle(db, parcelle_id, user.org_id)
-    for field, value in data.model_dump(exclude_none=True).items():
+    patch = data.model_dump(exclude_none=True)
+
+    # Recalcule stade si culture ou date_semis changent (sauf si stade fourni explicitement)
+    if "stade_culture" not in patch:
+        culture_apres = patch.get("type_culture", p.type_culture)
+        semis_apres = patch.get("date_semis", p.date_semis)
+        if culture_apres and semis_apres:
+            patch["stade_culture"] = deriver_stade(culture_apres, semis_apres)
+
+    for field, value in patch.items():
         setattr(p, field, value)
     p.updated_at = datetime.now(timezone.utc)
     db.commit()

@@ -31,6 +31,9 @@ class ParcelleCreate(BaseModel):
     localite: Optional[str] = None
     statut: StatutParcelle = StatutParcelle.ACTIVE
     description: Optional[str] = None
+    date_semis: Optional[date] = None
+    variete: Optional[str] = Field(None, max_length=200)
+    stade_culture: Optional[str] = Field(None, max_length=200)
 
 
 class ParcelleUpdate(BaseModel):
@@ -42,6 +45,9 @@ class ParcelleUpdate(BaseModel):
     localite: Optional[str] = None
     statut: Optional[StatutParcelle] = None
     description: Optional[str] = None
+    date_semis: Optional[date] = None
+    variete: Optional[str] = Field(None, max_length=200)
+    stade_culture: Optional[str] = Field(None, max_length=200)
 
 
 class ParcelleSummary(BaseModel):
@@ -54,6 +60,8 @@ class ParcelleSummary(BaseModel):
     statut: StatutParcelle
     superficie_ha: Optional[float] = None
     score_completude: int
+    date_semis: Optional[date] = None
+    stade_culture: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -78,6 +86,9 @@ class ParcelleOut(BaseModel):
     centre_lon: Optional[float] = None
     score_completude: int
     score_detail: Optional[Dict[str, Any]] = None
+    date_semis: Optional[date] = None
+    variete: Optional[str] = None
+    stade_culture: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -10,69 +10,120 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/agroscan.css">
 <style>
-body { padding-bottom: 0; }
-.hero {
-  min-height: 100vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 40px 24px; text-align: center;
-}
-.hero-mark {
-  width: 80px; height: 80px; border-radius: 20px; margin: 0 auto 20px;
-  background: linear-gradient(150deg, var(--gold), var(--millet));
-  display: grid; place-items: center; font-size: 40px;
-  box-shadow: var(--shadow);
-}
-.hero h1 {
-  font-family: var(--serif); font-weight: 900; font-size: 2rem;
-  color: var(--gdeep); margin-bottom: 8px;
-}
-.hero p { color: var(--soft); font-size: 1rem; max-width: 380px; margin: 0 auto 28px; }
-.coming-soon {
-  background: var(--card); border: 2px dashed var(--gold);
-  border-radius: var(--r); padding: 24px 28px; max-width: 420px; width: 100%;
-  margin: 0 auto 24px;
-}
-.coming-soon .cs-title {
-  font-family: var(--serif); font-weight: 700; font-size: 1.1rem;
-  color: var(--gdeep); margin-bottom: 12px;
-}
-.coming-soon ul {
-  list-style: none; text-align: left;
-}
-.coming-soon li {
-  font-size: .9rem; color: var(--soft); padding: 6px 0;
-  border-bottom: 1px solid var(--line); display: flex; gap: 10px;
-}
-.coming-soon li:last-child { border-bottom: none; }
-.coming-soon li .cs-icon { font-size: 1.1rem; flex-shrink: 0; }
-.user-info {
-  font-size: .82rem; color: var(--soft); margin-bottom: 20px;
-}
-.user-info strong { color: var(--gdeep); }
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.kpi .n{font-family:var(--serif);font-weight:900;font-size:1.5rem;color:var(--gdk);line-height:1}
+.kpi .l{font-size:.68rem;color:var(--soft);margin-top:3px}
+.kpi.warn .n{color:var(--orange)}
+.kpi.danger .n{color:var(--red)}
+
+.section-title{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:12px}
+.filter-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.chip{padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid var(--line);background:var(--card);color:var(--soft)}
+.chip.active{background:var(--g);color:#fff;border-color:var(--g)}
+
+.parc-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;cursor:pointer;transition:transform .12s}
+.parc-card:hover{transform:translateY(-1px);box-shadow:0 6px 24px -8px rgba(0,60,20,.2)}
+.parc-card.has-anomalie{border-left:4px solid var(--red)}
+.parc-card.has-retard{border-left:4px solid var(--orange)}
+.parc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+.parc-nom{font-weight:700;font-size:.98rem;color:var(--gdeep)}
+.parc-culture{font-size:.8rem;color:var(--soft);margin-top:2px}
+.parc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.ptag{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px}
+.ptag.stade{background:#d1fae5;color:#065f46}
+.ptag.retard{background:#fee2e2;color:#991b1b}
+.ptag.anomalie{background:#fef3c7;color:#92400e}
+.ptag.ok{background:#d1fae5;color:#065f46}
+.parc-data{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.data-item{font-size:.78rem;color:var(--soft)}
+.data-item strong{display:block;font-size:.88rem;color:var(--ink);font-weight:700}
+
+.act-retard{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
+.act-retard .ar-ico{font-size:1.4rem;flex-shrink:0}
+.act-retard .ar-body{flex:1}
+.act-retard .ar-titre{font-weight:700;font-size:.88rem}
+.act-retard .ar-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--r) var(--r) 0 0;padding:20px;max-height:85vh;overflow-y:auto;width:100%;animation:slideup .3s}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:var(--serif);font-weight:900;font-size:1.1rem;color:var(--gdeep);margin-bottom:16px}
+.modal-close{float:right;cursor:pointer;font-size:1.4rem;color:var(--soft);line-height:1}
+
+.obs-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;margin-bottom:10px}
+.obs-card img{width:100%;border-radius:8px;margin-bottom:8px;max-height:200px;object-fit:cover}
+.obs-etat{font-weight:700;font-size:.88rem;margin-bottom:4px}
+.obs-etat.anomalie{color:var(--red)}
+.obs-etat.ok{color:var(--gdk)}
+.obs-date{font-size:.75rem;color:var(--soft);margin-bottom:8px}
+.val-input{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-family:var(--sans);font-size:.9rem;margin-bottom:8px}
+.val-input:focus{outline:none;border-color:var(--g)}
+.btn-valider{padding:8px 16px;background:var(--g);color:#fff;border:none;border-radius:var(--r-sm);font-weight:700;font-size:.82rem;cursor:pointer;font-family:var(--sans)}
+
+.empty{text-align:center;padding:24px;color:var(--soft);font-size:.88rem}
+.empty .eico{font-size:2rem;margin-bottom:8px}
+.loading-state{text-align:center;padding:40px;color:var(--soft)}
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:300;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:90%;text-align:center}
+.toast.ok{background:var(--gdeep)}.toast.err{background:#7f1d1d}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-mark">🧑‍🌾</div>
-  <h1>Espace Conseiller</h1>
-  <p id="welcomeMsg">Tableau de bord technique — en cours de construction.</p>
+<header class="topbar">
+  <div class="tb">
+    <div class="brand">
+      <div class="mark">🧑‍🌾</div>
+      <div class="brand-text">
+        <h1>Espace Conseiller</h1>
+        <p id="welcomeMsg">Tableau de bord technique</p>
+      </div>
+    </div>
+    <span class="lk" onclick="logout()">Sortir</span>
+  </div>
+</header>
 
-  <div class="user-info" id="userInfo"></div>
+<div class="wrap">
 
-  <div class="coming-soon">
-    <div class="cs-title">📋 Ce qui arrive en Phase 6</div>
-    <ul>
-      <li><span class="cs-icon">🗺️</span> Carte de toutes vos parcelles suivies</li>
-      <li><span class="cs-icon">🌱</span> État des cultures : stade, activités, retards</li>
-      <li><span class="cs-icon">📸</span> Validation des diagnostics photo (Kindwise)</li>
-      <li><span class="cs-icon">📡</span> NDVI satellite par parcelle (Sentinel-2)</li>
-      <li><span class="cs-icon">🧪</span> Données sol, pH, fertilité par parcelle</li>
-      <li><span class="cs-icon">📊</span> Rapports PDF pour vos producteurs</li>
-    </ul>
+  <div class="kpi-row">
+    <div class="kpi" id="kParc"><div class="n">—</div><div class="l">parcelles</div></div>
+    <div class="kpi warn" id="kRetard"><div class="n">—</div><div class="l">en retard</div></div>
+    <div class="kpi danger" id="kAnom"><div class="n">—</div><div class="l">anomalies</div></div>
+    <div class="kpi" id="kObs"><div class="n">—</div><div class="l">observations</div></div>
   </div>
 
-  <button class="as-btn as-btn-primary" onclick="logout()">Se déconnecter</button>
+  <div class="filter-bar" id="filterBar">
+    <button class="chip active" data-filtre="toutes" onclick="filtrerParc(this)">Toutes</button>
+    <button class="chip" data-filtre="anomalie" onclick="filtrerParc(this)">🔴 Anomalies</button>
+    <button class="chip" data-filtre="retard" onclick="filtrerParc(this)">🟠 En retard</button>
+    <button class="chip" data-filtre="ok" onclick="filtrerParc(this)">✅ OK</button>
+  </div>
+
+  <div id="retardsSection" style="display:none">
+    <p class="section-title">⏰ Activités en retard</p>
+    <div id="retardsList"></div>
+  </div>
+
+  <p class="section-title" id="parcTitle">Toutes les parcelles</p>
+  <div id="parcList">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalObs" onclick="fermerModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">
+      <span class="modal-close" onclick="fermerModal()">✕</span>
+      Observations
+    </div>
+    <div id="modalContent"></div>
+  </div>
 </div>
 
 <script>
@@ -86,31 +137,196 @@ function _decodeJWT(token) {
   } catch(e) { return {}; }
 }
 
-// Vérifier que l'utilisateur est bien un conseiller
 const payload = _decodeJWT(TOKEN);
 if (payload.profil && payload.profil !== 'conseiller' && payload.profil !== 'admin') {
   location.href = '/app';
 }
 
-async function boot() {
-  try {
-    const me = await fetch('/api/auth/me', {
-      headers: { 'Authorization': 'Bearer ' + TOKEN }
-    }).then(r => r.ok ? r.json() : null);
+let _parcelles = [], _activites = [], _observations = [];
+let _satData = {};  // parcelle_id → {couleur, message_simple, date}
+let _filtreParc = 'toutes';
 
-    if (me) {
-      const prenom = (me.full_name || '').split(' ')[0];
-      document.getElementById('welcomeMsg').textContent =
-        `Bonjour ${prenom}, votre espace conseiller est en préparation.`;
-      document.getElementById('userInfo').innerHTML =
-        `Connecté en tant que <strong>${me.full_name}</strong> · profil : <strong>${me.profil || 'conseiller'}</strong>`;
-    }
-  } catch(e) {}
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
-function logout() {
-  localStorage.removeItem('agro_token');
-  location.href = '/';
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+function logout() { localStorage.removeItem('agro_token'); location.href = '/'; }
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'short'});
+}
+
+function filtrerParc(el) {
+  document.querySelectorAll('#filterBar .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  _filtreParc = el.dataset.filtre;
+  renderParcelles();
+}
+
+function enrich(p) {
+  const acts = _activites.filter(a => a.parcelle_id === p.id);
+  const retards = acts.filter(a => a.statut_simple === 'en_retard');
+  const obs = _observations.filter(o => o.parcelle_id === p.id);
+  const anomalies = obs.filter(o => o.anomalie && !o.validation_conseiller);
+  return { ...p, retards, obs, anomalies };
+}
+
+function renderKpis() {
+  const totalRetards = _activites.filter(a => a.statut_simple === 'en_retard').length;
+  const totalAnom = _observations.filter(o => o.anomalie && !o.validation_conseiller).length;
+  document.getElementById('kParc').querySelector('.n').textContent = _parcelles.length;
+  document.getElementById('kRetard').querySelector('.n').textContent = totalRetards;
+  document.getElementById('kAnom').querySelector('.n').textContent = totalAnom;
+  document.getElementById('kObs').querySelector('.n').textContent = _observations.length;
+  if (totalRetards === 0) document.getElementById('kRetard').className = 'kpi';
+  if (totalAnom === 0) document.getElementById('kAnom').className = 'kpi';
+
+  const retards = _activites.filter(a => a.statut_simple === 'en_retard').slice(0, 5);
+  if (retards.length > 0) {
+    document.getElementById('retardsSection').style.display = 'block';
+    document.getElementById('retardsList').innerHTML = retards.map(a => `
+      <div class="act-retard">
+        <div class="ar-ico">🔴</div>
+        <div class="ar-body">
+          <div class="ar-titre">${a.titre}</div>
+          <div class="ar-meta">${a.parcelle_nom || ''} · prévu le ${formatDate(a.date_prevue)}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function renderParcelles() {
+  let liste = _parcelles.map(enrich);
+  if (_filtreParc === 'anomalie') liste = liste.filter(p => p.anomalies.length > 0);
+  else if (_filtreParc === 'retard') liste = liste.filter(p => p.retards.length > 0);
+  else if (_filtreParc === 'ok') liste = liste.filter(p => p.anomalies.length === 0 && p.retards.length === 0);
+  const titres = {toutes:'Toutes les parcelles', anomalie:'Anomalies détectées', retard:'Activités en retard', ok:'Parcelles en ordre'};
+  document.getElementById('parcTitle').textContent = titres[_filtreParc];
+  const el = document.getElementById('parcList');
+  if (!liste.length) {
+    el.innerHTML = '<div class="empty"><div class="eico">✅</div><p>Aucune parcelle dans cette catégorie.</p></div>';
+    return;
+  }
+  el.innerHTML = liste.map(p => {
+    const cls = p.anomalies.length > 0 ? 'has-anomalie' : (p.retards.length > 0 ? 'has-retard' : '');
+    const tags = [];
+    if (p.stade_culture) tags.push(`<span class="ptag stade">📍 ${p.stade_culture}</span>`);
+    if (p.retards.length) tags.push(`<span class="ptag retard">⏰ ${p.retards.length} en retard</span>`);
+    if (p.anomalies.length) tags.push(`<span class="ptag anomalie">🔴 ${p.anomalies.length} anomalie${p.anomalies.length>1?'s':''}</span>`);
+    if (!p.anomalies.length && !p.retards.length) tags.push(`<span class="ptag ok">✅ OK</span>`);
+    const sat = _satData[p.id];
+    if (sat) {
+      const dots = {vert:'🟢', orange:'🟠', rouge:'🔴'};
+      tags.push(`<span class="ptag stade">${dots[sat.couleur]||'⚪'} Satellite ${sat.couleur}</span>`);
+    }
+    return `<div class="parc-card ${cls}" onclick="voirParcelle(${p.id},'${p.nom.replace(/'/g,"\\'")}')">
+      <div class="parc-head">
+        <div>
+          <div class="parc-nom">🌾 ${p.nom}</div>
+          <div class="parc-culture">${p.type_culture||'Culture non renseignée'}${p.variete?' · '+p.variete:''}</div>
+        </div>
+      </div>
+      <div class="parc-tags">${tags.join('')}</div>
+      <div class="parc-data">
+        <div class="data-item"><strong>${p.superficie_ha?p.superficie_ha+' ha':'—'}</strong>Surface</div>
+        <div class="data-item"><strong>${p.region||'—'}</strong>Région</div>
+        <div class="data-item"><strong>${p.date_semis?formatDate(p.date_semis):'—'}</strong>Date semis</div>
+        <div class="data-item"><strong>${p.obs.length}</strong>Photo${p.obs.length>1?'s':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function voirParcelle(parcelleId, nom) {
+  const obs = _observations.filter(o => o.parcelle_id === parcelleId);
+  const el = document.getElementById('modalContent');
+  document.getElementById('modalTitle').innerHTML = `<span class="modal-close" onclick="fermerModal()">✕</span>🌾 ${nom}`;
+  if (!obs.length) {
+    el.innerHTML = '<div class="empty">Aucune observation photo pour cette parcelle.</div>';
+  } else {
+    el.innerHTML = obs.map(o => {
+      const cls = o.anomalie ? 'anomalie' : 'ok';
+      const valHtml = o.validation_conseiller
+        ? `<div style="font-size:.78rem;color:var(--g);padding:6px 8px;background:#f0fdf4;border-radius:6px;margin-top:6px">✔ Validé : ${o.validation_conseiller}</div>`
+        : `<div style="margin-top:8px">
+            <input class="val-input" type="text" id="val-${o.id}" placeholder="Votre commentaire de validation…">
+            <button class="btn-valider" onclick="validerObs(${o.id},${parcelleId},'${nom.replace(/'/g,"\\'")}')">Valider</button>
+          </div>`;
+      const imgHtml = o.chemin ? `<img src="${o.chemin}" alt="Photo" onerror="this.style.display='none'">` : '';
+      return `<div class="obs-card">${imgHtml}
+        <div class="obs-etat ${cls}">${o.anomalie?'🔴':'✅'} ${o.etat_simple||'—'}</div>
+        <div class="obs-date">📅 ${formatDate(o.created_at)}</div>
+        ${valHtml}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modalObs').classList.add('open');
+}
+
+async function validerObs(obsId, parcelleId, nom) {
+  const input = document.getElementById('val-' + obsId);
+  const commentaire = input ? input.value.trim() : '';
+  if (!commentaire) { toast('Saisissez un commentaire', 'err'); return; }
+  try {
+    await api(`/api/app/observations/${obsId}/valider`, {method:'PATCH', body:JSON.stringify({commentaire})});
+    const idx = _observations.findIndex(o => o.id === obsId);
+    if (idx >= 0) _observations[idx].validation_conseiller = commentaire;
+    toast('Validation enregistrée', 'ok');
+    renderKpis();
+    voirParcelle(parcelleId, nom);
+  } catch(e) {
+    toast('Erreur : ' + (e.detail || 'réessayez'), 'err');
+  }
+}
+
+function fermerModal(ev) {
+  if (ev && ev.target !== document.getElementById('modalObs')) return;
+  document.getElementById('modalObs').classList.remove('open');
+}
+
+async function boot() {
+  try {
+    const me = await api('/api/auth/me');
+    const prenom = (me.full_name || '').split(' ')[0];
+    document.getElementById('welcomeMsg').textContent = `Bonjour ${prenom} — vue technique`;
+
+    const [parcs, acts, obs] = await Promise.allSettled([
+      api('/api/champ/parcelles?limit=200'),
+      api('/api/app/activites?limit=500'),
+      api('/api/app/observations?limit=200'),
+    ]);
+
+    _parcelles    = parcs.status === 'fulfilled' ? (parcs.value  || []) : [];
+    _activites    = acts.status  === 'fulfilled' ? (acts.value   || []) : [];
+    _observations = obs.status   === 'fulfilled' ? (obs.value    || []) : [];
+
+    renderKpis();
+    renderParcelles();
+
+    // Chargement satellite en arrière-plan (n'attend pas)
+    Promise.allSettled(_parcelles.map(p =>
+      api(`/api/app/satellite/${p.id}`).then(s => { _satData[p.id] = s; })
+    )).then(() => renderParcelles());
+  } catch(e) {
+    if (e.status === 401 || e.status === 403) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    document.getElementById('parcList').innerHTML =
+      '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement.</p></div>';
+  }
 }
 
 boot();

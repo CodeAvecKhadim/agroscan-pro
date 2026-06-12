@@ -3,7 +3,7 @@ Schémas Pydantic — Base Agronomique AgroScan Pro.
 Séparation lecture/écriture ; from_attributes=True pour SQLAlchemy.
 """
 from typing import Optional, List, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # ─────────────────────────────────────────────
@@ -23,8 +23,7 @@ class VarieteOut(BaseModel):
     rendement_potentiel_t_ha: Optional[float]
     notes: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ParametreClimatiqueOut(BaseModel):
@@ -42,8 +41,7 @@ class ParametreClimatiqueOut(BaseModel):
     texture_preferee: Optional[str]
     ensoleillement_h: Optional[float]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BesoinEauOut(BaseModel):
@@ -53,8 +51,7 @@ class BesoinEauOut(BaseModel):
     frequence_irrigation: Optional[str]
     notes: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BesoinNutritionnelOut(BaseModel):
@@ -68,8 +65,7 @@ class BesoinNutritionnelOut(BaseModel):
     moment_application: Optional[str]
     notes: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StadeOut(BaseModel):
@@ -81,8 +77,7 @@ class StadeOut(BaseModel):
     actions_cles: Optional[Any]
     indicateurs_visuels: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CalendrierOut(BaseModel):
@@ -94,8 +89,7 @@ class CalendrierOut(BaseModel):
     mois_recolte_fin: Optional[int]
     remarques: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RendementOut(BaseModel):
@@ -107,8 +101,7 @@ class RendementOut(BaseModel):
     unite: Optional[str]
     source: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MaladieOut(BaseModel):
@@ -119,8 +112,7 @@ class MaladieOut(BaseModel):
     symptomes: str
     conditions_favorables: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CultureMaladieOut(BaseModel):
@@ -132,8 +124,7 @@ class CultureMaladieOut(BaseModel):
     prevention: Optional[str]
     traitement: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RavageurOut(BaseModel):
@@ -144,8 +135,7 @@ class RavageurOut(BaseModel):
     description: Optional[str]
     symptomes_degats: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CultureRavageurOut(BaseModel):
@@ -157,8 +147,7 @@ class CultureRavageurOut(BaseModel):
     prevention: Optional[str]
     lutte: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RecommandationOut(BaseModel):
@@ -169,8 +158,7 @@ class RecommandationOut(BaseModel):
     zone_agro: Optional[str]
     mois_applicable: Optional[Any]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -187,8 +175,7 @@ class CultureResume(BaseModel):
     icone: Optional[str]
     description: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -207,8 +194,7 @@ class CultureDetail(CultureResume):
     culture_ravageurs: List[CultureRavageurOut] = []
     recommandations: List[RecommandationOut] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────

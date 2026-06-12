@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#047857">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 <title>AgroScan Pro — Mon espace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -181,6 +183,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       <div class="mod-name">Météo</div>
       <div class="mod-sub">Alertes · Prévisions</div>
     </a>
+    <a href="/app/activites" class="mod" id="modActivites">
+      <div class="mod-icon">📅</div>
+      <div class="mod-name">Activités</div>
+      <div class="mod-sub">Calendrier · Tâches</div>
+    </a>
+    <a href="/app/photo" class="mod" id="modPhoto">
+      <div class="mod-icon">📷</div>
+      <div class="mod-name">Diagnostic Photo</div>
+      <div class="mod-sub">Santé · Maladies</div>
+    </a>
     <a href="/ia" class="mod" style="grid-column:span 2" id="modIA">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="mod-icon">🤖</div>
@@ -192,13 +204,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </a>
   </div>
 
-  <!-- Plan card (gratuit only) -->
+  <!-- Plan card -->
   <div class="plan-card" id="planCard" style="display:none">
     <div class="pc-text">
-      <div class="pc-title">Passez au Premium</div>
-      <div class="pc-sub">Débloquez l'IA complète, analyses illimitées et alertes SMS.</div>
+      <div class="pc-title" id="planCardTitle">Passez au Premium</div>
+      <div class="pc-sub" id="planCardSub">14 900 FCFA par campagne agricole (3 mois) — moins de 170 FCFA/jour.</div>
     </div>
-    <a href="/" class="btn-sm">Voir →</a>
+    <a href="/tarifs" class="btn-sm">Voir →</a>
   </div>
 
   <!-- Alertes récentes -->
@@ -276,15 +288,35 @@ async function boot() {
     // Plan
     const sub = await api('/api/billing/me');
     const badge = document.getElementById('planBadge');
-    badge.textContent = sub.plan;
+    const planLabels = {
+      gratuit: 'Gratuit',
+      premium: 'Premium',
+      cooperative: 'Coopérative',
+    };
+    badge.textContent = planLabels[sub.plan] || sub.plan;
     badge.className = 'badge ' + sub.plan;
-    document.getElementById('greetSub').textContent =
-      sub.plan === 'gratuit' ? 'Plan Gratuit — fonctionnalités de base actives' :
-      sub.plan === 'premium' ? 'Plan Premium — toutes les fonctionnalités actives' :
-      'Plan Coopérative — accès multi-exploitation';
 
+    // Message sous greeting
+    if (sub.plan === 'gratuit') {
+      document.getElementById('greetSub').textContent = 'Plan Gratuit — 2 parcelles, 3 analyses IA/jour';
+    } else if (sub.plan === 'premium') {
+      const days = sub.remaining_days;
+      document.getElementById('greetSub').textContent =
+        days != null ? `Campagne Premium — ${days} jour${days !== 1 ? 's' : ''} restant${days !== 1 ? 's' : ''}` :
+        'Plan Premium actif';
+    } else {
+      const billing = sub.campaign_billing === 'annual' ? 'annuel' : 'mensuel';
+      document.getElementById('greetSub').textContent = `Coopérative (${billing}) — accès multi-exploitation`;
+    }
+
+    // CTA upgrade
     if (sub.plan === 'gratuit') {
       document.getElementById('planCard').style.display = 'flex';
+    } else if (sub.plan === 'premium' && sub.remaining_days != null && sub.remaining_days <= 14) {
+      // Alerte renouvellement proche
+      document.getElementById('planCard').style.display = 'flex';
+      document.getElementById('planCardTitle').textContent = `⏳ Campagne expire dans ${sub.remaining_days} jours`;
+      document.getElementById('planCardSub').textContent = 'Renouvelez pour continuer à utiliser toutes les fonctionnalités.';
     }
 
     // Load data in parallel
@@ -399,5 +431,6 @@ function renderAlertes(list) {
 
 boot();
 </script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/static/sw.js').catch(()=>{});</script>
 </body>
 </html>

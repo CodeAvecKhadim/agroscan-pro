@@ -1,0 +1,122 @@
+{
+  "_meta": { "lang": "fr", "name": "Français", "dir": "ltr" },
+
+  "nav": {
+    "accueil": "Accueil",
+    "mon_champ": "Mon Champ",
+    "sante": "Santé des Cultures",
+    "meteo": "Météo",
+    "ia": "Assistant IA",
+    "activites": "Activités",
+    "exploitation": "Mon Exploitation",
+    "connexion": "Connexion",
+    "deconnexion": "Déconnexion",
+    "profil": "Mon Profil"
+  },
+
+  "parcelle": {
+    "titre": "Mes Parcelles",
+    "ajouter": "Ajouter une parcelle",
+    "nom": "Nom du champ",
+    "culture": "Culture",
+    "variete": "Variété",
+    "superficie": "Superficie (ha)",
+    "zone_agro": "Zone agro-écologique",
+    "date_semis": "Date de semis",
+    "stade": "Stade actuel",
+    "statut": "Statut",
+    "aucune": "Aucune parcelle enregistrée.",
+    "supprimer": "Supprimer",
+    "modifier": "Modifier",
+    "enregistrer": "Enregistrer",
+    "annuler": "Annuler"
+  },
+
+  "satellite": {
+    "titre": "Analyse Satellite",
+    "actualiser": "Actualiser l'analyse",
+    "chargement": "Analyse en cours…",
+    "vert": "Végétation saine",
+    "orange": "Attention requise",
+    "rouge": "Anomalie détectée",
+    "source": "Source",
+    "date": "Date d'analyse",
+    "non_disponible": "Données satellites non disponibles pour cette parcelle."
+  },
+
+  "ndvi": {
+    "tres_bien": "Votre champ va très bien. La végétation est vigoureuse.",
+    "bon": "Votre champ est en bon état.",
+    "stress_eau": "Signe de stress hydrique détecté. Pensez à l'irrigation.",
+    "vigueur_basse": "La vigueur de votre culture est en baisse. Consultez un conseiller.",
+    "anomalie": "Anomalie détectée. Contactez votre conseiller agricole.",
+    "non_dispo": "Données satellites non disponibles ce mois-ci.",
+    "estimation": "Estimation basée sur la moyenne saisonnière."
+  },
+
+  "score": {
+    "titre": "Score de complétude",
+    "excellent": "Excellent",
+    "bon": "Bon",
+    "moyen": "Moyen",
+    "insuffisant": "Insuffisant",
+    "manquants": "Informations manquantes"
+  },
+
+  "auth": {
+    "email": "Email",
+    "mot_de_passe": "Mot de passe",
+    "connexion": "Se connecter",
+    "inscription": "S'inscrire",
+    "nom_complet": "Nom complet",
+    "telephone": "Téléphone",
+    "erreur_identifiants": "Email ou mot de passe incorrect.",
+    "bienvenue": "Bienvenue sur AgroScan Pro"
+  },
+
+  "meteo": {
+    "titre": "Météo agricole",
+    "temp": "Température",
+    "pluie": "Pluviométrie",
+    "humidite": "Humidité",
+    "vent": "Vent",
+    "alerte": "Alerte météo"
+  },
+
+  "activites": {
+    "titre": "Activités",
+    "ajouter": "Nouvelle activité",
+    "type": "Type d'activité",
+    "date_prevue": "Date prévue",
+    "date_reelle": "Date réelle",
+    "statut": "Statut",
+    "en_retard": "En retard",
+    "fait": "Réalisé",
+    "a_faire": "À faire"
+  },
+
+  "pdf": {
+    "rapport": "Rapport Agronomique",
+    "telecharger": "Télécharger le rapport PDF",
+    "genere_le": "Généré le"
+  },
+
+  "erreurs": {
+    "reseau": "Erreur réseau. Vérifiez votre connexion.",
+    "serveur": "Erreur serveur. Réessayez plus tard.",
+    "non_autorise": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "non_trouve": "Ressource introuvable."
+  },
+
+  "commun": {
+    "oui": "Oui",
+    "non": "Non",
+    "ok": "OK",
+    "fermer": "Fermer",
+    "chargement": "Chargement…",
+    "enregistrement": "Enregistrement…",
+    "succes": "Opération réussie !",
+    "ha": "ha",
+    "jours": "jours"
+  }
+}

@@ -314,6 +314,8 @@ setTimeout(()=>map.invalidateSize(), 200);
   panel.innerHTML='<input id="pNom" placeholder="Nom du champ" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;min-width:140px;">'
     +'<input id="pCulture" list="pCultures" placeholder="Culture" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;min-width:120px;">'
     +'<datalist id="pCultures">'+cultures.map(function(c){return '<option value="'+c+'">';}).join('')+'</datalist>'
+    +'<input id="pVariete" placeholder="Variété (ex: Souna III)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;min-width:130px;">'
+    +'<input id="pDateSemis" type="date" title="Date de semis" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;">'
     +'<button id="pSave" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Enregistrer ma parcelle</button>'
     +'<span id="pMsg" style="font-size:14px;"></span>';
   document.body.appendChild(panel);
@@ -326,9 +328,11 @@ setTimeout(()=>map.invalidateSize(), 200);
     if(!token){showMsg("Connecte-toi sur la page d'accueil pour enregistrer.",false);return;}
     var nom=(document.getElementById('pNom').value||'').trim()||'Ma parcelle';
     var culture=(document.getElementById('pCulture').value||'').trim()||null;
+    var variete=(document.getElementById('pVariete').value||'').trim()||null;
+    var dateSemis=document.getElementById('pDateSemis').value||null;
     var m2=airePolygone(points.map(function(p){return L.latLng(p[0],p[1]);}));
     var c=centroid(points);
-    var body={nom:nom,culture:culture,superficie_ha:+(m2/10000).toFixed(3),superficie_m2:Math.round(m2),centre_lat:c.lat,centre_lng:c.lng,contour:points};
+    var body={nom:nom,culture:culture,variete:variete,date_semis:dateSemis,superficie_ha:+(m2/10000).toFixed(3),superficie_m2:Math.round(m2),centre_lat:c.lat,centre_lng:c.lng,contour:points};
     showMsg("Enregistrement...",true);
     try{
       var r=await fetch('/api/parcelles',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
@@ -359,7 +363,7 @@ setTimeout(()=>map.invalidateSize(), 200);
 (function(){
   var css=''
     +'#savePanel{left:0 !important;right:0 !important;bottom:0 !important;top:auto !important;transform:none !important;max-width:none !important;width:auto !important;flex-direction:column !important;align-items:stretch !important;gap:10px !important;border-radius:18px 18px 0 0 !important;padding:14px 16px 18px !important;box-shadow:0 -6px 24px rgba(0,0,0,.25) !important;}'
-    +'#savePanel #pNom,#savePanel #pCulture{width:100% !important;min-width:0 !important;font-size:17px !important;padding:15px 14px !important;border:1.5px solid #cbd5e1 !important;border-radius:12px !important;box-sizing:border-box !important;}'
+    +'#savePanel #pNom,#savePanel #pCulture,#savePanel #pVariete,#savePanel #pDateSemis{width:100% !important;min-width:0 !important;font-size:17px !important;padding:15px 14px !important;border:1.5px solid #cbd5e1 !important;border-radius:12px !important;box-sizing:border-box !important;}'
     +'#savePanel #pSave{width:100% !important;font-size:18px !important;font-weight:700 !important;padding:16px !important;border-radius:14px !important;order:3 !important;}'
     +'#savePanel #printBtn{position:static !important;width:100% !important;font-size:17px !important;font-weight:700 !important;padding:15px !important;border-radius:14px !important;margin:0 !important;order:4 !important;}'
     +'#pMsg{display:block !important;font-size:15px !important;text-align:center !important;order:5 !important;}'

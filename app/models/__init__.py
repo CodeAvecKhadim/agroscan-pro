@@ -95,6 +95,8 @@ class Subscription(Base):
     current_period_end = Column(DateTime)        # date d'échéance de la période payée
     seats = Column(Integer, default=1)           # nb de membres autorisés (coopérative)
     auto_renew = Column(Boolean, default=True)
+    # Coopérative : "monthly" | "annual"
+    campaign_billing = Column(String, default="monthly", nullable=True)
 
     organization = relationship("Organization", back_populates="subscription")
     payments = relationship("Payment", back_populates="subscription", cascade="all, delete-orphan")
@@ -158,6 +160,11 @@ class UsageCounter(Base):
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     period = Column(String, index=True)          # ex : "2026-05"
     analyses_count = Column(Integer, default=0)
+    # Limites plan gratuit : IA quotidienne + satellite hebdomadaire
+    daily_ai_count = Column(Integer, default=0)
+    daily_ai_date = Column(String, nullable=True)    # "2026-06-12"
+    weekly_satellite_count = Column(Integer, default=0)
+    weekly_period = Column(String, nullable=True)    # "2026-W24"
 
 
 # Importer les modèles agronomiques pour que Base.metadata les découvre.

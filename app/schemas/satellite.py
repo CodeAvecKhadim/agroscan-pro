@@ -6,7 +6,7 @@ Requêtes/Réponses pour les endpoints de recherche et orchestration Sentinel Hu
 from __future__ import annotations
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # ── Requête de recherche catalogue ───────────────────────────────────────────
@@ -20,17 +20,16 @@ class SatelliteSearchRequest(BaseModel):
     cloud_cover_max:    Optional[float] = Field(50.0, ge=0, le=100, description="Cloud cover max %")
     limit:              Optional[int]   = Field(10, ge=1, le=100, description="Nb max résultats")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "parcelle_id": 1,
-                "sensor": "sentinel-2",
-                "date_from": "2026-05-01",
-                "date_to": "2026-06-11",
-                "cloud_cover_max": 30.0,
-                "limit": 10,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "parcelle_id": 1,
+            "sensor": "sentinel-2",
+            "date_from": "2026-05-01",
+            "date_to": "2026-06-11",
+            "cloud_cover_max": 30.0,
+            "limit": 10,
         }
+    })
 
 
 # ── Produit Sentinel Hub ─────────────────────────────────────────────────────
@@ -47,8 +46,7 @@ class SatelliteProductResponse(BaseModel):
     discovered_at:      datetime
     product_url:        Optional[str]       = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Réponse de recherche ─────────────────────────────────────────────────────
@@ -61,26 +59,25 @@ class SatelliteSearchResponse(BaseModel):
     total_count:    int = Field(..., description="Nombre total de produits trouvés")
     searched_at:    datetime
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "parcelle_id": 1,
-                "sensor": "sentinel-2",
-                "products": [
-                    {
-                        "id": 42,
-                        "product_id": "S2A_MSIL2A_20260530T104031_N0510_R117_T31NDD_20260530T122534",
-                        "tile_id": "31NDD",
-                        "sensor": "sentinel-2",
-                        "date_acquisition": "2026-05-30",
-                        "cloud_cover": 12.5,
-                        "discovered_at": "2026-06-11T10:00:00Z",
-                    }
-                ],
-                "total_count": 5,
-                "searched_at": "2026-06-11T10:05:00Z",
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "parcelle_id": 1,
+            "sensor": "sentinel-2",
+            "products": [
+                {
+                    "id": 42,
+                    "product_id": "S2A_MSIL2A_20260530T104031_N0510_R117_T31NDD_20260530T122534",
+                    "tile_id": "31NDD",
+                    "sensor": "sentinel-2",
+                    "date_acquisition": "2026-05-30",
+                    "cloud_cover": 12.5,
+                    "discovered_at": "2026-06-11T10:00:00Z",
+                }
+            ],
+            "total_count": 5,
+            "searched_at": "2026-06-11T10:05:00Z",
         }
+    })
 
 
 # ── Requête de traitement (Process API) ──────────────────────────────────────
@@ -91,14 +88,13 @@ class ProcessRequest(BaseModel):
     evalscript:         Optional[str]   = Field(None, description="Script d'évaluation custom")
     data_fusion:        Optional[bool]  = Field(False, description="Fusionner S1 + S2")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "product_id": 42,
-                "evalscript": None,
-                "data_fusion": False,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "product_id": 42,
+            "evalscript": None,
+            "data_fusion": False,
         }
+    })
 
 
 # ── Job Satellite ────────────────────────────────────────────────────────────
@@ -115,25 +111,23 @@ class SatelliteJobResponse(BaseModel):
     result:             Optional[Dict[str, Any]] = None
     retry_count:        int             = 0
 
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
-            "example": {
-                "id": 123,
-                "job_type": "process",
-                "status": "done",
-                "sentinelhub_job_id": "abc123def456",
-                "started_at": "2026-06-11T10:10:00Z",
-                "completed_at": "2026-06-11T10:15:30Z",
-                "error_message": None,
-                "result": {
-                    "ndvi": 0.65,
-                    "ndre": 0.48,
-                    "ndmi": 0.32,
-                },
-                "retry_count": 0,
-            }
+    model_config = ConfigDict(from_attributes=True, json_schema_extra={
+        "example": {
+            "id": 123,
+            "job_type": "process",
+            "status": "done",
+            "sentinelhub_job_id": "abc123def456",
+            "started_at": "2026-06-11T10:10:00Z",
+            "completed_at": "2026-06-11T10:15:30Z",
+            "error_message": None,
+            "result": {
+                "ndvi": 0.65,
+                "ndre": 0.48,
+                "ndmi": 0.32,
+            },
+            "retry_count": 0,
         }
+    })
 
 
 # ── Indices satellitaires ────────────────────────────────────────────────────
@@ -154,8 +148,7 @@ class SatelliteMetricsResponse(BaseModel):
     cloud_cover:        float = 0.0
     created_at:         datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Configuration Sentinel Hub (Expert mode) ─────────────────────────────────
@@ -168,8 +161,7 @@ class SatelliteConfigItem(BaseModel):
     description:        Optional[str] = None
     updated_at:         datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SatelliteConfigRequest(BaseModel):

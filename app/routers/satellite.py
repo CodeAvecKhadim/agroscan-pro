@@ -15,18 +15,23 @@ from datetime import date, datetime, timezone
 from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import current_user
-from app.models import User, Parcelle
+from app.core.deps import current_user, require_role
+from app.models import User, Parcelle, UserRole
+from app.models.champ import Cartographie
 from app.models.satellite import SatelliteProduct, SatelliteJob, SatelliteConfig, SensorType, JobStatus
 from app.schemas.satellite import (
     SatelliteSearchRequest, SatelliteSearchResponse, SatelliteProductResponse,
     SatelliteJobResponse, SatelliteConfigRequest, SatelliteConfigResponse,
     BulkStatusResponse,
 )
-from app.services.satellite import SentinelHubClient, SentinelHubConfig, SentinelHubException
+from app.services.satellite import (
+    SentinelHubClient, SentinelHubConfig, SentinelHubException,
+    coordonnees_to_bbox,
+)
 
 log = logging.getLogger(__name__)
 
@@ -79,23 +84,48 @@ def search_satellite_products(
     # Vérifier la parcelle
     parcelle = _check_parcelle(req.parcelle_id, user, db)
     
-    # Obtenir la géométrie de la parcelle
-    # Hypothèse: parcelle a centre_lat, centre_lon et une géométrie approximée
+    # Obtenir la géométrie de la parcelle — contour réel en priorité
     if not parcelle.centre_lat or not parcelle.centre_lon:
         raise HTTPException(
             status_code=400,
             detail="Parcelle must have coordinates (centre_lat, centre_lon)"
         )
-    
-    # Créer un bbox autour du centre (ex: 100m)
-    # Pour le MVP, on utilise une approximation simple
-    delta = 0.001  # ~110m en degrés
-    bbox = {
-        "min_lon": parcelle.centre_lon - delta,
-        "min_lat": parcelle.centre_lat - delta,
-        "max_lon": parcelle.centre_lon + delta,
-        "max_lat": parcelle.centre_lat + delta,
-    }
+
+    # Chercher le contour cartographié le plus récent
+    carto = (
+        db.query(Cartographie)
+        .filter_by(parcelle_id=parcelle.id)
+        .order_by(Cartographie.created_at.desc())
+        .first()
+    )
+
+    if carto and carto.coordonnees:
+        try:
+            min_lon, min_lat, max_lon, max_lat = coordonnees_to_bbox(carto.coordonnees)
+            bbox = {
+                "min_lon": min_lon, "min_lat": min_lat,
+                "max_lon": max_lon, "max_lat": max_lat,
+            }
+            log.info(f"Bbox from parcel contour ({len(carto.coordonnees)} pts): {bbox}")
+        except (ValueError, KeyError) as exc:
+            log.warning(f"Contour invalide pour parcelle {parcelle.id}: {exc} — fallback centre")
+            delta = 0.001
+            bbox = {
+                "min_lon": parcelle.centre_lon - delta,
+                "min_lat": parcelle.centre_lat - delta,
+                "max_lon": parcelle.centre_lon + delta,
+                "max_lat": parcelle.centre_lat + delta,
+            }
+    else:
+        # Pas de contour : approximation ~110 m autour du centre
+        delta = 0.001
+        bbox = {
+            "min_lon": parcelle.centre_lon - delta,
+            "min_lat": parcelle.centre_lat - delta,
+            "max_lon": parcelle.centre_lon + delta,
+            "max_lat": parcelle.centre_lat + delta,
+        }
+        log.info(f"Bbox from centre±{delta}° (no contour): {bbox}")
     
     # Récupérer config Sentinel Hub
     try:
@@ -280,15 +310,12 @@ def list_satellite_jobs(
 @router.post("/config", response_model=SatelliteConfigResponse)
 def update_satellite_config(
     req: SatelliteConfigRequest,
-    user: User = Depends(current_user),
+    user: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
     db: Session = Depends(get_db),
 ):
     """
-    Met à jour la configuration Sentinel Hub (admin only).
+    Met à jour la configuration Sentinel Hub (owner/admin uniquement).
     """
-    # Vérifier permissions (admin)
-    # TODO: Implement role check
-    
     log.info(f"[{user.org_id}] Updating config: {req.key}")
     
     # Chercher ou créer la config
@@ -322,15 +349,12 @@ def update_satellite_config(
 @router.get("/config/{key}", response_model=Dict[str, Any])
 def get_satellite_config(
     key: str,
-    user: User = Depends(current_user),
+    user: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
     db: Session = Depends(get_db),
 ):
     """
-    Récupère une configuration (non-secrets seulement, admin).
+    Récupère une configuration (non-secrets seulement, owner/admin uniquement).
     """
-    # Vérifier permissions (admin)
-    # TODO: Implement role check
-    
     config = db.query(SatelliteConfig).filter_by(key=key).first()
     if not config:
         raise HTTPException(status_code=404, detail=f"Config '{key}' not found")
@@ -353,7 +377,7 @@ def health_check(db: Session = Depends(get_db)):
     """Vérifie la santé du service satellite."""
     try:
         # Vérifier la DB
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         
         # Vérifier la config Sentinel Hub
         _get_sentinel_hub_config(db)

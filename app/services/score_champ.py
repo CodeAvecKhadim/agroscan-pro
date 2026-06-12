@@ -65,19 +65,24 @@ def calculer_score(db: Session, parcelle: Parcelle) -> ScoreCompletude:
         d_sol = _dim(0, 25, "Aucune analyse sol")
         manquants.append("Analyse sol")
 
-    # 3. Culture + zone agro (15)
+    # 3. Culture + zone agro + date semis (15)
     culture_ok = bool(parcelle.culture_id or parcelle.type_culture)
     zone_ok = bool(parcelle.zone_agro)
+    semis_ok = bool(getattr(parcelle, "date_semis", None))
     cz_score = 0
     cz_miss = []
     if culture_ok:
-        cz_score += 8
+        cz_score += 7
     else:
         cz_miss.append("Culture")
     if zone_ok:
-        cz_score += 7
+        cz_score += 6
     else:
         cz_miss.append("Zone agro-écologique")
+    if semis_ok:
+        cz_score += 2
+    else:
+        cz_miss.append("Date de semis")
     d_culture_zone = _dim(cz_score, 15,
                           "Manquant : " + ", ".join(cz_miss) if cz_miss else None)
     if cz_miss:

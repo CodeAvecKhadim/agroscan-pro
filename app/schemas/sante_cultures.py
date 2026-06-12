@@ -4,7 +4,7 @@ Schémas Pydantic — Santé des Cultures + Agriculture de Précision.
 from __future__ import annotations
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # ── Requête d'analyse ────────────────────────────────────────────────────────
@@ -31,19 +31,18 @@ class AnalyseSanteRequest(BaseModel):
     capteur:       Optional[CapteurData] = Field(None, description="Données capteur 8-en-1 (niveau 2)")
     photo_base64:  Optional[str]  = Field(None, description="Photo base64 pour analyse visuelle (optionnel)")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "culture_nom": "Riz",
-                "parcelle_id": 1,
-                "stade_actuel": "tallage",
-                "mois": 8,
-                "capteur": {
-                    "sol_pH": 6.2,
-                    "sol_humidite": 65.0,
-                }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "culture_nom": "Riz",
+            "parcelle_id": 1,
+            "stade_actuel": "tallage",
+            "mois": 8,
+            "capteur": {
+                "sol_pH": 6.2,
+                "sol_humidite": 65.0,
             }
         }
+    })
 
 
 # ── Résultats indices ────────────────────────────────────────────────────────
@@ -139,8 +138,7 @@ class AnalyseSanteResume(BaseModel):
     niveau_donnees: int
     analyse_le:     datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AnalyseDemarreeResponse(BaseModel):
@@ -170,8 +168,7 @@ class CarteInfo(BaseModel):
     nb_cellules:  int
     created_at:   datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Série temporelle indices ─────────────────────────────────────────────────
@@ -185,5 +182,4 @@ class IndicesHistorique(BaseModel):
     couverture_nuages: Optional[float] = None
     analyse_id:   Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
