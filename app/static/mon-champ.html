@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#047857">
 <link rel="manifest" href="/static/manifest.json">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 <title>Mon Champ — AgroScan Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --g:#059669;--gdk:#047857;--gdeep:#065f46;
@@ -24,67 +24,37 @@
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 select,input,textarea{font-family:inherit}
+img{max-width:100%}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
-.tb{max-width:560px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.tb{max-width:600px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
 .tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
 .tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
 .tb-sub{font-size:.72rem;opacity:.8}
-.tb-btn{background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
-.tb-btn:hover{background:rgba(255,255,255,.3)}
 
 /* MAIN */
-.wrap{max-width:560px;margin:0 auto;padding:16px}
+.wrap{max-width:600px;margin:0 auto;padding:16px}
 
-/* FILTER BAR */
-.filter-bar{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.filter-bar::-webkit-scrollbar{display:none}
-.fchip{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--soft);cursor:pointer;transition:all .15s}
-.fchip.active{background:var(--g);color:#fff;border-color:var(--g)}
+/* ── WIZARD ─────────────────────────────────────────────────────── */
+#viewWizard{display:none}
 
-/* PARCELLE CARDS */
-.parc-list{display:flex;flex-direction:column;gap:10px}
-.parc-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;display:flex;gap:12px;align-items:flex-start}
-.parc-card:active{transform:scale(.98)}
-.parc-card:hover{transform:translateY(-1px)}
-.pc-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
-.pc-body{flex:1;min-width:0}
-.pc-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
-.pc-score{flex-shrink:0;text-align:right}
-.score-ring{width:44px;height:44px;position:relative}
-.score-ring svg{transform:rotate(-90deg)}
-.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:.85rem;color:var(--gdk)}
-.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.tag{padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
-.tag.active{background:#d1fae5;color:var(--gdeep)}
-.tag.en_repos{background:#fef9c3;color:#713f12}
-.tag.en_preparation{background:#e0f2fe;color:#0c4a6e}
-.tag.archive{background:#f3f4f6;color:#6b7280}
-.tag.culture{background:#ede9fe;color:#4c1d95}
+.wizard-header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 18px;max-width:600px;margin:0 auto}
+.step-progress{display:flex;gap:4px;margin-bottom:8px}
+.step-dot{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background .3s}
+.step-dot.done{background:var(--gold)}
+.step-dot.active{background:var(--g)}
+.step-label{font-size:.78rem;color:var(--soft);font-weight:600}
+.step-label span{color:var(--g);font-family:var(--serif);font-weight:900;font-size:1rem}
 
-/* EMPTY */
-.empty{text-align:center;padding:50px 20px;color:var(--soft)}
-.empty .eico{font-size:3rem;margin-bottom:12px}
-.empty h3{font-family:var(--serif);font-weight:700;color:var(--gdk);margin-bottom:8px}
-.empty p{font-size:.88rem;margin-bottom:20px}
+.wizard-content{max-width:600px;margin:0 auto;padding:16px}
 
-/* FAB */
-.fab{position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30;transition:transform .15s}
-.fab:active{transform:scale(.92)}
+.step-card{display:none;animation:fadeIn .3s}
+.step-card.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* MODAL / SHEET */
-.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
-.overlay.open{display:flex}
-.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:560px;margin:0 auto;max-height:90vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
-.sheet-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.2rem;flex:1}
-.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
-.sheet-close:hover{background:var(--paper)}
-.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
+.step-title{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdeep);margin-bottom:6px}
+.step-desc{font-size:.88rem;color:var(--soft);margin-bottom:20px}
 
 /* FORM */
 .field{margin-bottom:14px}
@@ -93,49 +63,203 @@ select,input,textarea{font-family:inherit}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g);background:#fff}
 .field textarea{resize:vertical;min-height:80px}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .15s;margin-top:4px;display:block;text-align:center;cursor:pointer;border:none;font-family:inherit}
 .btn-primary{background:var(--g);color:#fff}
 .btn-primary:hover{background:var(--gdk)}
-.btn-danger{background:#fef2f2;color:var(--red);margin-top:8px}
-.btn-danger:hover{background:#fee2e2}
-.btn-ghost{background:var(--paper);color:var(--soft);margin-top:8px}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm{padding:8px 14px;border-radius:9px;font-size:.82rem;font-weight:600}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--paper);color:var(--g);border:1.5px solid var(--g)}
+.btn-ghost{background:var(--paper);color:var(--soft);border:1.5px solid var(--line)}
+.btn-danger{background:#fef2f2;color:var(--red);border:1.5px solid #fecaca}
+.btn-sm{padding:8px 14px;border-radius:9px;font-size:.82rem;font-weight:600;width:auto;display:inline-block}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-row .btn{margin-top:0}
 
-/* DETAIL SHEET */
+/* METHOD CARDS */
+.method-cards{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.method-card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:20px;cursor:pointer;transition:all .2s;display:flex;gap:16px;align-items:center}
+.method-card:hover,.method-card.selected{border-color:var(--g);background:#f0fdf4}
+.method-icon{font-size:2.4rem;flex-shrink:0}
+.method-body h3{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:4px}
+.method-body p{font-size:.82rem;color:var(--soft)}
+
+/* LOADING BARS */
+.prep-list{display:flex;flex-direction:column;gap:14px;margin:20px 0}
+.prep-item{display:flex;align-items:center;gap:12px}
+.prep-icon{font-size:1.4rem;flex-shrink:0;width:32px;text-align:center}
+.prep-body{flex:1}
+.prep-label{font-size:.88rem;font-weight:600;margin-bottom:4px}
+.prep-bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prep-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--g));width:0%;transition:width 1.5s ease}
+.prep-status{font-size:.72rem;color:var(--soft);margin-top:3px}
+.prep-status.done{color:var(--g);font-weight:600}
+
+/* MAP */
+#map-container{height:360px;border-radius:var(--r);overflow:hidden;border:2px solid var(--line);margin:12px 0}
+.map-instructions{background:rgba(5,150,105,.9);color:#fff;padding:10px 14px;border-radius:10px;font-size:.82rem;font-weight:600;margin-bottom:8px;text-align:center}
+.map-toolbar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.map-btn{padding:8px 14px;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.map-btn-gps{background:var(--blue);color:#fff}
+.map-btn-gps.recording{background:#dc2626;animation:pulse 1.5s infinite}
+.map-btn-undo{background:var(--paper);color:var(--soft);border:1.5px solid var(--line)}
+.map-btn-done{background:var(--g);color:#fff}
+.map-btn-done:disabled{opacity:.4;cursor:not-allowed}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.map-pts-count{font-size:.8rem;color:var(--soft);padding:8px 0}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.metric-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
+.metric-val{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdeep)}
+.metric-unit{font-size:.72rem;color:var(--soft)}
+.metric-label{font-size:.78rem;color:var(--soft);margin-top:4px}
+
+/* SAT ANALYSIS */
+.sat-sections{display:flex;flex-direction:column;gap:12px;margin:12px 0}
+.sat-section{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.sat-section-head{background:linear-gradient(90deg,#f0fdf4,var(--card));padding:10px 14px;font-weight:700;font-size:.85rem;color:var(--gdeep);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.sat-section-body{padding:10px 14px}
+.sat-row{display:flex;justify-content:space-between;padding:5px 0;font-size:.84rem;border-bottom:1px solid #f3f4f6}
+.sat-row:last-child{border-bottom:none}
+.sat-key{color:var(--soft)}
+.sat-val{font-weight:600;text-align:right;max-width:60%}
+.sat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sat-chip{background:#d1fae5;color:var(--gdeep);padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:600}
+
+/* PROFIL SOL */
+.profil-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.profil-card{background:linear-gradient(135deg,#f0fdf4,var(--card));border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;text-align:center}
+.profil-icon{font-size:1.8rem;margin-bottom:6px}
+.profil-val{font-family:var(--serif);font-weight:700;font-size:.9rem;color:var(--gdeep)}
+.profil-key{font-size:.72rem;color:var(--soft);margin-top:3px}
+
+/* CAPTEUR 8-EN-1 */
+.sensor-optional{background:#fffbeb;border:1.5px dashed #fcd34d;border-radius:var(--r-sm);padding:14px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+.sensor-optional p{font-size:.84rem;color:#92400e}
+
+/* INFRASTRUCTURE */
+.infra-categories{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.infra-cat-head{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.9rem;transition:all .15s;user-select:none}
+.infra-cat-head:hover{background:#f0fdf4}
+.infra-cat-head .cat-icon{font-size:1.2rem;margin-right:8px}
+.infra-cat-body{display:none;padding:8px 0 4px}
+.infra-cat-body.open{display:block}
+.infra-items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;padding:4px 2px}
+.infra-item-btn{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 8px;text-align:center;cursor:pointer;transition:all .15s;font-size:.78rem;font-weight:600;color:var(--ink)}
+.infra-item-btn:hover,.infra-item-btn.added{border-color:var(--g);background:#f0fdf4;color:var(--gdeep)}
+.infra-item-btn .ii-icon{font-size:1.4rem;display:block;margin-bottom:4px}
+.infra-added-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.infra-added-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;display:flex;gap:10px;align-items:center}
+.iac-icon{font-size:1.4rem;flex-shrink:0}
+.iac-body{flex:1;min-width:0}
+.iac-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iac-sub{font-size:.74rem;color:var(--soft)}
+.iac-photo{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.iac-del{color:var(--red);font-size:1rem;padding:4px;flex-shrink:0}
+.infra-free-text{display:flex;gap:8px;margin-top:8px}
+.infra-free-text input{flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:.88rem;font-family:inherit}
+
+/* PHOTO BUTTONS */
+.photo-row{display:flex;gap:8px;margin-top:6px}
+.photo-btn{flex:1;padding:8px;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--line);background:var(--paper);color:var(--soft);font-family:inherit;text-align:center}
+.photo-btn:hover{border-color:var(--g);color:var(--g)}
+input[type=file]{display:none}
+
+/* SCORE */
+.score-dims{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.score-dim{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px}
+.score-dim-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px}
+.score-dim-label{font-weight:700;color:var(--ink)}
+.score-dim-val{font-family:var(--serif);font-weight:900;color:var(--g)}
+.score-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--g));transition:width 1s}
+.score-global{background:linear-gradient(135deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:20px;text-align:center;margin:16px 0}
+.score-global-val{font-family:var(--serif);font-weight:900;font-size:3rem;line-height:1}
+.score-global-label{font-size:.85rem;opacity:.85;margin-top:4px}
+
+/* RAPPORT */
+.rapport-preview{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.rapport-sections{display:flex;flex-direction:column;gap:8px}
+.rapport-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.rapport-item:last-child{border-bottom:none}
+.rapport-item .ri-icon{font-size:1.2rem;flex-shrink:0;width:28px;text-align:center}
+
+/* ACTIVATION */
+.activation-hero{text-align:center;padding:24px 0 16px}
+.activation-hero .ah-icon{font-size:4rem;margin-bottom:12px}
+.activation-hero h2{font-family:var(--serif);font-weight:900;font-size:1.6rem;color:var(--gdeep);margin-bottom:8px}
+.activation-hero p{font-size:.88rem;color:var(--soft);max-width:280px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.feature-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center}
+.feature-card .fc-icon{font-size:1.6rem;margin-bottom:6px}
+.feature-card .fc-label{font-size:.78rem;font-weight:600;color:var(--gdeep)}
+
+/* ── LIST VIEW ──────────────────────────────────────────────────── */
+#viewList{display:none}
+
+.list-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.list-topbar h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;color:var(--gdeep)}
+
+.parcelle-list{display:flex;flex-direction:column;gap:10px}
+.parcelle-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:transform .15s;display:flex;gap:12px;align-items:flex-start}
+.parcelle-card:active{transform:scale(.98)}
+.parcelle-card:hover{transform:translateY(-1px)}
+.pc-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
+.pc-body{flex:1;min-width:0}
+.pc-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
+.pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
+.tag.active{background:#d1fae5;color:var(--gdeep)}
+.tag.en_repos{background:#fef9c3;color:#713f12}
+.tag.en_preparation{background:#e0f2fe;color:#0c4a6e}
+.tag.archive{background:#f3f4f6;color:#6b7280}
+.tag.config{background:#ede9fe;color:#4c1d95}
+.pc-score{flex-shrink:0;text-align:right}
+.score-ring{width:44px;height:44px;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:.78rem;color:var(--gdk)}
+.continue-btn{display:inline-flex;align-items:center;gap:4px;background:var(--g);color:#fff;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;margin-top:6px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-state .es-icon{font-size:4rem;margin-bottom:16px}
+.empty-state h3{font-family:var(--serif);font-weight:700;font-size:1.2rem;color:var(--gdeep);margin-bottom:8px}
+.empty-state p{font-size:.88rem;color:var(--soft);margin-bottom:24px;max-width:280px;margin-left:auto;margin-right:auto}
+
+/* FAB */
+.fab{position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30;transition:transform .15s;cursor:pointer;border:none}
+.fab:active{transform:scale(.92)}
+
+/* ── DETAIL SHEET ──────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,30,15,.45);z-index:60;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:600px;margin:0 auto;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.22,.68,0,1.2)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
+.sheet-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.2rem;flex:1}
+.sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+.sheet-close:hover{background:var(--paper)}
+.sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
 .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--soft);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s}
 .tab.active{color:var(--g);border-bottom-color:var(--g)}
 .tab-pane{display:none}
 .tab-pane.active{display:block}
-
-/* INFO ROWS */
 .info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.88rem}
 .info-row:last-child{border-bottom:none}
 .info-row .irl{color:var(--soft);flex-shrink:0;margin-right:8px}
-.info-row .irv{font-weight:600;text-align:right}
-
-/* SCORE BAR */
-.score-bar-wrap{margin:14px 0}
-.score-bar-label{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:6px}
-.score-bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
-.score-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--g));transition:width .8s}
-
-/* SOL GRID */
-.sol-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.sol-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.sol-card .sv{font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)}
-.sol-card .sl{font-size:.73rem;color:var(--soft)}
-
-/* MINI CARDS */
+.info-row .irv{font-weight:600;text-align:right;max-width:60%;word-break:break-word}
 .mini-list{display:flex;flex-direction:column;gap:8px}
 .mini-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center}
 .mini-icon{font-size:1.4rem;flex-shrink:0}
 .mini-body{flex:1;min-width:0}
 .mini-name{font-weight:600;font-size:.88rem}
 .mini-sub{font-size:.75rem;color:var(--soft)}
-.mini-del{color:var(--red);font-size:1.1rem;padding:4px}
+.mini-photo{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0}
 
 /* TOAST */
 .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:88%;text-align:center}
@@ -144,163 +268,402 @@ select,input,textarea{font-family:inherit}
 .spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-state{text-align:center;padding:40px;color:var(--soft)}
+.loading-state p{margin-top:8px;font-size:.85rem}
 
 /* BOTTOM NAV */
 .bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
 .bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
 .bm-item.active,.bm-item:hover{color:var(--g)}
 .bm-item .bm-icon{font-size:1.3rem;line-height:1}
-
-/* Section add btn */
-.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.sec-title{font-family:var(--serif);font-weight:700;font-size:.98rem;color:var(--gdeep)}
-.add-btn{font-size:.78rem;font-weight:600;color:var(--g);padding:5px 10px;border-radius:8px;background:#d1fae5}
-
-/* SATELLITE */
-.sat-card{background:var(--paper);border-radius:12px;padding:16px 14px;border-left:4px solid var(--g);margin-bottom:10px}
-.sat-card.orange{border-left-color:var(--orange)}
-.sat-card.rouge{border-left-color:var(--red)}
-.sat-msg{font-size:.9rem;font-weight:500;line-height:1.5;color:var(--ink)}
-.sat-meta{font-size:.72rem;color:var(--soft);margin-top:8px}
-.sat-dot{width:10px;height:10px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px;flex-shrink:0}
-.sat-dot.vert{background:#059669}.sat-dot.orange{background:#d97706}.sat-dot.rouge{background:#dc2626}
-.tag.stade{background:#e0f2fe;color:#0c4a6e}
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <header class="topbar">
   <div class="tb">
     <a href="/app" class="tb-back">←</a>
     <div style="flex:1">
-      <div class="tb-title">🌾 Mon Champ</div>
-      <div class="tb-sub" id="tbSub">Chargement…</div>
+      <div class="tb-title" id="topTitle">🌾 Mon Champ</div>
+      <div class="tb-sub" id="topSub">Chargement…</div>
     </div>
-    <button class="tb-btn" onclick="openAdd()">+ Ajouter</button>
+    <button id="btnTopExit" onclick="exitWizard()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;display:none">Quitter</button>
   </div>
 </header>
 
-<div class="wrap">
-  <!-- Filtres -->
-  <div class="filter-bar">
-    <button class="fchip active" data-s="">Toutes</button>
-    <button class="fchip" data-s="active">Actives</button>
-    <button class="fchip" data-s="en_preparation">En prépa</button>
-    <button class="fchip" data-s="en_repos">En repos</button>
-    <button class="fchip" data-s="archive">Archivées</button>
-  </div>
-
-  <!-- Liste parcelles -->
-  <div id="parcelleList">
-    <div class="loading-state"><div class="spinner"></div></div>
-  </div>
-</div>
-
-<!-- FAB -->
-<button class="fab" onclick="openAdd()" title="Ajouter une parcelle">＋</button>
-
-<!-- MODAL: AJOUTER / MODIFIER PARCELLE -->
-<div class="overlay" id="ovAdd" onclick="if(event.target===this)closeAdd()">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head">
-      <h2 id="addTitle">Nouvelle parcelle</h2>
-      <button class="sheet-close" onclick="closeAdd()">✕</button>
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VUE LISTE                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="viewList">
+  <div class="wrap">
+    <div class="list-topbar">
+      <h2 id="listTitle">Mes parcelles</h2>
     </div>
-    <div class="sheet-body">
-      <form id="formAdd" onsubmit="submitAdd(event)">
-        <div class="field">
-          <label>Nom de la parcelle *</label>
-          <input type="text" id="fNom" required maxlength="200" placeholder="Ex: Champ Nord Kédougou">
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Culture</label>
-            <select id="fCulture">
-              <option value="">— Sélectionner —</option>
-              <option value="Papaye">Papaye</option>
-              <option value="Oignon">Oignon</option>
-              <option value="Maïs">Maïs</option>
-              <option value="Tomate">Tomate</option>
-              <option value="Manioc">Manioc</option>
-              <option value="Arachide">Arachide</option>
-              <option value="Mil">Mil</option>
-              <option value="Sorgho">Sorgho</option>
-              <option value="Gombo">Gombo</option>
-              <option value="Aubergine">Aubergine</option>
-              <option value="Chou">Chou</option>
-              <option value="Concombre">Concombre</option>
-              <option value="Pastèque">Pastèque</option>
-              <option value="Haricot vert">Haricot vert</option>
-              <option value="Poivron">Poivron</option>
-              <option value="Autre">Autre</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Statut</label>
-            <select id="fStatut">
-              <option value="active">Active</option>
-              <option value="en_preparation">En préparation</option>
-              <option value="en_repos">En repos</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Date de semis</label>
-            <input type="date" id="fDateSemis">
-          </div>
-          <div class="field">
-            <label>Variété</label>
-            <input type="text" id="fVariete" maxlength="200" placeholder="Ex: Souna III, IR64">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Région</label>
-            <select id="fRegion">
-              <option value="">— Région —</option>
-              <option>Dakar</option><option>Thiès</option>
-              <option>Kaolack</option><option>Ziguinchor</option>
-              <option>Saint-Louis</option><option>Tambacounda</option>
-              <option>Kédougou</option><option>Kolda</option>
-              <option>Fatick</option><option>Kaffrine</option>
-              <option>Louga</option><option>Matam</option>
-              <option>Sédhiou</option><option>Diourbel</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Zone agro</label>
-            <select id="fZone">
-              <option value="">— Zone —</option>
-              <option value="soudano_sahelien">Soudano-sahélien</option>
-              <option value="soudanien">Soudanien</option>
-              <option value="subguineen">Sub-guinéen</option>
-              <option value="littoral">Littoral</option>
-              <option value="niayes">Niayes</option>
-              <option value="bassin_arachidier">Bassin arachidier</option>
-              <option value="delta_fleuve">Delta du fleuve</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label>Localité / Village</label>
-          <input type="text" id="fLocalite" maxlength="200" placeholder="Nom du village ou quartier">
-        </div>
-        <div class="field">
-          <label>Description</label>
-          <textarea id="fDesc" rows="2" placeholder="Notes sur la parcelle…"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" id="btnAddSave">Enregistrer</button>
-        <button type="button" class="btn btn-ghost" onclick="closeAdd()">Annuler</button>
-      </form>
+    <div id="parcelleList">
+      <div class="loading-state"><div class="spinner"></div><p>Chargement…</p></div>
     </div>
   </div>
+  <button class="fab" onclick="startWizard()" title="Nouvelle parcelle">＋</button>
 </div>
 
-<!-- MODAL: DÉTAIL PARCELLE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- VUE WIZARD                                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="viewWizard">
+  <!-- Progress -->
+  <div class="wizard-header">
+    <div class="step-progress" id="stepProgress"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+      <button id="btnWizBack" onclick="goBack()" style="display:none;background:none;border:none;color:var(--soft);font-size:.82rem;font-weight:600;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:3px">← Retour</button>
+      <div class="step-label">Étape <span id="stepNum">1</span> / 5 — <span id="stepName">Création de la parcelle</span></div>
+    </div>
+  </div>
+
+  <div class="wizard-content">
+
+    <!-- ── ÉTAPE 1 : CRÉATION ───────────────────────────────────── -->
+    <div class="step-card" id="step1">
+      <div class="step-title">Créer ma parcelle</div>
+      <div class="step-desc">Renseignez les informations essentielles de votre parcelle.</div>
+
+      <div class="field">
+        <label>Nom de la parcelle *</label>
+        <input type="text" id="s1Nom" required maxlength="200" placeholder="Ex: Champ Nord Kédougou">
+      </div>
+      <div class="field">
+        <label>Source d'eau principale <span style="font-weight:400;color:var(--soft)">(optionnel)</span></label>
+        <select id="s1Eau">
+          <option value="">— Sélectionner —</option>
+          <option value="forage">Forage</option>
+          <option value="puits_traditionnel">Puits traditionnel</option>
+          <option value="riviere">Rivière</option>
+          <option value="fleuve">Fleuve</option>
+          <option value="mare_permanente">Mare permanente</option>
+          <option value="mare_temporaire">Mare temporaire</option>
+          <option value="reservoir">Réservoir</option>
+          <option value="chateau_eau">Château d'eau</option>
+          <option value="eau_de_pluie">Eau de pluie</option>
+          <option value="canal_irrigation">Canal d'irrigation</option>
+          <option value="cours_eau">Cours d'eau</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Culture principale *</label>
+        <select id="s1Culture" required>
+          <option value="">— Sélectionner —</option>
+          <option value="Riz">Riz</option>
+          <option value="Maïs">Maïs</option>
+          <option value="Mil">Mil</option>
+          <option value="Sorgho">Sorgho</option>
+          <option value="Arachide">Arachide</option>
+          <option value="Niébé">Niébé</option>
+          <option value="Soja">Soja</option>
+          <option value="Coton">Coton</option>
+          <option value="Manioc">Manioc</option>
+          <option value="Patate douce">Patate douce</option>
+          <option value="Igname">Igname</option>
+          <option value="Tomate">Tomate</option>
+          <option value="Oignon">Oignon</option>
+          <option value="Gombo">Gombo</option>
+          <option value="Pastèque">Pastèque</option>
+          <option value="Melon">Melon</option>
+          <option value="Piment">Piment</option>
+          <option value="Aubergine">Aubergine</option>
+          <option value="Chou">Chou</option>
+          <option value="Laitue">Laitue</option>
+          <option value="Poivron">Poivron</option>
+          <option value="Concombre">Concombre</option>
+          <option value="Haricot vert">Haricot vert</option>
+          <option value="Papaye">Papaye</option>
+          <option value="Banane">Banane</option>
+          <option value="Mangue">Mangue</option>
+          <option value="Anacarde">Anacarde</option>
+          <option value="Sésame">Sésame</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Type d'irrigation <span style="font-weight:400;color:var(--soft)">(optionnel)</span></label>
+        <select id="s1Irrigation">
+          <option value="">— Sélectionner —</option>
+          <option value="goutte_a_goutte">Goutte-à-goutte</option>
+          <option value="aspersion">Aspersion</option>
+          <option value="gravitaire">Gravitaire</option>
+          <option value="pivot">Pivot</option>
+          <option value="micro_aspersion">Micro-aspersion</option>
+          <option value="submersion">Submersion</option>
+          <option value="manuel">Manuel / Arrosoir</option>
+          <option value="aucun">Sans irrigation (pluvial)</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="submitStep1()">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 2 : CHOIX MÉTHODE ─────────────────────────────── -->
+    <div class="step-card" id="step2">
+      <div class="step-title">Cartographier ma parcelle</div>
+      <div class="step-desc">Choisissez comment délimiter votre champ.</div>
+
+      <div class="method-cards">
+        <div class="method-card" id="method1Card" onclick="selectMethod('gps')">
+          <div class="method-icon">🚶</div>
+          <div class="method-body">
+            <h3>Faire le tour de mon champ</h3>
+            <p>Marchez autour de votre parcelle avec votre téléphone. AgroScan enregistre automatiquement les limites GPS.</p>
+          </div>
+        </div>
+        <div class="method-card" id="method2Card" onclick="selectMethod('carte')">
+          <div class="method-icon">🗺️</div>
+          <div class="method-body">
+            <h3>Pointer les limites sur la carte</h3>
+            <p>Utilisez la carte satellite pour placer les points de limite de votre parcelle.</p>
+          </div>
+        </div>
+        <div class="method-card" id="method3Card" onclick="selectMethod('kml')">
+          <div class="method-icon">📂</div>
+          <div class="method-body">
+            <h3>Importer un fichier KML / KMZ</h3>
+            <p>Importez un fichier de cartographie existant (Google Earth, QGIS, etc.).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone upload KML (visible uniquement si méthode kml sélectionnée) -->
+      <div id="kmlUploadZone" style="display:none;margin-top:20px;border:2px dashed var(--g);border-radius:var(--r);padding:24px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">📂</div>
+        <div style="font-weight:600;margin-bottom:4px">Sélectionner un fichier KML ou KMZ</div>
+        <div style="font-size:0.85rem;color:var(--gris);margin-bottom:14px">Formats acceptés : .kml, .kmz (max 10 Mo)</div>
+        <input type="file" id="kmlFileInput" accept=".kml,.kmz" style="display:none" onchange="uploadKML()">
+        <button class="btn btn-primary" onclick="document.getElementById('kmlFileInput').click()">Choisir un fichier</button>
+        <div id="kmlStatus" style="margin-top:12px;font-size:0.9rem;color:var(--gris)"></div>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 3 : PRÉPARATION ───────────────────────────────── -->
+    <div class="step-card" id="step3">
+      <div class="step-title">Préparation des données</div>
+      <div class="step-desc">AgroScan charge les ressources nécessaires à la cartographie.</div>
+
+      <div class="prep-list">
+        <div class="prep-item">
+          <div class="prep-icon">📡</div>
+          <div class="prep-body">
+            <div class="prep-label">GPS</div>
+            <div class="prep-bar"><div class="prep-fill" id="prepGPS"></div></div>
+            <div class="prep-status" id="prepGPSStatus">Initialisation…</div>
+          </div>
+        </div>
+        <div class="prep-item">
+          <div class="prep-icon">🗺️</div>
+          <div class="prep-body">
+            <div class="prep-label">Cartographie</div>
+            <div class="prep-bar"><div class="prep-fill" id="prepCarto"></div></div>
+            <div class="prep-status" id="prepCartoStatus">En attente…</div>
+          </div>
+        </div>
+        <div class="prep-item">
+          <div class="prep-icon">🛰️</div>
+          <div class="prep-body">
+            <div class="prep-label">Imagerie satellite</div>
+            <div class="prep-bar"><div class="prep-fill" id="prepSat"></div></div>
+            <div class="prep-status" id="prepSatStatus">En attente…</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btnStartCarto" disabled onclick="goToStep(4)" style="margin-top:8px">
+        Préparation des données satellitaires…
+      </button>
+    </div>
+
+    <!-- ── ÉTAPE 4 : CARTOGRAPHIE ──────────────────────────────── -->
+    <div class="step-card" id="step4">
+      <div class="step-title">Cartographier ma parcelle</div>
+      <div id="step4Instructions" class="map-instructions">Vous pouvez commencer à délimiter votre champ</div>
+
+      <div class="map-toolbar">
+        <button class="map-btn map-btn-gps" id="btnGPS" onclick="toggleGPS()" style="display:none">▶ Démarrer le tour</button>
+        <button class="map-btn map-btn-undo" onclick="undoLastPoint()">↩ Annuler point</button>
+        <button class="map-btn map-btn-done" id="btnFinishCarto" onclick="finishCartographie()" disabled>✓ Terminer</button>
+      </div>
+
+      <div class="map-pts-count" id="mapPtsCount">0 point(s) placé(s) — minimum 3 requis</div>
+      <div id="map-container"></div>
+    </div>
+
+    <!-- ── ÉTAPE 5 : CALCULS ───────────────────────────────────── -->
+    <div class="step-card" id="step5">
+      <div class="step-title">Calculs automatiques</div>
+      <div class="step-desc">AgroScan a calculé les métriques de votre parcelle.</div>
+
+      <div class="metrics-grid" id="metricsGrid">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" onclick="exitWizardExpress()">✓ Enregistrer ma parcelle</button>
+        <button class="btn btn-secondary" onclick="goToStep(6)" style="font-size:.85rem">Analyses avancées (optionnel) →</button>
+        <button class="btn btn-ghost btn-sm" onclick="goToStep(4)" style="width:auto">← Recartographier</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 6 : ANALYSE SATELLITE SOL ────────────────────── -->
+    <div class="step-card" id="step6">
+      <div class="step-title">Analyse satellite du sol</div>
+      <div class="step-desc">AgroScan analyse les données satellite de votre parcelle.</div>
+      <div id="step6Content">
+        <div class="loading-state"><div class="spinner"></div><p>Analyse satellite en cours…</p></div>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 7 : PROFIL DU SOL ────────────────────────────── -->
+    <div class="step-card" id="step7">
+      <div class="step-title">Profil du sol</div>
+      <div class="step-desc">AgroScan a généré le profil pédologique de votre parcelle.</div>
+      <div id="step7Content">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-primary" onclick="goToStep(8)">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 8 : CAPTEUR 8-EN-1 ───────────────────────────── -->
+    <div class="step-card" id="step8">
+      <div class="step-title">Analyse avancée du sol</div>
+      <div class="step-desc">Renseignez les mesures de votre appareil de mesure du sol (optionnel).</div>
+
+      <div class="sensor-optional">
+        <span style="font-size:1.4rem">💡</span>
+        <p>Cette étape est <strong>facultative</strong>. Si vous n'avez pas de capteur de sol, passez à l'étape suivante.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Température sol (°C)</label><input type="number" id="s8Temp" step="0.1" placeholder="25.3"></div>
+        <div class="field"><label>Humidité sol (%)</label><input type="number" id="s8Hum" min="0" max="100" step="0.1" placeholder="42.5"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>pH</label><input type="number" id="s8pH" min="0" max="14" step="0.1" placeholder="6.8"></div>
+        <div class="field"><label>Conductivité (dS/m)</label><input type="number" id="s8CE" min="0" step="0.01" placeholder="0.45"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Azote N (mg/kg)</label><input type="number" id="s8N" min="0" step="0.1" placeholder="85"></div>
+        <div class="field"><label>Phosphore P (mg/kg)</label><input type="number" id="s8P" min="0" step="0.1" placeholder="32"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Potassium K (mg/kg)</label><input type="number" id="s8K" min="0" step="0.1" placeholder="180"></div>
+        <div class="field"><label>Salinité (mg/L)</label><input type="number" id="s8Sal" min="0" step="0.1" placeholder="0.8"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="skipStep8()">Passer cette étape →</button>
+        <button class="btn btn-primary" onclick="submitStep8()">Enregistrer et continuer →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 9 : INFRASTRUCTURES ──────────────────────────── -->
+    <div class="step-card" id="step9">
+      <div class="step-title">Cartographie des infrastructures</div>
+      <div class="step-desc">Ajoutez les équipements et infrastructures de votre exploitation.</div>
+
+      <div class="infra-categories" id="infraCategories"><!-- rendered by JS --></div>
+
+      <div style="margin-top:12px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--gdeep);margin-bottom:8px">Autre (libre)</div>
+        <div class="infra-free-text">
+          <input type="text" id="infraFreeInput" placeholder="Ex: Hangar de séchage, Pont…" maxlength="100">
+          <button class="btn btn-sm btn-secondary" onclick="addFreeInfra()">Ajouter</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--gdeep);margin-bottom:8px" id="infraAddedTitle"></div>
+        <div class="infra-added-list" id="infraAddedList"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-ghost" onclick="goToStep(10)">Passer →</button>
+        <button class="btn btn-primary" onclick="finishStep9()">Continuer →</button>
+      </div>
+      <!-- Hidden photo inputs -->
+      <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhotoCapture(event)">
+    </div>
+
+    <!-- ── ÉTAPE 10 : SCORE ────────────────────────────────────── -->
+    <div class="step-card" id="step10">
+      <div class="step-title">Score de complétude</div>
+      <div class="step-desc">AgroScan évalue la complétude du profil de votre parcelle.</div>
+
+      <div class="score-global" id="scoreGlobal">
+        <div class="score-global-val" id="scoreGlobalVal">—</div>
+        <div class="score-global-label">Score global AgroScan</div>
+      </div>
+
+      <div class="score-dims" id="scoreDims">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-primary" onclick="goToStep(11)">Générer le rapport →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 11 : RAPPORT ──────────────────────────────────── -->
+    <div class="step-card" id="step11">
+      <div class="step-title">Rapport initial</div>
+      <div class="step-desc">AgroScan génère le rapport complet de votre parcelle.</div>
+
+      <div class="rapport-preview">
+        <div class="rapport-sections">
+          <div class="rapport-item"><span class="ri-icon">🗺️</span> Cartographie et métriques GPS</div>
+          <div class="rapport-item"><span class="ri-icon">🛰️</span> Analyse satellite du sol</div>
+          <div class="rapport-item"><span class="ri-icon">🧪</span> Profil pédologique</div>
+          <div class="rapport-item"><span class="ri-icon">🏗️</span> Inventaire des infrastructures</div>
+          <div class="rapport-item"><span class="ri-icon">📊</span> Scores de complétude</div>
+          <div class="rapport-item"><span class="ri-icon">🌾</span> Cultures recommandées</div>
+          <div class="rapport-item"><span class="ri-icon">⚡</span> Actions prioritaires</div>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" id="btnDownloadPDF" onclick="downloadPDF()" style="margin-bottom:12px">⬇ Télécharger le rapport PDF</button>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToStep(12)">Activer ma parcelle →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 12 : ACTIVATION ───────────────────────────────── -->
+    <div class="step-card" id="step12">
+      <div class="activation-hero">
+        <div class="ah-icon">🎉</div>
+        <h2>Parcelle activée !</h2>
+        <p>Votre profil numérique est complet. Vous avez accès à toutes les fonctionnalités AgroScan.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card"><div class="fc-icon">🩺</div><div class="fc-label">Diagnostic maladies</div></div>
+        <div class="feature-card"><div class="fc-icon">🐛</div><div class="fc-label">Diagnostic ravageurs</div></div>
+        <div class="feature-card"><div class="fc-icon">🌿</div><div class="fc-label">Fertilisation intelligente</div></div>
+        <div class="feature-card"><div class="fc-icon">🛰️</div><div class="fc-label">État des cultures (satellite)</div></div>
+        <div class="feature-card"><div class="fc-icon">🌤️</div><div class="fc-label">Météo agricole</div></div>
+        <div class="feature-card"><div class="fc-icon">🔔</div><div class="fc-label">Alertes intelligentes</div></div>
+        <div class="feature-card"><div class="fc-icon">📋</div><div class="fc-label">Rapports AgroScan</div></div>
+        <div class="feature-card"><div class="fc-icon">🤖</div><div class="fc-label">Recommandations IA</div></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="finishWizard()" style="margin-top:8px">Accéder à ma parcelle →</button>
+    </div>
+
+  </div><!-- wizard-content -->
+</div><!-- viewWizard -->
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DETAIL SHEET                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="overlay" id="ovDetail" onclick="if(event.target===this)closeDetail()">
-  <div class="sheet" style="max-height:92vh">
+  <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <div style="flex:1">
@@ -309,282 +672,39 @@ select,input,textarea{font-family:inherit}
       </div>
       <button class="sheet-close" onclick="closeDetail()">✕</button>
     </div>
-    <div class="sheet-body" id="detailBody">
-      <!-- tabs -->
+    <div class="sheet-body">
       <div class="tabs">
-        <button class="tab active" onclick="switchTab(this,'tInfo')">Infos</button>
-        <button class="tab" onclick="switchTab(this,'tSol')">Sol</button>
-        <button class="tab" onclick="switchTab(this,'tEau')">Eau</button>
-        <button class="tab" onclick="switchTab(this,'tInfra')">Infra</button>
-        <button class="tab" onclick="switchTab(this,'tSat')">📡 Satellite</button>
+        <button class="tab active" onclick="switchTab(this,'dInfo')">Infos</button>
+        <button class="tab" onclick="switchTab(this,'dSol')">Sol</button>
+        <button class="tab" onclick="switchTab(this,'dEau')">Eau</button>
+        <button class="tab" onclick="switchTab(this,'dInfra')">Infra</button>
+        <button class="tab" onclick="switchTab(this,'dSat')">📡 Satellite</button>
       </div>
 
-      <!-- INFO -->
-      <div class="tab-pane active" id="tInfo">
-        <div class="score-bar-wrap">
-          <div class="score-bar-label">
-            <span style="font-weight:600">Complétude</span>
-            <span id="dScore" style="font-family:var(--serif);font-weight:900;color:var(--g)">—%</span>
-          </div>
-          <div class="score-bar"><div class="score-bar-fill" id="dScoreFill" style="width:0%"></div></div>
-        </div>
+      <div class="tab-pane active" id="dInfo">
         <div id="dInfoRows"></div>
-        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-primary" style="flex:1" onclick="editCurrent()">Modifier</button>
-          <button class="btn btn-sm btn-danger" style="flex:1" onclick="archiveCurrent()">Archiver</button>
-          <button class="btn btn-sm btn-ghost" style="width:100%" onclick="telechargerPDF()">⬇ Télécharger rapport PDF</button>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-sm btn-ghost" onclick="archiveDetail()">Archiver</button>
+          <button class="btn btn-sm btn-ghost" onclick="dlPDFDetail()">⬇ PDF</button>
         </div>
       </div>
 
-      <!-- SOL -->
-      <div class="tab-pane" id="tSol">
-        <div id="dSolContent">
-          <div class="loading-state"><div class="spinner"></div></div>
-        </div>
-        <button class="btn btn-primary" style="margin-top:12px" onclick="openSolForm()">Saisir analyse de sol</button>
+      <div class="tab-pane" id="dSol">
+        <div id="dSolContent"><div class="loading-state"><div class="spinner"></div></div></div>
       </div>
 
-      <!-- EAU -->
-      <div class="tab-pane" id="tEau">
-        <div class="sec-header">
-          <span class="sec-title">Sources d'eau</span>
-          <button class="add-btn" onclick="openEauForm()">+ Ajouter</button>
-        </div>
+      <div class="tab-pane" id="dEau">
         <div id="dEauContent"><div class="loading-state"><div class="spinner"></div></div></div>
       </div>
 
-      <!-- INFRA -->
-      <div class="tab-pane" id="tInfra">
-        <div class="sec-header">
-          <span class="sec-title">Infrastructures</span>
-          <button class="add-btn" onclick="openInfraForm()">+ Ajouter</button>
-        </div>
+      <div class="tab-pane" id="dInfra">
         <div id="dInfraContent"><div class="loading-state"><div class="spinner"></div></div></div>
       </div>
 
-      <!-- SATELLITE -->
-      <div class="tab-pane" id="tSat">
+      <div class="tab-pane" id="dSat">
         <div id="dSatContent"><div class="loading-state"><div class="spinner"></div></div></div>
-        <button class="btn btn-ghost" id="btnSatForce" style="margin-top:10px;display:none" onclick="forcerSatellite()">Actualiser l'analyse</button>
+        <button class="btn btn-ghost" id="btnSatRefresh" style="margin-top:8px;display:none" onclick="refreshSat()">Actualiser l'analyse</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: ANALYSE SOL -->
-<div class="overlay" id="ovSol" onclick="if(event.target===this)closeSheet('ovSol')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head">
-      <h2>Analyse de sol</h2>
-      <button class="sheet-close" onclick="closeSheet('ovSol')">✕</button>
-    </div>
-    <div class="sheet-body">
-      <form id="formSol" onsubmit="submitSol(event)">
-        <div class="field-row">
-          <div class="field">
-            <label>Texture</label>
-            <select id="sTex">
-              <option value="">—</option>
-              <option value="sableux">Sableux</option>
-              <option value="limoneux">Limoneux</option>
-              <option value="argileux">Argileux</option>
-              <option value="argilo_limoneux">Argilo-limoneux</option>
-              <option value="sablo_limoneux">Sablo-limoneux</option>
-              <option value="limon_argileux">Limon-argileux</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Érosion</label>
-            <select id="sEro">
-              <option value="">—</option>
-              <option value="nulle">Nulle</option>
-              <option value="faible">Faible</option>
-              <option value="moderee">Modérée</option>
-              <option value="forte">Forte</option>
-              <option value="tres_forte">Très forte</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>pH eau</label>
-            <input type="number" id="sPhEau" min="0" max="14" step="0.1" placeholder="6.5">
-          </div>
-          <div class="field">
-            <label>pH KCl</label>
-            <input type="number" id="sPhKcl" min="0" max="14" step="0.1" placeholder="5.8">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>M.O. (%)</label>
-            <input type="number" id="sMo" min="0" max="100" step="0.01" placeholder="2.5">
-          </div>
-          <div class="field">
-            <label>Conductivité (dS/m)</label>
-            <input type="number" id="sCond" min="0" step="0.01" placeholder="0.8">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Azote total (g/kg)</label>
-            <input type="number" id="sAz" min="0" step="0.01">
-          </div>
-          <div class="field">
-            <label>Phosphore (mg/kg)</label>
-            <input type="number" id="sPhos" min="0" step="0.1">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Potassium (cmol/kg)</label>
-            <input type="number" id="sKal" min="0" step="0.01">
-          </div>
-          <div class="field">
-            <label>Prof. labour (cm)</label>
-            <input type="number" id="sProf" min="0" max="200" step="1">
-          </div>
-        </div>
-        <div class="field">
-          <label>Date d'analyse</label>
-          <input type="date" id="sDt">
-        </div>
-        <div class="field">
-          <label>Laboratoire</label>
-          <input type="text" id="sLab" placeholder="Ex: ISRA, CNRA…">
-        </div>
-        <div class="field">
-          <label>Observations</label>
-          <textarea id="sObs" rows="2"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Enregistrer l'analyse</button>
-        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovSol')">Annuler</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: SOURCE EAU -->
-<div class="overlay" id="ovEau" onclick="if(event.target===this)closeSheet('ovEau')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head">
-      <h2>Source d'eau</h2>
-      <button class="sheet-close" onclick="closeSheet('ovEau')">✕</button>
-    </div>
-    <div class="sheet-body">
-      <form id="formEau" onsubmit="submitEau(event)">
-        <div class="field">
-          <label>Type de source *</label>
-          <select id="eType" required>
-            <option value="">— Sélectionner —</option>
-            <option value="forage">Forage</option>
-            <option value="puits_traditionnel">Puits traditionnel</option>
-            <option value="cours_eau">Cours d'eau</option>
-            <option value="mare_permanente">Mare permanente</option>
-            <option value="mare_temporaire">Mare temporaire</option>
-            <option value="reservoir">Réservoir</option>
-            <option value="eau_de_pluie">Eau de pluie</option>
-            <option value="canal_irrigation">Canal d'irrigation</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Qualité</label>
-            <select id="eQual">
-              <option value="">—</option>
-              <option value="bonne">Bonne</option>
-              <option value="acceptable">Acceptable</option>
-              <option value="traitee_requise">Traitement requis</option>
-              <option value="impropre">Impropre</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Disponibilité</label>
-            <select id="eDisp">
-              <option value="">—</option>
-              <option value="permanente">Permanente</option>
-              <option value="saisonniere">Saisonnière</option>
-              <option value="irreguliere">Irrégulière</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label>Débit (m³/h)</label>
-          <input type="number" id="eDebit" min="0" step="0.1">
-        </div>
-        <div class="field">
-          <label>Distance à la parcelle (m)</label>
-          <input type="number" id="eDist" min="0" step="1">
-        </div>
-        <div class="field">
-          <label>Notes</label>
-          <textarea id="eNotes" rows="2"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovEau')">Annuler</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: INFRASTRUCTURE -->
-<div class="overlay" id="ovInfra" onclick="if(event.target===this)closeSheet('ovInfra')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head">
-      <h2>Infrastructure</h2>
-      <button class="sheet-close" onclick="closeSheet('ovInfra')">✕</button>
-    </div>
-    <div class="sheet-body">
-      <form id="formInfra" onsubmit="submitInfra(event)">
-        <div class="field">
-          <label>Type *</label>
-          <select id="iType" required>
-            <option value="">— Sélectionner —</option>
-            <option value="batiment">Bâtiment</option>
-            <option value="hangar">Hangar</option>
-            <option value="serre">Serre</option>
-            <option value="cloture">Clôture</option>
-            <option value="piste">Piste d'accès</option>
-            <option value="canal">Canal</option>
-            <option value="digue">Digue</option>
-            <option value="forage">Forage</option>
-            <option value="puits">Puits</option>
-            <option value="reservoir">Réservoir</option>
-            <option value="compostiere">Compostière</option>
-            <option value="autre">Autre</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Nom</label>
-          <input type="text" id="iNom" maxlength="200" placeholder="Ex: Hangar principal">
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>État</label>
-            <select id="iEtat">
-              <option value="">—</option>
-              <option value="bon">Bon</option>
-              <option value="moyen">Moyen</option>
-              <option value="mauvais">Mauvais</option>
-              <option value="a_reparer">À réparer</option>
-              <option value="hors_service">Hors service</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Année construction</label>
-            <input type="number" id="iAnnee" min="1900" max="2100">
-          </div>
-        </div>
-        <div class="field">
-          <label>Description</label>
-          <textarea id="iDesc" rows="2"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <button type="button" class="btn btn-ghost" onclick="closeSheet('ovInfra')">Annuler</button>
-      </form>
     </div>
   </div>
 </div>
@@ -603,12 +723,30 @@ select,input,textarea{font-family:inherit}
 const TOKEN = localStorage.getItem('agro_token') || '';
 if (!TOKEN) location.href = '/';
 
-let parcelles = [];
-let currentParcelle = null;
-let editingId = null;
-let currentFilter = '';
-let _satLoaded = false;
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let state = {
+  currentStep: 1,
+  parcelleId: null,
+  method: null,         // 'gps' | 'carte'
+  gpsPoints: [],
+  mapPoints: [],
+  satAnalysis: null,
+  infraAdded: [],
+  currentInfraPhotoIdx: null,
+  detailParcelle: null,
+  satLoaded: false,
+  parcelles: [],
+};
 
+const STEP_NAMES = [
+  '', 'Création de la parcelle', 'Choix de la méthode',
+  'Préparation des données', 'Cartographie', 'Calculs automatiques',
+  'Analyse satellite du sol', 'Profil du sol', 'Analyse avancée (capteur)',
+  'Cartographie des infrastructures', 'Score de complétude',
+  'Rapport initial', 'Activation',
+];
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
 function toast(msg, type) {
   const t = document.createElement('div');
   t.className = 'toast ' + (type || '');
@@ -627,199 +765,986 @@ async function api(path, opts = {}) {
   return data;
 }
 
-// ── SCORE RING ──
-function scoreSVG(score) {
-  const r = 18, c = 2 * Math.PI * r;
-  const col = score >= 80 ? '#059669' : score >= 50 ? '#d97706' : '#dc2626';
-  const dash = (score / 100) * c;
-  return `<div class="score-ring">
-    <svg width="44" height="44" viewBox="0 0 44 44">
-      <circle cx="22" cy="22" r="${r}" fill="none" stroke="#d1fae5" stroke-width="4"/>
-      <circle cx="22" cy="22" r="${r}" fill="none" stroke="${col}" stroke-width="4"
-        stroke-dasharray="${dash} ${c}" stroke-linecap="round"/>
-    </svg>
-    <div class="val">${score}%</div>
-  </div>`;
+// ── VIEWS ──────────────────────────────────────────────────────────────────────
+function showList() {
+  document.getElementById('viewList').style.display = 'block';
+  document.getElementById('viewWizard').style.display = 'none';
+  document.getElementById('btnTopExit').style.display = 'none';
+  document.getElementById('topTitle').textContent = '🌾 Mon Champ';
+  loadParcelles();
 }
 
-// ── LOAD PARCELLES ──
-async function loadParcelles(statut = '') {
+function showWizard() {
+  document.getElementById('viewList').style.display = 'none';
+  document.getElementById('viewWizard').style.display = 'block';
+  document.getElementById('btnTopExit').style.display = 'block';
+  document.getElementById('topTitle').textContent = '🌾 Création parcelle';
+}
+
+function exitWizard() {
+  if (!confirm('Quitter le wizard ? Votre parcelle sera sauvegardée et vous pourrez continuer plus tard.')) return;
+  showList();
+}
+
+// ── PARCELLES LIST ─────────────────────────────────────────────────────────────
+async function loadParcelles() {
   try {
-    const q = statut ? `?statut=${statut}` : '';
-    parcelles = await api('/api/champ/parcelles' + q);
-    if (!Array.isArray(parcelles)) parcelles = [];
-    renderList();
-    document.getElementById('tbSub').textContent =
-      `${parcelles.length} parcelle${parcelles.length > 1 ? 's' : ''}`;
+    state.parcelles = await api('/api/champ/parcelles');
+    if (!Array.isArray(state.parcelles)) state.parcelles = [];
+    renderParcelles();
+    document.getElementById('topSub').textContent =
+      `${state.parcelles.length} parcelle${state.parcelles.length > 1 ? 's' : ''}`;
   } catch(e) {
     if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
     document.getElementById('parcelleList').innerHTML =
-      '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
-    toast('Erreur: ' + e.detail, 'err');
+      '<div style="text-align:center;padding:24px;color:var(--soft)">Erreur de chargement</div>';
   }
 }
 
-function renderList() {
+function renderParcelles() {
   const el = document.getElementById('parcelleList');
-  if (parcelles.length === 0) {
-    el.innerHTML = `<div class="empty">
-      <div class="eico">🌾</div>
+  if (state.parcelles.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="es-icon">🌾</div>
       <h3>Aucune parcelle</h3>
-      <p>Commencez par créer votre première parcelle.</p>
-      <button class="btn btn-primary" style="max-width:220px;margin:0 auto" onclick="openAdd()">+ Créer une parcelle</button>
+      <p>Créez votre première parcelle pour accéder à toutes les fonctionnalités AgroScan.</p>
+      <button class="btn btn-primary" style="max-width:240px;margin:0 auto" onclick="startWizard()">+ Créer ma première parcelle</button>
     </div>`;
     return;
   }
-  el.innerHTML = parcelles.map(p => {
+  el.innerHTML = `<div class="parcelle-list">${state.parcelles.map(p => {
     const ha = p.superficie_ha ? `${p.superficie_ha.toFixed(2)} ha` : 'Surface non définie';
-    const cult = p.type_culture || 'Culture inconnue';
-    const reg = p.region || '';
-    return `<div class="parc-card" onclick="openDetail(${p.id})">
+    const sc = p.score_completude || 0;
+    const r = 18, c = 2 * Math.PI * r;
+    const col = sc >= 80 ? '#059669' : sc >= 50 ? '#d97706' : '#dc2626';
+    const dash = (sc / 100) * c;
+    const ring = `<div class="score-ring"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="${r}" fill="none" stroke="#d1fae5" stroke-width="4"/><circle cx="22" cy="22" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="${dash} ${c}" stroke-linecap="round" transform="rotate(-90 22 22)"/></svg><div class="val">${sc}%</div></div>`;
+
+    const isConfig = !p.wizard_complet;
+    return `<div class="parcelle-card" onclick="${isConfig ? `continuerWizard(${p.id},${p.etape_wizard})` : `openDetail(${p.id})`}">
       <div class="pc-icon">🌾</div>
       <div class="pc-body">
         <div class="pc-name">${p.nom}</div>
-        <div class="pc-meta">${cult} · ${ha}${reg ? ' · ' + reg : ''}</div>
+        <div class="pc-meta">${p.type_culture || 'Culture non définie'} · ${ha}${p.region ? ' · ' + p.region : ''}</div>
         <div class="pc-tags">
-          <span class="tag ${p.statut}">${statutLabel(p.statut)}</span>
-          ${p.type_culture ? `<span class="tag culture">${p.type_culture}</span>` : ''}
-          ${p.stade_culture ? `<span class="tag stade">${p.stade_culture}</span>` : ''}
+          ${isConfig
+            ? `<span class="tag config">⚙ À compléter — étape ${internalToDisplay(p.etape_wizard||1)}/5</span>`
+            : `<span class="tag ${p.statut}">${statutLabel(p.statut)}</span>`}
+        </div>
+        ${isConfig ? `<div class="continue-btn">▶ Compléter ma parcelle</div>` : ''}
+      </div>
+      <div class="pc-score">${ring}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function statutLabel(s) {
+  return {active:'Active', en_repos:'En repos', en_preparation:'En préparation', archive:'Archivée'}[s] || s;
+}
+
+// ── WIZARD START ───────────────────────────────────────────────────────────────
+function startWizard() {
+  state = { currentStep:1, parcelleId:null, method:null, gpsPoints:[], mapPoints:[],
+            satAnalysis:null, infraAdded:[], currentInfraPhotoIdx:null,
+            detailParcelle:null, satLoaded:false, parcelles:state.parcelles };
+  renderInfraCategories();
+  showWizard();
+  goToStep(1);
+}
+
+async function continuerWizard(id, etape) {
+  state.parcelleId = id;
+  showWizard();
+  const step = Math.max(1, Math.min(12, etape || 1));
+  // If past step 4, we need parcelle data
+  if (step >= 5) {
+    try {
+      const p = await api(`/api/champ/parcelles/${id}`);
+      updateMetrics(p);
+    } catch(e) {}
+  }
+  goToStep(step);
+}
+
+// ── BACK NAV ───────────────────────────────────────────────────────────────────
+function goBack() {
+  const n = state.currentStep;
+  if (n <= 1) { showList(); return; }
+  goToStep(n - 1);
+}
+
+async function exitWizardExpress() {
+  if (!state.parcelleId) { showList(); return; }
+  try {
+    await api(`/api/champ/parcelles/${state.parcelleId}/finaliser`, { method: 'POST' });
+  } catch(_) {}
+  toast('Parcelle enregistrée ! Vous pouvez la compléter plus tard.', 'ok');
+  showList();
+}
+
+// ── STEP NAV ───────────────────────────────────────────────────────────────────
+function internalToDisplay(n) {
+  if (n === 1)      return 1;
+  if (n <= 4)       return 2;
+  if (n <= 7)       return 3;
+  if (n <= 9)       return 4;
+  return 5;
+}
+
+const DISPLAY_NAMES = ['', 'Création de la parcelle', 'Configuration', 'Analyse satellite', 'Données avancées', 'Finalisation'];
+
+function updateProgress(current) {
+  const disp = internalToDisplay(current);
+  const prog = document.getElementById('stepProgress');
+  prog.innerHTML = Array.from({length:5}, (_,i) => {
+    const n = i + 1;
+    const cls = n < disp ? 'done' : n === disp ? 'active' : '';
+    return `<div class="step-dot ${cls}"></div>`;
+  }).join('');
+}
+
+// ── STEP 1 ─────────────────────────────────────────────────────────────────────
+async function submitStep1() {
+  const nom = document.getElementById('s1Nom').value.trim();
+  const eau = document.getElementById('s1Eau').value;
+  const irrig = document.getElementById('s1Irrigation').value;
+  const culture = document.getElementById('s1Culture').value;
+  if (!nom) { toast('Veuillez saisir le nom de la parcelle', 'err'); return; }
+  if (!culture) { toast('Veuillez sélectionner une culture principale', 'err'); return; }
+
+  try {
+    const p = await api('/api/champ/parcelles', {
+      method: 'POST',
+      body: JSON.stringify({
+        nom,
+        type_culture: culture,
+        source_eau_principale: eau || null,
+        type_irrigation: irrig || null,
+        etape_wizard: 2
+      })
+    });
+    state.parcelleId = p.id;
+    toast('Parcelle créée !', 'ok');
+    goToStep(2);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur création parcelle', 'err');
+  }
+}
+
+// ── STEP 2 ─────────────────────────────────────────────────────────────────────
+function selectMethod(m) {
+  state.method = m;
+  document.getElementById('method1Card').classList.toggle('selected', m === 'gps');
+  document.getElementById('method2Card').classList.toggle('selected', m === 'carte');
+  document.getElementById('method3Card').classList.toggle('selected', m === 'kml');
+  const kmlZone = document.getElementById('kmlUploadZone');
+  if (m === 'kml') {
+    kmlZone.style.display = 'block';
+    return; // Ne pas avancer — attendre l'upload
+  }
+  kmlZone.style.display = 'none';
+  // Advance after brief delay for visual feedback
+  setTimeout(() => goToStep(3), 400);
+}
+
+async function uploadKML() {
+  const input = document.getElementById('kmlFileInput');
+  const statusEl = document.getElementById('kmlStatus');
+  if (!input.files.length) return;
+  const file = input.files[0];
+  if (!state.parcelleId) { toast('Parcelle non créée', 'err'); return; }
+  statusEl.textContent = '⏳ Import en cours…';
+  statusEl.style.color = 'var(--gris)';
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const carto = await fetch(`/api/champ/parcelles/${state.parcelleId}/import-kml`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token() },
+      body: fd,
+    }).then(async r => {
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || 'Erreur import KML');
+      }
+      return r.json();
+    });
+    statusEl.textContent = `✓ Import réussi — ${carto.superficie_ha?.toFixed(2)} ha, ${carto.coordonnees?.length} points`;
+    statusEl.style.color = 'var(--g)';
+    toast('Fichier KML importé avec succès !', 'ok');
+    setTimeout(() => goToStep(5), 800); // sauter étapes 3-4 (GPS/carte)
+  } catch(ex) {
+    statusEl.textContent = '✗ ' + (ex.message || 'Erreur import');
+    statusEl.style.color = '#dc2626';
+    toast(ex.message || 'Erreur import KML', 'err');
+  }
+}
+
+// ── STEP 3 : PREPARATION ──────────────────────────────────────────────────────
+function initPreparation() {
+  const fills = { prepGPS:0, prepCarto:0, prepSat:0 };
+  const statuses = { prepGPS:'Initialisation…', prepCarto:'En attente…', prepSat:'En attente…' };
+
+  function setFill(id, pct, status, done) {
+    document.getElementById(id).style.width = pct + '%';
+    const el = document.getElementById(id + 'Status');
+    el.textContent = status;
+    if (done) el.className = 'prep-status done';
+  }
+
+  // Sequence
+  setTimeout(() => setFill('prepGPS', 50, 'Acquisition GPS…', false), 300);
+  setTimeout(() => setFill('prepGPS', 100, '✓ GPS prêt', true), 1800);
+  setTimeout(() => setFill('prepCarto', 50, 'Chargement carte…', false), 2000);
+  setTimeout(() => setFill('prepCarto', 100, '✓ Carte prête', true), 3200);
+  setTimeout(() => setFill('prepSat', 40, 'Récupération imagerie…', false), 3400);
+  setTimeout(() => setFill('prepSat', 100, '✓ Satellite prêt', true), 5000);
+  setTimeout(() => {
+    const btn = document.getElementById('btnStartCarto');
+    btn.disabled = false;
+    btn.textContent = 'Vous pouvez commencer à faire le tour de votre champ →';
+    btn.style.background = 'var(--g)';
+  }, 5200);
+}
+
+// ── STEP 4 : MAP ──────────────────────────────────────────────────────────────
+let leafletMap = null;
+let leafletPolygon = null;
+let leafletPolyline = null;
+let leafletMarkers = [];
+let gpsWatchId = null;
+let gpsTracking = false;
+let lastGPSPoint = null;
+
+function initMap() {
+  if (leafletMap) {
+    leafletMap.invalidateSize();
+    return;
+  }
+
+  leafletMap = L.map('map-container').setView([14.692, -17.446], 14);
+
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '© Esri',
+    maxZoom: 21,
+  }).addTo(leafletMap);
+
+  // Show correct controls
+  if (state.method === 'gps') {
+    document.getElementById('btnGPS').style.display = 'block';
+    document.getElementById('step4Instructions').textContent = 'Appuyez sur "Démarrer le tour" puis marchez autour de votre champ';
+    // Try to center on user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        leafletMap.setView([pos.coords.latitude, pos.coords.longitude], 16);
+      });
+    }
+  } else {
+    document.getElementById('step4Instructions').textContent = 'Appuyez sur la carte pour placer les limites de votre parcelle (minimum 3 points)';
+    leafletMap.on('click', onMapClick);
+    // Center on Senegal default
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        leafletMap.setView([pos.coords.latitude, pos.coords.longitude], 16);
+      });
+    }
+  }
+}
+
+function onMapClick(e) {
+  state.mapPoints.push({lat: e.latlng.lat, lon: e.latlng.lng});
+  updateMapDrawing(state.mapPoints);
+  updateMapUI(state.mapPoints.length);
+}
+
+function toggleGPS() {
+  if (!gpsTracking) {
+    startGPS();
+  } else {
+    stopGPS();
+  }
+}
+
+function startGPS() {
+  if (!navigator.geolocation) { toast('GPS non disponible', 'err'); return; }
+  gpsTracking = true;
+  lastGPSPoint = null;
+  document.getElementById('btnGPS').textContent = '⏹ Arrêter le tour';
+  document.getElementById('btnGPS').classList.add('recording');
+
+  gpsWatchId = navigator.geolocation.watchPosition(pos => {
+    const pt = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+    if (!lastGPSPoint || haversineJS(lastGPSPoint, pt) >= 3) {
+      state.gpsPoints.push(pt);
+      lastGPSPoint = pt;
+      leafletMap.setView([pt.lat, pt.lon]);
+      updateMapDrawing(state.gpsPoints);
+      updateMapUI(state.gpsPoints.length);
+    }
+  }, err => {
+    toast('Erreur GPS : ' + err.message, 'err');
+    stopGPS();
+  }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 0});
+}
+
+function stopGPS() {
+  gpsTracking = false;
+  if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+  document.getElementById('btnGPS').textContent = '▶ Reprendre le tour';
+  document.getElementById('btnGPS').classList.remove('recording');
+}
+
+function haversineJS(a, b) {
+  const R = 6371000;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLon = (b.lon - a.lon) * Math.PI / 180;
+  const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+function undoLastPoint() {
+  const pts = state.method === 'gps' ? state.gpsPoints : state.mapPoints;
+  if (pts.length === 0) return;
+  pts.pop();
+  updateMapDrawing(pts);
+  updateMapUI(pts.length);
+}
+
+function updateMapDrawing(pts) {
+  if (leafletPolygon) { leafletMap.removeLayer(leafletPolygon); leafletPolygon = null; }
+  if (leafletPolyline) { leafletMap.removeLayer(leafletPolyline); leafletPolyline = null; }
+  leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+  leafletMarkers = [];
+
+  if (pts.length === 0) return;
+
+  const lls = pts.map(p => [p.lat, p.lon]);
+
+  if (pts.length >= 3) {
+    leafletPolygon = L.polygon(lls, {color:'#059669', fillColor:'#059669', fillOpacity:.25, weight:2}).addTo(leafletMap);
+  } else {
+    leafletPolyline = L.polyline(lls, {color:'#059669', weight:2}).addTo(leafletMap);
+  }
+
+  lls.forEach((ll, i) => {
+    const m = L.circleMarker(ll, {radius:6, color:'#047857', fillColor:'#fff', fillOpacity:1, weight:2}).addTo(leafletMap);
+    leafletMarkers.push(m);
+  });
+}
+
+function updateMapUI(n) {
+  document.getElementById('mapPtsCount').textContent =
+    `${n} point${n>1?'s':''} placé${n>1?'s':''} — ${n < 3 ? 'minimum 3 requis' : '✓ Polygone valide'}`;
+  document.getElementById('btnFinishCarto').disabled = n < 3;
+}
+
+async function finishCartographie() {
+  if (gpsTracking) stopGPS();
+  const pts = state.method === 'gps' ? state.gpsPoints : state.mapPoints;
+  if (pts.length < 3) { toast('Minimum 3 points requis', 'err'); return; }
+
+  try {
+    const carto = await api(`/api/champ/parcelles/${state.parcelleId}/cartographie`, {
+      method: 'POST',
+      body: JSON.stringify({
+        coordonnees: pts,
+        source_mesure: state.method === 'gps' ? 'gps_terrain' : 'dessin_carte',
+        date_mesure: new Date().toISOString().split('T')[0],
+      })
+    });
+    state.cartoData = carto;
+    toast('Cartographie enregistrée !', 'ok');
+    goToStep(5);
+  } catch(ex) {
+    toast(ex.detail || 'Erreur sauvegarde cartographie', 'err');
+  }
+}
+
+// ── STEP 5 : METRICS ──────────────────────────────────────────────────────────
+async function showMetrics() {
+  try {
+    const p = await api(`/api/champ/parcelles/${state.parcelleId}`);
+    updateMetrics(p);
+  } catch(e) {
+    document.getElementById('metricsGrid').innerHTML = '<p style="color:var(--red)">Erreur chargement métriques</p>';
+  }
+}
+
+function updateMetrics(p) {
+  const pts = state.method === 'gps' ? state.gpsPoints : state.mapPoints;
+  const m2 = p.superficie_m2;
+  const ha = p.superficie_ha;
+  const peri = p.perimetre_m;
+  const lat = p.centre_lat;
+  const lon = p.centre_lon;
+  const nbPts = pts.length;
+
+  document.getElementById('metricsGrid').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-val">${ha ? ha.toFixed(4) : '—'}</div>
+      <div class="metric-unit">hectares</div>
+      <div class="metric-label">Surface</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">${m2 ? m2.toFixed(0) : '—'}</div>
+      <div class="metric-unit">m²</div>
+      <div class="metric-label">Surface</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">${peri ? peri.toFixed(0) : '—'}</div>
+      <div class="metric-unit">mètres</div>
+      <div class="metric-label">Périmètre</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">${nbPts}</div>
+      <div class="metric-unit">points GPS</div>
+      <div class="metric-label">Limites</div>
+    </div>
+    <div class="metric-card" style="grid-column:span 2">
+      <div class="metric-val" style="font-size:1rem">${lat ? lat.toFixed(6) : '—'}</div>
+      <div class="metric-unit">° Latitude</div>
+      <div class="metric-label">Centre GPS</div>
+    </div>
+    <div class="metric-card" style="grid-column:span 2">
+      <div class="metric-val" style="font-size:1rem">${lon ? lon.toFixed(6) : '—'}</div>
+      <div class="metric-unit">° Longitude</div>
+      <div class="metric-label">Centre GPS</div>
+    </div>
+  `;
+}
+
+// ── STEP 6 : SATELLITE SOL ────────────────────────────────────────────────────
+async function triggerSatAnalysis() {
+  try {
+    const data = await api(`/api/champ/parcelles/${state.parcelleId}/analyse-sol-satellite`, {method:'POST'});
+    state.satAnalysis = data;
+    renderSatAnalysis(data);
+    // Auto-proceed to step 7 after display
+    setTimeout(() => {
+      if (state.currentStep === 6) goToStep(7);
+    }, 4000);
+  } catch(e) {
+    document.getElementById('step6Content').innerHTML =
+      `<div style="text-align:center;padding:20px;color:var(--soft)">
+        <p>Données satellite en cours de traitement…</p>
+        <button class="btn btn-primary" style="max-width:200px;margin:16px auto 0" onclick="goToStep(7)">Continuer →</button>
+      </div>`;
+  }
+}
+
+function renderSatAnalysis(d) {
+  const geo = d.geographie || {};
+  const adm = d.administration || {};
+  const topo = d.topographie || {};
+  const hydro = d.hydrologie || {};
+  const risques = d.risques || {};
+  const hist = d.historique || {};
+  const cultures = Array.isArray(hist.cultures_adaptees) ? hist.cultures_adaptees : [];
+
+  document.getElementById('step6Content').innerHTML = `
+    <div class="sat-sections">
+      <div class="sat-section">
+        <div class="sat-section-head">🌍 Géographie</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Latitude</span><span class="sat-val">${geo.latitude ? geo.latitude.toFixed(4) + '°' : '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Longitude</span><span class="sat-val">${geo.longitude ? geo.longitude.toFixed(4) + '°' : '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Altitude</span><span class="sat-val">${geo.altitude_m != null ? geo.altitude_m + ' m' : '—'}</span></div>
         </div>
       </div>
-      <div class="pc-score">${scoreSVG(p.score_completude || 0)}</div>
+      <div class="sat-section">
+        <div class="sat-section-head">🗺️ Administration</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Région</span><span class="sat-val">${adm.region || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Département</span><span class="sat-val">${adm.departement || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Zone agroécologique</span><span class="sat-val">${adm.zone_agroecologique || '—'}</span></div>
+        </div>
+      </div>
+      <div class="sat-section">
+        <div class="sat-section-head">⛰️ Topographie</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Pente</span><span class="sat-val">${topo.pente_pct != null ? topo.pente_pct + '%' : '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Orientation</span><span class="sat-val">${topo.orientation || '—'}</span></div>
+        </div>
+      </div>
+      <div class="sat-section">
+        <div class="sat-section-head">💧 Hydrologie</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Drainage estimé</span><span class="sat-val">${hydro.drainage || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Rétention d'eau</span><span class="sat-val">${hydro.retention_eau || '—'}</span></div>
+        </div>
+      </div>
+      <div class="sat-section">
+        <div class="sat-section-head">⚠️ Risques</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Érosion</span><span class="sat-val">${risques.erosion || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Inondation</span><span class="sat-val">${risques.inondation || '—'}</span></div>
+        </div>
+      </div>
+      <div class="sat-section">
+        <div class="sat-section-head">📈 Historique & Aptitude</div>
+        <div class="sat-section-body">
+          <div class="sat-row"><span class="sat-key">Végétation</span><span class="sat-val">${hist.vegetation || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Occupation sol</span><span class="sat-val">${hist.occupation_sol || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Aptitude agricole</span><span class="sat-val">${hist.aptitude_agricole || '—'}</span></div>
+          <div class="sat-row"><span class="sat-key">Potentiel</span><span class="sat-val">${hist.potentiel || '—'}</span></div>
+          ${cultures.length ? `<div class="sat-row" style="flex-direction:column;gap:6px"><span class="sat-key">Cultures adaptées</span><div class="sat-chips">${cultures.map(c=>`<span class="sat-chip">${c}</span>`).join('')}</div></div>` : ''}
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goToStep(7)" style="margin-top:8px">Voir le profil du sol →</button>
+  `;
+}
+
+// ── STEP 7 : PROFIL SOL ───────────────────────────────────────────────────────
+function renderProfilSol() {
+  const profil = state.satAnalysis?.profil_sol || {};
+  document.getElementById('step7Content').innerHTML = `
+    <div class="profil-grid">
+      <div class="profil-card">
+        <div class="profil-icon">🧱</div>
+        <div class="profil-val">${profil.type_sol || '—'}</div>
+        <div class="profil-key">Type de sol probable</div>
+      </div>
+      <div class="profil-card">
+        <div class="profil-icon">🌱</div>
+        <div class="profil-val">${profil.fertilite || '—'}</div>
+        <div class="profil-key">Fertilité estimée</div>
+      </div>
+      <div class="profil-card">
+        <div class="profil-icon">📈</div>
+        <div class="profil-val">${profil.potentiel_agricole || '—'}</div>
+        <div class="profil-key">Potentiel agricole</div>
+      </div>
+      <div class="profil-card" style="grid-column:span 2">
+        <div class="profil-icon">🌾</div>
+        <div class="profil-val" style="font-size:.82rem;line-height:1.4">${profil.aptitude_culturale || '—'}</div>
+        <div class="profil-key">Aptitude culturale</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── STEP 8 : CAPTEUR ──────────────────────────────────────────────────────────
+function skipStep8() {
+  api(`/api/champ/parcelles/${state.parcelleId}`, {
+    method:'PUT', body: JSON.stringify({etape_wizard:9})
+  }).catch(()=>{});
+  goToStep(9);
+}
+
+async function submitStep8() {
+  const v = id => { const x = parseFloat(document.getElementById(id).value); return isNaN(x) ? null : x; };
+  const body = {
+    source_analyse: 'capteur_8en1',
+    date_analyse: new Date().toISOString().split('T')[0],
+    temperature_sol: v('s8Temp'),
+    humidite_sol: v('s8Hum'),
+    pH_eau: v('s8pH'),
+    conductivite_ds_m: v('s8CE'),
+    azote_total: v('s8N'),
+    phosphore_assim: v('s8P'),
+    potassium_echang: v('s8K'),
+    salinite: v('s8Sal'),
+  };
+  // Check at least one value
+  const vals = Object.values(body).filter(v => v !== null && typeof v === 'number');
+  if (vals.length === 0) { skipStep8(); return; }
+
+  try {
+    await api(`/api/champ/parcelles/${state.parcelleId}/sol`, {
+      method:'POST', body: JSON.stringify(body)
+    });
+    toast('Mesures capteur enregistrées', 'ok');
+  } catch(e) {
+    toast(e.detail || 'Erreur enregistrement capteur', 'err');
+  }
+  goToStep(9);
+}
+
+// ── STEP 9 : INFRASTRUCTURES ──────────────────────────────────────────────────
+const INFRA_CATS = [
+  { id:'eau', label:'Ressources en eau', icon:'💧', items:[
+    {type:'forage', label:'Forage', icon:'🔩'},
+    {type:'puits_traditionnel', label:'Puits traditionnel', icon:'⛏️'},
+    {type:'riviere', label:'Rivière', icon:'🌊'},
+    {type:'fleuve', label:'Fleuve', icon:'🏞️'},
+    {type:'mare_permanente', label:'Mare permanente', icon:'💧'},
+    {type:'mare_temporaire', label:'Mare temporaire', icon:'💦'},
+    {type:'reservoir', label:'Réservoir', icon:'🪣'},
+    {type:'chateau_eau', label:'Château d\'eau', icon:'🏗️'},
+  ]},
+  { id:'irrigation', label:'Irrigation', icon:'💦', items:[
+    {type:'goutte_a_goutte', label:'Goutte-à-goutte', icon:'🌿'},
+    {type:'aspersion', label:'Aspersion', icon:'🚿'},
+    {type:'gravitaire', label:'Gravitaire', icon:'⬇️'},
+    {type:'pivot', label:'Pivot', icon:'🔄'},
+    {type:'micro_aspersion', label:'Micro-aspersion', icon:'💦'},
+  ]},
+  { id:'production_vegetale', label:'Production végétale', icon:'🌿', items:[
+    {type:'serre', label:'Serre', icon:'🌿'},
+    {type:'pepiniere', label:'Pépinière', icon:'🌱'},
+    {type:'ombriere', label:'Ombrière', icon:'☂️'},
+    {type:'aire_compostage', label:'Compostière', icon:'♻️'},
+    {type:'jardin_semencier', label:'Jardin semencier', icon:'🌻'},
+  ]},
+  { id:'production_animale', label:'Production animale', icon:'🐄', items:[
+    {type:'batiment_avicole', label:'Bâtiment avicole', icon:'🐔'},
+    {type:'bergerie', label:'Bergerie', icon:'🐑'},
+    {type:'etable', label:'Étable', icon:'🐄'},
+    {type:'porcherie', label:'Porcherie', icon:'🐷'},
+    {type:'clapier', label:'Clapier', icon:'🐰'},
+    {type:'enclos', label:'Enclos', icon:'🔒'},
+  ]},
+  { id:'stockage', label:'Stockage', icon:'🏚️', items:[
+    {type:'magasin_agricole', label:'Magasin agricole', icon:'🏪'},
+    {type:'entrepot', label:'Entrepôt', icon:'🏭'},
+    {type:'chambre_froide', label:'Chambre froide', icon:'❄️'},
+    {type:'silo', label:'Silo', icon:'🏛️'},
+    {type:'grenier', label:'Grenier', icon:'🏚️'},
+  ]},
+  { id:'energie', label:'Énergie', icon:'⚡', items:[
+    {type:'panneaux_solaires', label:'Panneaux solaires', icon:'☀️'},
+    {type:'pompe_solaire', label:'Pompe solaire', icon:'🔋'},
+    {type:'groupe_electrogene', label:'Groupe électrogène', icon:'⚙️'},
+  ]},
+  { id:'equipements', label:'Équipements', icon:'🚜', items:[
+    {type:'tracteur', label:'Tracteur', icon:'🚜'},
+    {type:'motoculteur', label:'Motoculteur', icon:'⚙️'},
+    {type:'drone_agricole', label:'Drone agricole', icon:'🚁'},
+    {type:'capteur_sol', label:'Capteur de sol', icon:'📡'},
+  ]},
+  { id:'plantations', label:'Plantations permanentes', icon:'🌳', items:[
+    {type:'manguiers', label:'Manguiers', icon:'🥭'},
+    {type:'agrumes', label:'Agrumes', icon:'🍊'},
+    {type:'anacardiers', label:'Anacardiers', icon:'🌰'},
+    {type:'bananeraies', label:'Bananeraies', icon:'🍌'},
+    {type:'papayers', label:'Papayers', icon:'🍈'},
+    {type:'cocotiers', label:'Cocotiers', icon:'🥥'},
+  ]},
+];
+
+function renderInfraCategories() {
+  const el = document.getElementById('infraCategories');
+  if (!el) return;
+  el.innerHTML = INFRA_CATS.map(cat => `
+    <div>
+      <div class="infra-cat-head" onclick="toggleCat('cat_${cat.id}')">
+        <span><span class="cat-icon">${cat.icon}</span>${cat.label}</span>
+        <span>▾</span>
+      </div>
+      <div class="infra-cat-body" id="cat_${cat.id}">
+        <div class="infra-items-grid">
+          ${cat.items.map(item => `
+            <button class="infra-item-btn" id="iBtn_${item.type}" onclick="addInfraItem('${item.type}','${item.label}','${item.icon}','${cat.label}')">
+              <span class="ii-icon">${item.icon}</span>${item.label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCat(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+async function addInfraItem(type, label, icon, categorie) {
+  try {
+    const infra = await api(`/api/champ/parcelles/${state.parcelleId}/infrastructures`, {
+      method: 'POST',
+      body: JSON.stringify({type, nom: label, categorie})
+    });
+    state.infraAdded.push({...infra, _icon: icon, _label: label});
+    document.getElementById(`iBtn_${type}`)?.classList.add('added');
+    renderInfraAdded();
+    toast(`${label} ajouté`, 'ok');
+  } catch(e) {
+    toast(e.detail || 'Erreur ajout infrastructure', 'err');
+  }
+}
+
+async function addFreeInfra() {
+  const val = document.getElementById('infraFreeInput').value.trim();
+  if (!val) return;
+  try {
+    const infra = await api(`/api/champ/parcelles/${state.parcelleId}/infrastructures`, {
+      method: 'POST',
+      body: JSON.stringify({type:'autre', nom: val, categorie:'Autre'})
+    });
+    state.infraAdded.push({...infra, _icon:'🔧', _label: val});
+    document.getElementById('infraFreeInput').value = '';
+    renderInfraAdded();
+    toast(`${val} ajouté`, 'ok');
+  } catch(e) {
+    toast(e.detail || 'Erreur', 'err');
+  }
+}
+
+function renderInfraAdded() {
+  const el = document.getElementById('infraAddedList');
+  const title = document.getElementById('infraAddedTitle');
+  if (state.infraAdded.length === 0) {
+    title.textContent = '';
+    el.innerHTML = '';
+    return;
+  }
+  title.textContent = `${state.infraAdded.length} infrastructure${state.infraAdded.length>1?'s':''} ajoutée${state.infraAdded.length>1?'s':''}`;
+  el.innerHTML = state.infraAdded.map((item, idx) => `
+    <div class="infra-added-card">
+      <div class="iac-icon">${item._icon}</div>
+      <div class="iac-body">
+        <div class="iac-name">${item._label || item.nom || item.type}</div>
+        <div class="iac-sub">${item.categorie || ''}</div>
+        <div class="photo-row">
+          <button class="photo-btn" onclick="openPhotoCapture(${idx})">📷 Photo</button>
+        </div>
+        ${item.photo_url ? `<img src="${item.photo_url}" class="iac-photo" alt="photo" onerror="this.style.display='none'">` : ''}
+      </div>
+      <button class="iac-del" onclick="removeInfra(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+
+function openPhotoCapture(idx) {
+  state.currentInfraPhotoIdx = idx;
+  document.getElementById('photoInput').click();
+}
+
+async function handlePhotoCapture(e) {
+  const file = e.target.files[0];
+  if (!file || state.currentInfraPhotoIdx === null) return;
+  const infra = state.infraAdded[state.currentInfraPhotoIdx];
+  if (!infra) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const r = await fetch(`/api/champ/infrastructures/${infra.id}/photo`, {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + TOKEN},
+      body: formData,
+    });
+    if (!r.ok) throw new Error('Upload failed');
+    const updated = await r.json();
+    state.infraAdded[state.currentInfraPhotoIdx].photo_url = updated.photo_url;
+    renderInfraAdded();
+    toast('Photo enregistrée', 'ok');
+  } catch(err) {
+    toast('Erreur upload photo', 'err');
+  }
+  e.target.value = '';
+}
+
+async function removeInfra(idx) {
+  const infra = state.infraAdded[idx];
+  try {
+    await api(`/api/champ/infrastructures/${infra.id}`, {method:'DELETE'});
+  } catch(e) {}
+  state.infraAdded.splice(idx, 1);
+  renderInfraAdded();
+}
+
+function finishStep9() {
+  api(`/api/champ/parcelles/${state.parcelleId}`, {
+    method:'PUT', body: JSON.stringify({etape_wizard:10})
+  }).catch(()=>{});
+  goToStep(10);
+}
+
+// ── STEP 10 : SCORE ───────────────────────────────────────────────────────────
+async function loadScore() {
+  try {
+    const score = await api(`/api/champ/parcelles/${state.parcelleId}/score`);
+    renderScore(score);
+  } catch(e) {
+    document.getElementById('scoreDims').innerHTML = '<p style="color:var(--soft)">Erreur chargement score</p>';
+  }
+}
+
+function renderScore(s) {
+  document.getElementById('scoreGlobalVal').textContent = s.total + '%';
+  const dims = [
+    {key:'cartographie', label:'Cartographie', icon:'🗺️'},
+    {key:'sol', label:'Analyse sol', icon:'🧪'},
+    {key:'sources_eau', label:'Sources d\'eau', icon:'💧'},
+    {key:'infrastructures', label:'Infrastructures', icon:'🏗️'},
+    {key:'culture_zone', label:'Culture & Zone', icon:'🌾'},
+    {key:'localisation', label:'Localisation', icon:'📍'},
+  ];
+  document.getElementById('scoreDims').innerHTML = dims.map(d => {
+    const dim = s[d.key] || {score:0, max:25, pct:0};
+    return `<div class="score-dim">
+      <div class="score-dim-head">
+        <span class="score-dim-label">${d.icon} ${d.label}</span>
+        <span class="score-dim-val">${dim.score}/${dim.max}</span>
+      </div>
+      <div class="score-bar"><div class="score-bar-fill" style="width:${dim.pct}%"></div></div>
+      ${dim.manquant ? `<div style="font-size:.72rem;color:var(--orange);margin-top:4px">${dim.manquant}</div>` : ''}
     </div>`;
   }).join('');
 }
 
-function statutLabel(s) {
-  const M = {active:'Active', en_repos:'En repos', en_preparation:'En préparation', archive:'Archivée'};
-  return M[s] || s;
+// ── STEP 11 : RAPPORT ─────────────────────────────────────────────────────────
+function downloadPDF() {
+  if (!state.parcelleId) return;
+  fetch(`/api/app/parcelles/${state.parcelleId}/export-pdf`, {
+    headers: {Authorization:'Bearer '+TOKEN}
+  }).then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `rapport_parcelle_${state.parcelleId}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    }).catch(() => toast('Erreur génération PDF', 'err'));
 }
 
-// ── FILTER ──
-document.querySelectorAll('.fchip').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.fchip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.s;
-    loadParcelles(currentFilter);
-  });
-});
-
-// ── ADD / EDIT ──
-function openAdd() {
-  editingId = null;
-  document.getElementById('addTitle').textContent = 'Nouvelle parcelle';
-  document.getElementById('formAdd').reset();
-  document.getElementById('ovAdd').classList.add('open');
-}
-
-function editCurrent() {
-  if (!currentParcelle) return;
-  editingId = currentParcelle.id;
-  document.getElementById('addTitle').textContent = 'Modifier la parcelle';
-  document.getElementById('fNom').value = currentParcelle.nom || '';
-  document.getElementById('fCulture').value = currentParcelle.type_culture || '';
-  document.getElementById('fStatut').value = currentParcelle.statut || 'active';
-  document.getElementById('fRegion').value = currentParcelle.region || '';
-  document.getElementById('fZone').value = currentParcelle.zone_agro || '';
-  document.getElementById('fLocalite').value = currentParcelle.localite || '';
-  document.getElementById('fDesc').value = currentParcelle.description || '';
-  document.getElementById('fDateSemis').value = currentParcelle.date_semis || '';
-  document.getElementById('fVariete').value = currentParcelle.variete || '';
-  closeDetail();
-  document.getElementById('ovAdd').classList.add('open');
-}
-
-function closeAdd() {
-  document.getElementById('ovAdd').classList.remove('open');
-  editingId = null;
-}
-
-async function submitAdd(e) {
-  e.preventDefault();
-  const btn = document.getElementById('btnAddSave');
-  btn.disabled = true;
-  btn.textContent = 'Enregistrement…';
-
-  const body = {
-    nom: document.getElementById('fNom').value.trim(),
-    type_culture: document.getElementById('fCulture').value || null,
-    statut: document.getElementById('fStatut').value,
-    region: document.getElementById('fRegion').value || null,
-    zone_agro: document.getElementById('fZone').value || null,
-    localite: document.getElementById('fLocalite').value.trim() || null,
-    description: document.getElementById('fDesc').value.trim() || null,
-    date_semis: document.getElementById('fDateSemis').value || null,
-    variete: document.getElementById('fVariete').value.trim() || null,
-  };
-
+// ── STEP 12 : ACTIVATION ──────────────────────────────────────────────────────
+async function finalizeActivation() {
   try {
-    if (editingId) {
-      await api(`/api/champ/parcelles/${editingId}`, {method:'PUT', body:JSON.stringify(body)});
-      toast('Parcelle modifiée', 'ok');
-    } else {
-      await api('/api/champ/parcelles', {method:'POST', body:JSON.stringify(body)});
-      toast('Parcelle créée !', 'ok');
-    }
-    closeAdd();
-    loadParcelles(currentFilter);
-  } catch(ex) {
-    toast(ex.detail || 'Erreur', 'err');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Enregistrer';
+    await api(`/api/champ/parcelles/${state.parcelleId}/finaliser`, {method:'POST'});
+  } catch(e) {}
+}
+
+function finishWizard() {
+  showList();
+}
+
+// ── DETAIL SHEET ──────────────────────────────────────────────────────────────
+async function openDetail(id) {
+  const p = state.parcelles.find(x => x.id === id);
+  if (!p) return;
+  state.detailParcelle = p;
+  state.satLoaded = false;
+
+  document.getElementById('detailNom').textContent = p.nom;
+  document.getElementById('detailMeta').textContent =
+    (p.type_culture || 'Culture non définie') + (p.region ? ' · ' + p.region : '');
+
+  ['dSolContent','dEauContent','dInfraContent','dSatContent'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  });
+  document.getElementById('btnSatRefresh').style.display = 'none';
+
+  // Reset tabs
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('dInfo').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+
+  renderDetailInfo(p);
+  document.getElementById('ovDetail').classList.add('open');
+
+  loadDetailSol(id);
+  loadDetailEau(id);
+  loadDetailInfra(id);
+}
+
+function renderDetailInfo(p) {
+  const dateStr = p.date_semis
+    ? new Date(p.date_semis + 'T00:00:00').toLocaleDateString('fr-FR') : '—';
+  document.getElementById('dInfoRows').innerHTML = [
+    ['Code', p.code_parcelle || '—'],
+    ['Statut', statutLabel(p.statut)],
+    ['Source eau', p.source_eau_principale?.replace(/_/g,' ') || '—'],
+    ['Irrigation', p.type_irrigation?.replace(/_/g,' ') || '—'],
+    ['Stade culture', p.stade_culture || '—'],
+    ['Date semis', dateStr],
+    ['Zone agro', p.zone_agro || '—'],
+    ['Région', p.region || '—'],
+    ['Superficie', p.superficie_ha ? p.superficie_ha.toFixed(4) + ' ha' : '—'],
+    ['Périmètre', p.perimetre_m ? p.perimetre_m.toFixed(0) + ' m' : '—'],
+    ['Score', (p.score_completude || 0) + '%'],
+  ].map(([l,v]) => `<div class="info-row"><span class="irl">${l}</span><span class="irv">${v}</span></div>`).join('');
+}
+
+async function loadDetailSol(id) {
+  try {
+    const sol = await api(`/api/champ/parcelles/${id}/sol`);
+    const el = document.getElementById('dSolContent');
+    if (!sol) { el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune analyse de sol.</p>'; return; }
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        ${sol.pH_eau != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.pH_eau.toFixed(1)}</div><div style="font-size:.73rem;color:var(--soft)">pH eau</div></div>` : ''}
+        ${sol.matiere_organique != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.matiere_organique.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">M.O.</div></div>` : ''}
+        ${sol.temperature_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.temperature_sol.toFixed(1)}°C</div><div style="font-size:.73rem;color:var(--soft)">Temp. sol</div></div>` : ''}
+        ${sol.humidite_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.humidite_sol.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">Humidité</div></div>` : ''}
+      </div>
+      <div class="info-row"><span class="irl">Source</span><span class="irv">${sol.source_analyse ? sol.source_analyse.replace(/_/g,' ') : '—'}</span></div>
+      ${sol.texture ? `<div class="info-row"><span class="irl">Texture</span><span class="irv">${sol.texture}</span></div>` : ''}
+    `;
+  } catch(e) {
+    document.getElementById('dSolContent').innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune analyse de sol.</p>';
   }
 }
 
-// ── DETAIL ──
-async function openDetail(id) {
-  currentParcelle = parcelles.find(p => p.id === id) || null;
-  if (!currentParcelle) return;
+async function loadDetailEau(id) {
+  try {
+    const list = await api(`/api/champ/parcelles/${id}/sources-eau`);
+    const el = document.getElementById('dEauContent');
+    if (!list || !list.length) { el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune source d\'eau.</p>'; return; }
+    const ICONS = {forage:'🔩',puits_traditionnel:'⛏️',cours_eau:'🌊',mare_permanente:'🏞️',mare_temporaire:'💦',reservoir:'🪣',eau_de_pluie:'🌧️',canal_irrigation:'🏞️',riviere:'🌊',fleuve:'🏞️',chateau_eau:'🏗️'};
+    el.innerHTML = `<div class="mini-list">${list.map(s=>`<div class="mini-card"><div class="mini-icon">${ICONS[s.type]||'💧'}</div><div class="mini-body"><div class="mini-name">${s.type.replace(/_/g,' ')}</div><div class="mini-sub">${s.qualite||''} ${s.disponibilite||''}</div></div></div>`).join('')}</div>`;
+  } catch(e) {
+    document.getElementById('dEauContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
+  }
+}
 
-  // Reset tabs
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tInfo').classList.add('active');
-  document.querySelector('.tab').classList.add('active');
+async function loadDetailInfra(id) {
+  try {
+    const list = await api(`/api/champ/parcelles/${id}/infrastructures`);
+    const el = document.getElementById('dInfraContent');
+    if (!list || !list.length) { el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune infrastructure.</p>'; return; }
+    el.innerHTML = `<div class="mini-list">${list.map(i=>{
+      const icon = INFRA_CATS.flatMap(c=>c.items).find(x=>x.type===i.type)?.icon || '🏗️';
+      return `<div class="mini-card">
+        <div class="mini-icon">${icon}</div>
+        <div class="mini-body"><div class="mini-name">${i.nom||i.type.replace(/_/g,' ')}</div><div class="mini-sub">${i.categorie||''}</div></div>
+        ${i.photo_url ? `<img src="${i.photo_url}" class="mini-photo" alt="" onerror="this.style.display='none'">` : ''}
+      </div>`;
+    }).join('')}</div>`;
+  } catch(e) {
+    document.getElementById('dInfraContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
+  }
+}
 
-  document.getElementById('detailNom').textContent = currentParcelle.nom;
-  document.getElementById('detailMeta').textContent =
-    (currentParcelle.type_culture || 'Culture inconnue') + (currentParcelle.region ? ' · ' + currentParcelle.region : '');
+async function loadDetailSat(id) {
+  const el = document.getElementById('dSatContent');
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  try {
+    const sat = await api(`/api/app/satellite/${id}`);
+    state.satLoaded = true;
+    const col = sat.couleur || 'vert';
+    const colMap = {vert:'var(--g)',orange:'var(--orange)',rouge:'var(--red)'};
+    el.innerHTML = `
+      <div style="background:var(--paper);border-radius:12px;padding:16px;border-left:4px solid ${colMap[col]||'var(--g)'}">
+        <div style="font-size:.9rem;font-weight:500;line-height:1.5">${sat.message_simple||'—'}</div>
+        <div style="font-size:.72rem;color:var(--soft);margin-top:8px">
+          Analyse du ${sat.date ? new Date(sat.date+'T00:00:00').toLocaleDateString('fr-FR') : '—'} · ${sat.source||''}
+        </div>
+      </div>`;
+    document.getElementById('btnSatRefresh').style.display = 'block';
+  } catch(e) {
+    el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Impossible de récupérer les données satellite.</p>';
+    document.getElementById('btnSatRefresh').style.display = 'block';
+  }
+}
 
-  // Score
-  const sc = currentParcelle.score_completude || 0;
-  document.getElementById('dScore').textContent = sc + '%';
-  document.getElementById('dScoreFill').style.width = sc + '%';
-
-  // Info rows
-  const dateStr = currentParcelle.date_semis
-    ? new Date(currentParcelle.date_semis + 'T00:00:00').toLocaleDateString('fr-FR') : '—';
-  document.getElementById('dInfoRows').innerHTML = [
-    ['Code', currentParcelle.code_parcelle || '—'],
-    ['Statut', statutLabel(currentParcelle.statut)],
-    ['Stade', currentParcelle.stade_culture || '—'],
-    ['Variété', currentParcelle.variete || '—'],
-    ['Date semis', dateStr],
-    ['Zone agro', currentParcelle.zone_agro || '—'],
-    ['Localité', currentParcelle.localite || '—'],
-    ['Superficie', currentParcelle.superficie_ha ? currentParcelle.superficie_ha.toFixed(2) + ' ha' : '—'],
-    ['Périmètre', currentParcelle.perimetre_m ? currentParcelle.perimetre_m.toFixed(0) + ' m' : '—'],
-  ].map(([l, v]) => `<div class="info-row"><span class="irl">${l}</span><span class="irv">${v}</span></div>`).join('');
-
-  // Load sol/eau/infra in background
-  document.getElementById('dSolContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  document.getElementById('dEauContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  document.getElementById('dInfraContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  document.getElementById('dSatContent').innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  document.getElementById('btnSatForce').style.display = 'none';
-  _satLoaded = false;
-
-  document.getElementById('ovDetail').classList.add('open');
-
-  // Load async
-  loadSol(id);
-  loadEau(id);
-  loadInfra(id);
+async function refreshSat() {
+  if (!state.detailParcelle) return;
+  const btn = document.getElementById('btnSatRefresh');
+  btn.disabled = true;
+  try {
+    await api(`/api/app/satellite/${state.detailParcelle.id}/analyser`, {method:'POST'});
+    state.satLoaded = false;
+    loadDetailSat(state.detailParcelle.id);
+  } catch(e) {
+    toast(e.detail||'Erreur analyse satellite','err');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function closeDetail() {
@@ -827,276 +1752,73 @@ function closeDetail() {
 }
 
 function switchTab(btn, paneId) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(paneId).classList.add('active');
-  if (paneId === 'tSat' && currentParcelle && !_satLoaded) {
-    loadSatellite(currentParcelle.id);
+  if (paneId === 'dSat' && state.detailParcelle && !state.satLoaded) {
+    loadDetailSat(state.detailParcelle.id);
   }
 }
 
-async function loadSatellite(id) {
-  const el = document.getElementById('dSatContent');
-  const btnForce = document.getElementById('btnSatForce');
-  el.innerHTML = '<div class="loading-state"><div class="spinner"></div><p style="margin-top:8px;font-size:.82rem">Analyse satellite en cours…</p></div>';
+async function archiveDetail() {
+  if (!state.detailParcelle) return;
+  if (!confirm(`Archiver "${state.detailParcelle.nom}" ?`)) return;
   try {
-    const sat = await api(`/api/app/satellite/${id}`);
-    _satLoaded = true;
-    const couleur = sat.couleur || 'vert';
-    const dateSat = sat.date ? new Date(sat.date + 'T00:00:00').toLocaleDateString('fr-FR') : '—';
-    const src = (sat.source || '').startsWith('simule') ? 'estimation saisonnière' : 'Sentinel-2';
-    el.innerHTML = `<div class="sat-card ${couleur}">
-      <div class="sat-msg"><span class="sat-dot ${couleur}"></span>${sat.message_simple || '—'}</div>
-      <div class="sat-meta">Analyse du ${dateSat} · ${src}</div>
-    </div>`;
-    btnForce.style.display = 'block';
-  } catch(e) {
-    _satLoaded = false;
-    el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">📡</div><p>Impossible de récupérer les données satellite.</p></div>';
-    btnForce.style.display = 'block';
-  }
-}
-
-async function forcerSatellite() {
-  if (!currentParcelle) return;
-  const btnForce = document.getElementById('btnSatForce');
-  btnForce.disabled = true;
-  btnForce.textContent = 'Analyse en cours…';
-  try {
-    await api(`/api/app/satellite/${currentParcelle.id}/analyser`, {method: 'POST'});
-    _satLoaded = false;
-    loadSatellite(currentParcelle.id);
-  } catch(e) {
-    toast(e.detail || 'Erreur analyse satellite', 'err');
-  } finally {
-    btnForce.disabled = false;
-    btnForce.textContent = "Actualiser l'analyse";
-  }
-}
-
-async function archiveCurrent() {
-  if (!currentParcelle) return;
-  if (!confirm(`Archiver "${currentParcelle.nom}" ?`)) return;
-  try {
-    await api(`/api/champ/parcelles/${currentParcelle.id}`, {
-      method: 'PUT',
-      body: JSON.stringify({statut: 'archive'})
+    await api(`/api/champ/parcelles/${state.detailParcelle.id}`, {
+      method:'PUT', body: JSON.stringify({statut:'archive'})
     });
-    toast('Parcelle archivée', 'ok');
+    toast('Parcelle archivée','ok');
     closeDetail();
-    loadParcelles(currentFilter);
-  } catch(e) {
-    toast(e.detail || 'Erreur', 'err');
-  }
+    loadParcelles();
+  } catch(e) { toast(e.detail||'Erreur','err'); }
 }
 
-function telechargerPDF() {
-  if (!currentParcelle) return;
-  const a = document.createElement('a');
-  a.href = `/api/app/parcelles/${currentParcelle.id}/export-pdf`;
-  a.download = `rapport_${currentParcelle.nom || currentParcelle.id}.pdf`;
-  a.setAttribute('data-auth', TOKEN);
-  // Fetch avec auth puis déclencher téléchargement
-  fetch(a.href, {headers: {Authorization: 'Bearer ' + TOKEN}})
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
-    .then(blob => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = a.download;
-      link.click();
+function dlPDFDetail() {
+  if (!state.detailParcelle) return;
+  fetch(`/api/app/parcelles/${state.detailParcelle.id}/export-pdf`, {
+    headers:{Authorization:'Bearer '+TOKEN}
+  }).then(r=>{if(!r.ok)throw new Error();return r.blob();})
+    .then(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=`rapport_${state.detailParcelle.nom}.pdf`;a.click();
       URL.revokeObjectURL(url);
-    })
-    .catch(() => toast('Erreur génération PDF', 'err'));
+    }).catch(()=>toast('Erreur PDF','err'));
 }
 
-// ── SOL ──
-async function loadSol(id) {
-  try {
-    const sol = await api(`/api/champ/parcelles/${id}/sol`);
-    const el = document.getElementById('dSolContent');
-    if (!sol || !sol.id) {
-      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">🧪</div><p>Aucune analyse de sol.</p></div>';
-      return;
-    }
-    el.innerHTML = `
-      <div class="sol-grid">
-        ${sol.pH_eau != null ? `<div class="sol-card"><div class="sv">${sol.pH_eau.toFixed(1)}</div><div class="sl">pH eau</div></div>` : ''}
-        ${sol.pH_kcl != null ? `<div class="sol-card"><div class="sv">${sol.pH_kcl.toFixed(1)}</div><div class="sl">pH KCl</div></div>` : ''}
-        ${sol.matiere_organique != null ? `<div class="sol-card"><div class="sv">${sol.matiere_organique.toFixed(1)}%</div><div class="sl">M.O.</div></div>` : ''}
-        ${sol.conductivite_ds_m != null ? `<div class="sol-card"><div class="sv">${sol.conductivite_ds_m.toFixed(2)}</div><div class="sl">Cond. dS/m</div></div>` : ''}
-        ${sol.azote_total != null ? `<div class="sol-card"><div class="sv">${sol.azote_total.toFixed(2)}</div><div class="sl">N total</div></div>` : ''}
-        ${sol.phosphore_assim != null ? `<div class="sol-card"><div class="sv">${sol.phosphore_assim.toFixed(0)}</div><div class="sl">P (mg/kg)</div></div>` : ''}
-      </div>
-      <div class="info-row"><span class="irl">Texture</span><span class="irv">${sol.texture || '—'}</span></div>
-      <div class="info-row"><span class="irl">Érosion</span><span class="irv">${sol.erosion || '—'}</span></div>
-      ${sol.laboratoire ? `<div class="info-row"><span class="irl">Labo</span><span class="irv">${sol.laboratoire}</span></div>` : ''}
-      ${sol.date_analyse ? `<div class="info-row"><span class="irl">Date</span><span class="irv">${new Date(sol.date_analyse).toLocaleDateString('fr-FR')}</span></div>` : ''}
-      ${sol.observations ? `<p style="font-size:.82rem;color:var(--soft);margin-top:8px">${sol.observations}</p>` : ''}
-    `;
-  } catch(e) {
-    document.getElementById('dSolContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur de chargement</p>';
+// ── STEP NAV ───────────────────────────────────────────────────────────────────
+function goToStep(n) {
+  state.currentStep = n;
+  document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+  document.getElementById(`step${n}`).classList.add('active');
+  updateProgress(n);
+  const disp = internalToDisplay(n);
+  document.getElementById('stepNum').textContent = disp;
+  document.getElementById('stepName').textContent = DISPLAY_NAMES[disp] || STEP_NAMES[n] || '';
+  const back = document.getElementById('btnWizBack');
+  if (back) back.style.display = n > 1 ? 'inline-flex' : 'none';
+
+  if (n === 3) initPreparation();
+  if (n === 4) initMap();
+  if (n === 5) showMetrics();
+  if (n === 6) triggerSatAnalysis();
+  if (n === 7) renderProfilSol();
+  if (n === 10) loadScore();
+  if (n === 12) finalizeActivation();
+
+  // Save wizard progress
+  if (state.parcelleId && n > 1) {
+    api(`/api/champ/parcelles/${state.parcelleId}`, {
+      method:'PUT', body:JSON.stringify({etape_wizard:n})
+    }).catch(()=>{});
   }
+
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-async function loadEau(id) {
-  try {
-    const list = await api(`/api/champ/parcelles/${id}/sources-eau`);
-    const el = document.getElementById('dEauContent');
-    if (!list || list.length === 0) {
-      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">💧</div><p>Aucune source d\'eau.</p></div>';
-      return;
-    }
-    const ICONS = {forage:'🔩', puits_traditionnel:'⛏️', cours_eau:'🌊', mare_permanente:'🏞️',
-      mare_temporaire:'💦', reservoir:'🪣', eau_de_pluie:'🌧️', canal_irrigation:'🏞️'};
-    el.innerHTML = `<div class="mini-list">${list.map(s =>
-      `<div class="mini-card">
-        <div class="mini-icon">${ICONS[s.type] || '💧'}</div>
-        <div class="mini-body">
-          <div class="mini-name">${s.type.replace(/_/g,' ')}</div>
-          <div class="mini-sub">${s.qualite || ''} · ${s.disponibilite || ''}</div>
-        </div>
-      </div>`
-    ).join('')}</div>`;
-  } catch(e) {
-    document.getElementById('dEauContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur</p>';
-  }
-}
-
-async function loadInfra(id) {
-  try {
-    const list = await api(`/api/champ/parcelles/${id}/infrastructures`);
-    const el = document.getElementById('dInfraContent');
-    if (!list || list.length === 0) {
-      el.innerHTML = '<div class="empty" style="padding:20px 0"><div class="eico">🏗️</div><p>Aucune infrastructure.</p></div>';
-      return;
-    }
-    const ICONS = {batiment:'🏠', hangar:'🏚️', serre:'🌿', cloture:'🔒', piste:'🛤️',
-      canal:'💧', digue:'🏔️', forage:'🔩', puits:'⛏️', reservoir:'🪣', compostiere:'♻️', autre:'🔧'};
-    el.innerHTML = `<div class="mini-list">${list.map(i =>
-      `<div class="mini-card">
-        <div class="mini-icon">${ICONS[i.type] || '🏗️'}</div>
-        <div class="mini-body">
-          <div class="mini-name">${i.nom || i.type.replace(/_/g,' ')}</div>
-          <div class="mini-sub">${i.etat || '—'}</div>
-        </div>
-      </div>`
-    ).join('')}</div>`;
-  } catch(e) {
-    document.getElementById('dInfraContent').innerHTML = '<p style="color:var(--soft);font-size:.85rem">Erreur</p>';
-  }
-}
-
-// ── SOL FORM ──
-function openSolForm() {
-  document.getElementById('formSol').reset();
-  document.getElementById('ovSol').classList.add('open');
-}
-
-async function submitSol(e) {
-  e.preventDefault();
-  if (!currentParcelle) return;
-  const v = n => { const x = parseFloat(n); return isNaN(x) ? null : x; };
-  const vi = n => { const x = parseInt(n); return isNaN(x) ? null : x; };
-  const body = {
-    texture: document.getElementById('sTex').value || null,
-    erosion: document.getElementById('sEro').value || null,
-    pH_eau: v(document.getElementById('sPhEau').value),
-    pH_kcl: v(document.getElementById('sPhKcl').value),
-    matiere_organique: v(document.getElementById('sMo').value),
-    conductivite_ds_m: v(document.getElementById('sCond').value),
-    azote_total: v(document.getElementById('sAz').value),
-    phosphore_assim: v(document.getElementById('sPhos').value),
-    potassium_echang: v(document.getElementById('sKal').value),
-    profondeur_labour_cm: vi(document.getElementById('sProf').value),
-    date_analyse: document.getElementById('sDt').value || null,
-    laboratoire: document.getElementById('sLab').value.trim() || null,
-    observations: document.getElementById('sObs').value.trim() || null,
-  };
-
-  const btn = e.target.querySelector('[type=submit]');
-  btn.disabled = true;
-  try {
-    await api(`/api/champ/parcelles/${currentParcelle.id}/sol`, {method:'POST', body:JSON.stringify(body)});
-    toast('Analyse de sol enregistrée !', 'ok');
-    closeSheet('ovSol');
-    loadSol(currentParcelle.id);
-  } catch(ex) {
-    toast(ex.detail || 'Erreur', 'err');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// ── EAU FORM ──
-function openEauForm() {
-  document.getElementById('formEau').reset();
-  document.getElementById('ovEau').classList.add('open');
-}
-
-async function submitEau(e) {
-  e.preventDefault();
-  if (!currentParcelle) return;
-  const v = n => { const x = parseFloat(n); return isNaN(x) ? null : x; };
-  const body = {
-    type: document.getElementById('eType').value,
-    qualite: document.getElementById('eQual').value || null,
-    disponibilite: document.getElementById('eDisp').value || null,
-    debit_m3h: v(document.getElementById('eDebit').value),
-    distance_m: v(document.getElementById('eDist').value),
-    notes: document.getElementById('eNotes').value.trim() || null,
-  };
-  const btn = e.target.querySelector('[type=submit]');
-  btn.disabled = true;
-  try {
-    await api(`/api/champ/parcelles/${currentParcelle.id}/sources-eau`, {method:'POST', body:JSON.stringify(body)});
-    toast('Source d\'eau ajoutée', 'ok');
-    closeSheet('ovEau');
-    loadEau(currentParcelle.id);
-  } catch(ex) {
-    toast(ex.detail || 'Erreur', 'err');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// ── INFRA FORM ──
-function openInfraForm() {
-  document.getElementById('formInfra').reset();
-  document.getElementById('ovInfra').classList.add('open');
-}
-
-async function submitInfra(e) {
-  e.preventDefault();
-  if (!currentParcelle) return;
-  const body = {
-    type: document.getElementById('iType').value,
-    nom: document.getElementById('iNom').value.trim() || null,
-    etat: document.getElementById('iEtat').value || null,
-    annee_construction: parseInt(document.getElementById('iAnnee').value) || null,
-    description: document.getElementById('iDesc').value.trim() || null,
-  };
-  const btn = e.target.querySelector('[type=submit]');
-  btn.disabled = true;
-  try {
-    await api(`/api/champ/parcelles/${currentParcelle.id}/infrastructures`, {method:'POST', body:JSON.stringify(body)});
-    toast('Infrastructure ajoutée', 'ok');
-    closeSheet('ovInfra');
-    loadInfra(currentParcelle.id);
-  } catch(ex) {
-    toast(ex.detail || 'Erreur', 'err');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function closeSheet(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-// ── BOOT ──
-loadParcelles();
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+showList();
 </script>
 </body>
 </html>

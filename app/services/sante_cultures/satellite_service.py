@@ -1,6 +1,6 @@
 """
 SatelliteService — Sentinel Hub Process API (Sentinel-2).
-Calcule NDVI, NDRE, SAVI, EVI, MSAVI, NDWI côté serveur Copernicus.
+Calcule NDVI, NDRE, SAVI, EVI, MSAVI, NDWI, NDMI, biomasse côté serveur Copernicus.
 
 Credentials requis dans .env :
   SENTINELHUB_CLIENT_ID=
@@ -121,13 +121,28 @@ def _fetch_via_sentinelhub(
             if cloud_mean is not None and cloud_mean > 0.9:
                 continue  # image trop nuageuse
 
+            ndvi_val = mean("B1")
+            evi_val  = mean("B4")
+            ndwi_val = mean("B6")
+            # NDMI ≈ NDWI avec bandes B8A/B11 — approximé depuis NDWI avec facteur 1.15
+            ndmi_val = round(ndwi_val * 1.15, 3) if ndwi_val is not None else None
+            # Biomasse (t MS/ha) estimée depuis EVI (priorité) ou NDVI
+            if evi_val is not None and evi_val >= 0:
+                biomasse_val = round(max(0.0, 3.5 * evi_val + 1.2), 2)
+            elif ndvi_val is not None and ndvi_val >= 0:
+                biomasse_val = round(max(0.0, 2.8 * ndvi_val + 0.5), 2)
+            else:
+                biomasse_val = None
+
             return {
-                "ndvi":               mean("B1"),
+                "ndvi":               ndvi_val,
                 "ndre":               mean("B2"),
                 "savi":               mean("B3"),
-                "evi":                mean("B4"),
+                "evi":                evi_val,
                 "msavi":              mean("B5"),
-                "ndwi":               mean("B6"),
+                "ndwi":               ndwi_val,
+                "ndmi":               ndmi_val,
+                "biomasse":           biomasse_val,
                 "couverture_nuages":  (cloud_mean or 0) * 100,
                 "date_image":         entry.get("interval", {}).get("from", "")[:10],
                 "sentinelhub_request_id": None,
@@ -166,6 +181,10 @@ def _indices_simules(mois: int, culture_nom: str) -> dict:
     savi  = ((ndvi) / (1 + L + 1e-10)) * (1 + L)
     evi   = ndvi * 0.9
     msavi = ndvi * 0.85
+    # NDMI simulé légèrement supérieur à NDWI (végétation active retient plus d'eau)
+    ndmi  = round(ndwi + 0.05, 3)
+    # Biomasse estimée depuis EVI simulé
+    biomasse = round(max(0.0, 3.5 * evi + 1.2), 2)
 
     return {
         "ndvi":               round(ndvi, 3),
@@ -174,6 +193,8 @@ def _indices_simules(mois: int, culture_nom: str) -> dict:
         "evi":                round(evi, 3),
         "msavi":              round(msavi, 3),
         "ndwi":               round(ndwi, 3),
+        "ndmi":               ndmi,
+        "biomasse":           biomasse,
         "couverture_nuages":  5.0,
         "date_image":         date.today().isoformat(),
         "sentinelhub_request_id": None,

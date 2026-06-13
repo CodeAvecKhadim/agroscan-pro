@@ -202,6 +202,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         </div>
       </div>
     </a>
+    <a href="/sante-cultures" class="mod" style="grid-column:span 2" id="modSatellite">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="mod-icon">🛰️</div>
+        <div>
+          <div class="mod-name">Analyse Satellite</div>
+          <div class="mod-sub">Vigueur · Eau · Biomasse des cultures</div>
+        </div>
+      </div>
+    </a>
   </div>
 
   <!-- Plan card -->
@@ -307,6 +316,17 @@ async function boot() {
     } else {
       const billing = sub.campaign_billing === 'annual' ? 'annuel' : 'mensuel';
       document.getElementById('greetSub').textContent = `Coopérative (${billing}) — accès multi-exploitation`;
+    }
+
+    // Tuile coopérative (plan cooperative uniquement)
+    if (sub.plan === 'cooperative') {
+      const mods = document.querySelector('.modules');
+      const coopEl = document.createElement('a');
+      coopEl.href = '/coop';
+      coopEl.className = 'mod';
+      coopEl.id = 'modCoop';
+      coopEl.innerHTML = '<div class="mod-icon">🤝</div><div class="mod-name">Coopérative</div><div class="mod-sub">Membres · Stats · Rapports</div>';
+      mods.appendChild(coopEl);
     }
 
     // CTA upgrade

@@ -227,7 +227,13 @@ def historique_indices(
             satellite         = i.satellite or "sentinel-2",
             ndvi_label        = i.ndvi_label,
             ndre_label        = i.ndre_label,
+            savi_label        = i.savi_label,
+            evi_label         = i.evi_label,
+            msavi_label       = i.msavi_label,
             ndwi_label        = i.ndwi_label,
+            ndmi_label        = i.ndmi_label,
+            biomasse          = i.biomasse,
+            biomasse_label    = i.biomasse_label,
             couverture_nuages = i.couverture_nuages,
             analyse_id        = i.analyse_id,
         )

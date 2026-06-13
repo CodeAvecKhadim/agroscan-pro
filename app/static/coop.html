@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Coopérative — AgroScan Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a7a3c;--green-light:#e8f5ee;--ink:#1a1a1a;--ink-soft:#6b7280;
+  --bg:#f3f4f0;--white:#fff;--red:#dc2626;--orange:#ea580c;--blue:#2563eb;
+  --radius:14px;--shadow:0 2px 12px rgba(0,0,0,.07);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:80px}
+
+/* TOP BAR */
+.topbar{background:var(--white);padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar-back{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:8px;color:var(--ink)}
+.topbar-title{font-weight:700;font-size:1.05rem;flex:1}
+.topbar-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:7px 13px;font-size:.85rem;font-weight:600;cursor:pointer}
+
+/* CONTENT */
+.content{padding:16px;max-width:600px;margin:0 auto}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.kpi{background:var(--white);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.kpi-n{font-size:1.7rem;font-weight:800;color:var(--green);line-height:1}
+.kpi-l{font-size:.78rem;color:var(--ink-soft);margin-top:3px}
+
+/* SECTION */
+.sec-title{font-weight:700;font-size:.95rem;margin:20px 0 10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;font-size:.78rem}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-hd-title{font-weight:700;font-size:.95rem}
+
+/* MEMBRE ROW */
+.membre{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.membre:last-child{border-bottom:none}
+.m-avatar{width:38px;height:38px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:var(--green);flex-shrink:0}
+.m-info{flex:1;min-width:0}
+.m-name{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-sub{font-size:.77rem;color:var(--ink-soft)}
+.m-badge{font-size:.72rem;font-weight:700;padding:3px 7px;border-radius:20px;background:var(--green-light);color:var(--green)}
+.m-badge.owner{background:#fef3c7;color:#92400e}
+
+/* PERF BAR */
+.perf-row{margin-bottom:10px}
+.perf-label{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px}
+.perf-track{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.perf-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s}
+
+/* ALERTE */
+.alerte{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.alerte:last-child{border-bottom:none}
+.alerte-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px}
+.alerte-body .ab-t{font-weight:600;font-size:.88rem}
+.alerte-body .ab-s{font-size:.76rem;color:var(--ink-soft)}
+.alerte.critique .ab-t{color:var(--red)}
+.alerte.avertissement .ab-t{color:var(--orange)}
+
+/* BTN */
+.btn{display:block;width:100%;text-align:center;padding:13px;border-radius:var(--radius);font-weight:700;font-size:.95rem;cursor:pointer;border:none;margin-top:4px}
+.btn-green{background:var(--green);color:#fff}
+.btn-outline{background:#fff;color:var(--green);border:1.5px solid var(--green)}
+
+/* BOTTOM NAV */
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid #e5e7eb;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.bm-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px;font-size:.65rem;color:var(--ink-soft);text-decoration:none;gap:2px}
+.bm-item.active{color:var(--green)}
+.bm-icon{font-size:1.3rem}
+
+/* LOADING */
+.spinner{width:24px;height:24px;border:3px solid #e5e7eb;border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:24px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:30px 16px;color:var(--ink-soft);font-size:.88rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:30px;font-size:.85rem;z-index:999;white-space:nowrap}
+.toast.err{background:var(--red)}
+.toast.ok{background:var(--green)}
+
+/* MODAL backdrop */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-end}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:600px;margin:0 auto}
+.modal-title{font-weight:700;font-size:1rem;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.82rem;font-weight:600;margin-bottom:4px;color:var(--ink-soft)}
+.field input,.field select{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-size:.92rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="topbar-back" onclick="history.back()">←</button>
+  <div class="topbar-title">🤝 Coopérative</div>
+  <button class="topbar-btn" onclick="telechargerRapport()">📄 Rapport</button>
+</div>
+
+<div class="content">
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi"><div class="kpi-n" id="kpiMembres">—</div><div class="kpi-l">Membres actifs</div></div>
+    <div class="kpi"><div class="kpi-n" id="kpiParcelles">—</div><div class="kpi-l">Parcelles totales</div></div>
+    <div class="kpi"><div class="kpi-n" id="kpiSurface">—</div><div class="kpi-l">Surface (ha)</div></div>
+    <div class="kpi"><div class="kpi-n" id="kpiAlertes">—</div><div class="kpi-l">Alertes actives</div></div>
+  </div>
+
+  <!-- Membres -->
+  <div class="sec-title">Membres</div>
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-title">Équipe</div>
+      <button class="topbar-btn" onclick="openAddMembre()" style="font-size:.78rem;padding:5px 10px">+ Ajouter</button>
+    </div>
+    <div id="membresList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Performances -->
+  <div class="sec-title">Performances par membre</div>
+  <div class="card" id="perfCard">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Alertes actives -->
+  <div class="sec-title">Alertes actives</div>
+  <div class="card" id="alertesCard">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Activités récentes -->
+  <div class="sec-title">Activités récentes</div>
+  <div class="card" id="activitesCard">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Actions -->
+  <button class="btn btn-green" onclick="telechargerRapport()" style="margin-top:8px">📄 Télécharger le rapport consolidé</button>
+  <button class="btn btn-outline" onclick="location.href='/app'" style="margin-top:8px">← Retour au tableau de bord</button>
+
+</div>
+
+<!-- Modal ajout membre -->
+<div class="modal" id="modalMembre">
+  <div class="modal-box">
+    <div class="modal-title">Ajouter un membre</div>
+    <div class="field"><label>Nom complet</label><input type="text" id="mNom" placeholder="Modou Diop"></div>
+    <div class="field"><label>Email</label><input type="email" id="mEmail" placeholder="modou@exemple.sn"></div>
+    <div class="field"><label>Téléphone</label><input type="text" id="mTel" placeholder="78 000 00 00"></div>
+    <div class="field"><label>Mot de passe provisoire</label><input type="password" id="mPass" placeholder="6 caractères minimum"></div>
+    <div class="field"><label>Rôle</label>
+      <select id="mRole">
+        <option value="member">Membre</option>
+        <option value="conseiller">Conseiller</option>
+        <option value="admin">Administrateur</option>
+      </select>
+    </div>
+    <button class="btn btn-green" onclick="submitAddMembre()">Ajouter le membre</button>
+    <button class="btn btn-outline" onclick="closeModal()" style="margin-top:8px">Annuler</button>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-menu">
+  <a href="/app" class="bm-item"><span class="bm-icon">🏠</span>Accueil</a>
+  <a href="/mon-champ" class="bm-item"><span class="bm-icon">🌾</span>Champ</a>
+  <a href="/coop" class="bm-item active"><span class="bm-icon">🤝</span>Coop</a>
+  <a href="/ferme" class="bm-item"><span class="bm-icon">📋</span>Ferme</a>
+  <a href="/meteo" class="bm-item"><span class="bm-icon">🌤️</span>Météo</a>
+</nav>
+
+<script>
+const TOKEN = localStorage.getItem('agro_token') || '';
+if (!TOKEN) location.href = '/';
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json'}, opts.headers || {});
+  if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(path, opts);
+  let data = null;
+  try { data = await r.json(); } catch(e) {}
+  if (!r.ok) throw { status: r.status, detail: (data && data.detail) || 'Erreur' };
+  return data;
+}
+
+const ROLE_LABELS = { owner:'Propriétaire', admin:'Administrateur', member:'Membre', conseiller:'Conseiller' };
+const ROLE_ICONS  = { owner:'👑', admin:'⚙️', member:'👤', conseiller:'🌱' };
+
+async function boot() {
+  try {
+    const [dash, membres, perfs, alertes, activites] = await Promise.allSettled([
+      api('/api/coop/dashboard'),
+      api('/api/coop/members'),
+      api('/api/coop/membres/performances'),
+      api('/api/coop/alertes?limit=10'),
+      api('/api/coop/activites?limit=8'),
+    ]);
+
+    // KPIs from dashboard
+    if (dash.status === 'fulfilled') {
+      const d = dash.value;
+      document.getElementById('kpiMembres').textContent   = d.membres    ?? '—';
+      document.getElementById('kpiParcelles').textContent = d.parcelles  ?? '—';
+      document.getElementById('kpiSurface').textContent   = d.surface_totale_ha != null ? d.surface_totale_ha.toFixed(1) : '—';
+      const nbAl = alertes.status === 'fulfilled'
+        ? (alertes.value.nb_alertes ?? (alertes.value.alertes || []).length)
+        : '—';
+      document.getElementById('kpiAlertes').textContent = nbAl;
+    }
+
+    // Membres
+    const memEl = document.getElementById('membresList');
+    if (membres.status === 'fulfilled') {
+      const list = Array.isArray(membres.value) ? membres.value : (membres.value.membres || []);
+      if (list.length === 0) {
+        memEl.innerHTML = '<div class="empty">Aucun membre enregistré</div>';
+      } else {
+        memEl.innerHTML = list.map(m => {
+          const initials = (m.full_name || m.email || '?').substring(0,2).toUpperCase();
+          const role = m.role || 'member';
+          const badgeCls = role === 'owner' || role === 'admin' ? 'owner' : '';
+          return `<div class="membre">
+            <div class="m-avatar">${initials}</div>
+            <div class="m-info">
+              <div class="m-name">${m.full_name || '—'}</div>
+              <div class="m-sub">${m.email || ''}</div>
+            </div>
+            <span class="m-badge ${badgeCls}">${ROLE_ICONS[role] || ''} ${ROLE_LABELS[role] || role}</span>
+          </div>`;
+        }).join('');
+      }
+    } else {
+      memEl.innerHTML = '<div class="empty">Impossible de charger les membres</div>';
+    }
+
+    // Performances
+    const perfEl = document.getElementById('perfCard');
+    if (perfs.status === 'fulfilled') {
+      const list = Array.isArray(perfs.value) ? perfs.value : (perfs.value.membres || []);
+      if (list.length === 0) {
+        perfEl.innerHTML = '<div class="empty">Aucune donnée de performance</div>';
+      } else {
+        const maxActs = Math.max(...list.map(p => p.nb_activites || 0), 1);
+        perfEl.innerHTML = list.map(p => {
+          const pct = Math.round(((p.nb_activites || 0) / maxActs) * 100);
+          return `<div class="perf-row">
+            <div class="perf-label"><span>${p.nom || p.email || '—'}</span><span>${p.nb_activites || 0} activité${(p.nb_activites || 0) !== 1 ? 's' : ''}</span></div>
+            <div class="perf-track"><div class="perf-fill" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join('');
+      }
+    } else {
+      perfEl.innerHTML = '<div class="empty">Données de performance non disponibles</div>';
+    }
+
+    // Alertes (structure: {nb_alertes, alertes:[{consultation_id, type, parcelle_id, date, diagnostic_principal}]})
+    const alEl = document.getElementById('alertesCard');
+    if (alertes.status === 'fulfilled') {
+      const list = alertes.value.alertes || [];
+      if (list.length === 0) {
+        alEl.innerHTML = '<div class="empty">✅ Aucune alerte active</div>';
+      } else {
+        const ICONS = { maladie:'🦠', ravageur:'🐛', fertilisation:'🌿', irrigation:'💧', meteo:'🌩️', secheresse:'☀️' };
+        alEl.innerHTML = list.map(a => {
+          const icon  = ICONS[a.type] || '📢';
+          const diag  = a.diagnostic_principal ? ` — ${a.diagnostic_principal}` : '';
+          const dateS = a.date ? new Date(a.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'}) : '';
+          return `<div class="alerte avertissement">
+            <div class="alerte-icon">${icon}</div>
+            <div class="alerte-body">
+              <div class="ab-t">${a.type ? a.type.charAt(0).toUpperCase()+a.type.slice(1) : 'Alerte'}${diag}</div>
+              <div class="ab-s">Parcelle #${a.parcelle_id || '?'} · ${dateS}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    } else {
+      alEl.innerHTML = '<div class="empty">Alertes non disponibles</div>';
+    }
+
+    // Activités récentes (structure: {total, activites:[{id, type, titre, statut, date_prevue, parcelle_id}]})
+    const actEl = document.getElementById('activitesCard');
+    if (activites.status === 'fulfilled') {
+      const list = activites.value.activites || [];
+      if (list.length === 0) {
+        actEl.innerHTML = '<div class="empty">Aucune activité récente</div>';
+      } else {
+        const TYPE_ICONS = { traitement:'💊', irrigation:'💧', fertilisation:'🌿', plantation:'🌱', recolte:'🌾', autre:'📝' };
+        actEl.innerHTML = list.map(a => {
+          const date = a.date_prevue || a.created_at || '';
+          const dateStr = date ? new Date(date).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'}) : '—';
+          const icon = TYPE_ICONS[a.type] || '📋';
+          return `<div class="membre" style="gap:10px">
+            <div class="m-avatar" style="font-size:1rem">${icon}</div>
+            <div class="m-info">
+              <div class="m-name">${a.titre || a.type || '—'}</div>
+              <div class="m-sub">${dateStr} · Parcelle #${a.parcelle_id || '?'}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    } else {
+      actEl.innerHTML = '<div class="empty">Activités non disponibles</div>';
+    }
+
+  } catch(e) {
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 403) {
+      document.querySelector('.content').innerHTML =
+        '<div class="empty" style="margin-top:60px"><div style="font-size:2.5rem">🔒</div><p style="margin-top:12px">Accès réservé aux coopératives.<br>Votre plan ne permet pas l\'accès à ce module.</p><button class="btn btn-green" onclick="location.href=\'/tarifs\'" style="margin-top:16px">Voir les offres →</button></div>';
+    } else {
+      toast('Erreur de chargement', 'err');
+    }
+  }
+}
+
+async function telechargerRapport() {
+  toast('Génération du rapport…');
+  try {
+    const r = await fetch('/api/coop/rapport-consolide', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    if (!r.ok) { toast('Rapport non disponible', 'err'); return; }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rapport_coop_${new Date().toISOString().slice(0,10)}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Rapport téléchargé', 'ok');
+  } catch(e) {
+    toast('Erreur lors du téléchargement', 'err');
+  }
+}
+
+function openAddMembre() {
+  document.getElementById('modalMembre').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalMembre').classList.remove('open');
+}
+
+async function submitAddMembre() {
+  const nom   = document.getElementById('mNom').value.trim();
+  const email = document.getElementById('mEmail').value.trim();
+  const tel   = document.getElementById('mTel').value.trim();
+  const pass  = document.getElementById('mPass').value;
+  const role  = document.getElementById('mRole').value;
+  if (!nom || !email || !pass) { toast('Remplissez tous les champs requis', 'err'); return; }
+  try {
+    await api('/api/coop/members', {
+      method: 'POST',
+      body: JSON.stringify({ full_name: nom, email, phone: tel, password: pass, role })
+    });
+    toast('Membre ajouté avec succès', 'ok');
+    closeModal();
+    boot();
+  } catch(e) {
+    toast(e.detail || 'Erreur lors de l\'ajout', 'err');
+  }
+}
+
+// Fermer modal en cliquant backdrop
+document.getElementById('modalMembre').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+boot();
+</script>
+</body>
+</html>

@@ -129,6 +129,30 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
           <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="vous@exemple.sn"></div>
           <div class="field"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
           <button class="btn btn-primary btn-block" onclick="doLogin()">Se connecter →</button>
+          <div style="text-align:center;margin-top:12px"><a href="#" onclick="showReset();return false;" style="font-size:.82rem;color:var(--ink-soft);text-decoration:underline">Mot de passe oublié ?</a></div>
+        </div>
+        <!-- RESET MOT DE PASSE -->
+        <div id="formReset" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <button onclick="hideReset()" style="color:var(--ink-soft);font-size:1.1rem;padding:2px 6px">←</button>
+            <div style="font-weight:700;font-size:.95rem">Réinitialiser mon mot de passe</div>
+          </div>
+          <!-- Étape 1 : email -->
+          <div id="resetStep1">
+            <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:14px">Saisissez votre adresse email. Vous recevrez un code de réinitialisation.</p>
+            <div class="field"><label>Email</label><input type="email" id="rEmail2" placeholder="vous@exemple.sn"></div>
+            <button class="btn btn-primary btn-block" onclick="sendResetCode()">Envoyer le code →</button>
+          </div>
+          <!-- Étape 2 : code + nouveau mdp -->
+          <div id="resetStep2" style="display:none">
+            <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.85rem">
+              <strong>Code reçu :</strong> <span id="resetCodeDisplay" style="font-family:monospace;font-size:1rem;color:var(--laterite-deep)"></span><br>
+              <span style="color:var(--ink-soft);font-size:.78rem">Valable 1 heure</span>
+            </div>
+            <div class="field"><label>Code de réinitialisation</label><input type="text" id="rResetCode" placeholder="Collez le code ici" style="font-family:monospace"></div>
+            <div class="field"><label>Nouveau mot de passe</label><input type="password" id="rNewPass" placeholder="Minimum 6 caractères"></div>
+            <button class="btn btn-primary btn-block" onclick="confirmReset()">Réinitialiser →</button>
+          </div>
         </div>
         <div id="formReg" style="display:none">
           <div class="field"><label>Nom complet</label><input type="text" id="rName" placeholder="Modou Diop"></div>
@@ -262,6 +286,47 @@ function authTab(t){
   document.getElementById("tabReg").classList.toggle("on",t==="register");
   document.getElementById("formLogin").style.display=t==="login"?"block":"none";
   document.getElementById("formReg").style.display=t==="register"?"block":"none";
+  document.getElementById("formReset").style.display="none";
+}
+
+function showReset(){
+  document.getElementById("formLogin").style.display="none";
+  document.getElementById("formReset").style.display="block";
+  document.getElementById("resetStep1").style.display="block";
+  document.getElementById("resetStep2").style.display="none";
+  document.getElementById("rEmail2").value=document.getElementById("lEmail").value||"";
+}
+
+function hideReset(){
+  document.getElementById("formReset").style.display="none";
+  document.getElementById("formLogin").style.display="block";
+}
+
+async function sendResetCode(){
+  const email=document.getElementById("rEmail2").value.trim();
+  if(!email){toast("Saisissez votre adresse email","err");return;}
+  try{
+    const d=await api("/api/auth/forgot-password",{method:"POST",body:JSON.stringify({email})});
+    document.getElementById("resetStep1").style.display="none";
+    document.getElementById("resetStep2").style.display="block";
+    const code=d.reset_token||"";
+    document.getElementById("resetCodeDisplay").textContent=code;
+    document.getElementById("rResetCode").value=code;
+    toast("Code généré","ok");
+  }catch(e){toast(e.detail||"Erreur","err");}
+}
+
+async function confirmReset(){
+  const token=document.getElementById("rResetCode").value.trim();
+  const pw=document.getElementById("rNewPass").value;
+  if(!token){toast("Saisissez le code reçu","err");return;}
+  if(pw.length<6){toast("Mot de passe trop court (min 6 caractères)","err");return;}
+  try{
+    await api("/api/auth/reset-password",{method:"POST",body:JSON.stringify({token,new_password:pw})});
+    toast("Mot de passe modifié ! Connectez-vous.","ok");
+    document.getElementById("lPass").value="";
+    hideReset();
+  }catch(e){toast(e.detail||"Code invalide ou expiré","err");}
 }
 async function doRegister(){
   try{

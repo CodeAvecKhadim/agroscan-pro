@@ -201,7 +201,7 @@ footer a{color:var(--millet)}
     <ul>
       <li>Toutes les fonctionnalités AgroScan</li>
       <li>Agriculture de précision</li>
-      <li>NDVI Satellite illimité</li>
+      <li>Analyse satellite illimitée</li>
       <li>Assistant IA</li>
       <li>Analyse de sol avancée</li>
       <li>Santé des cultures avancée</li>
@@ -234,7 +234,7 @@ footer a{color:var(--millet)}
       <li>Toutes les fonctionnalités AgroScan</li>
       <li>Tableau de bord conseiller</li>
       <li>Gestion multi-agriculteurs</li>
-      <li>Suivi NDVI multi-parcelles</li>
+      <li>Suivi satellite multi-parcelles</li>
       <li>Rapports consolidés</li>
       <li>Alertes automatiques</li>
       <li>Recommandations agronomiques</li>
@@ -281,9 +281,26 @@ footer a{color:var(--millet)}
         <span class="recap-total-val" id="recapTotal">—</span>
       </div>
       <p class="recap-detail" id="recapDetail"></p>
-      <a href="/" class="btn btn-primary">Souscrire maintenant →</a>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:6px">Moyen de paiement</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
+            <input type="radio" name="provider" value="wave" checked> 📱 Wave
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
+            <input type="radio" name="provider" value="orange_money"> 📱 Orange Money
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
+            <input type="radio" name="provider" value="paydunya"> 💳 PayDunya
+          </label>
+        </div>
+        <input type="tel" id="phoneInput" placeholder="Téléphone (ex: 77 123 45 67)"
+          style="width:100%;margin-top:10px;padding:10px 12px;border:1.5px solid #dde;border-radius:8px;font-size:.9rem;display:none">
+      </div>
+      <button class="btn btn-primary" onclick="initierPaiement()" id="btnPayer">Payer maintenant →</button>
+      <div id="payMsg" style="margin-top:10px;font-size:.84rem;text-align:center;color:#059669"></div>
       <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:10px">
-        💳 Wave · Orange Money · Free Money · Carte (bientôt)
+        💳 Wave · Orange Money · PayDunya · Carte (bientôt)
       </p>
     </div>
   </div>
@@ -390,6 +407,66 @@ function updateRecap() {
       : '25 000 FCFA HT/mois — sans engagement.';
   }
   document.getElementById('recapDetail').textContent = detail;
+}
+
+// Afficher champ téléphone si Orange Money sélectionné
+document.querySelectorAll('input[name="provider"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const phone = document.getElementById('phoneInput');
+    phone.style.display = r.value === 'orange_money' ? 'block' : 'none';
+  });
+});
+
+async function initierPaiement() {
+  if (!selectedPlan) { alert('Choisissez un plan.'); return; }
+  const token = localStorage.getItem('agro_token');
+  if (!token) { window.location.href = '/'; return; }
+
+  const provider = document.querySelector('input[name="provider"]:checked')?.value || 'wave';
+  const phone = document.getElementById('phoneInput').value.replace(/\s/g,'') || null;
+  const planMap = { premium: 'producteur', cooperative: 'cooperative' };
+  const plan = planMap[selectedPlan] || selectedPlan;
+  const billingVal = selectedPlan === 'premium' ? 'campaign' : billing;
+
+  const btn = document.getElementById('btnPayer');
+  const msg = document.getElementById('payMsg');
+  btn.disabled = true;
+  btn.textContent = 'Chargement…';
+  msg.textContent = '';
+
+  try {
+    const r = await fetch('/api/billing/checkout', {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body: JSON.stringify({plan, billing: billingVal, provider, phone})
+    });
+    const d = await r.json();
+    if (!r.ok) { msg.style.color='#dc2626'; msg.textContent = d.detail || 'Erreur de paiement.'; return; }
+
+    // Rediriger si URL checkout dispo
+    const url = d.wave_checkout || d.orange_checkout || d.paydunya_checkout;
+    if (url) {
+      msg.style.color='#059669'; msg.textContent = 'Redirection vers la page de paiement…';
+      setTimeout(() => { window.location.href = url; }, 800);
+    } else {
+      // Instructions manuelles
+      const instruct = d.wave_manual || d.orange_manual || d.paydunya_error;
+      if (instruct && instruct.instructions) {
+        msg.style.color='#1b6ca8';
+        msg.innerHTML = '📋 <b>Paiement manuel :</b><br>' +
+          (instruct.steps||[]).map(s=>`• ${s}`).join('<br>') +
+          (instruct.ussd ? `<br>🔢 ${instruct.ussd}` : '') +
+          (instruct.reference ? `<br>Référence : <b>${instruct.reference}</b>` : '');
+      } else {
+        msg.style.color='#059669'; msg.textContent = 'Commande enregistrée. Notre équipe vous contacte sous 24h.';
+      }
+    }
+  } catch(e) {
+    msg.style.color='#dc2626'; msg.textContent = 'Erreur réseau. Veuillez réessayer.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Payer maintenant →';
+  }
 }
 
 // Init

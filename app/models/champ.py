@@ -59,21 +59,6 @@ class ErosionSol(str, enum.Enum):
     TRES_FORTE = "tres_forte"
 
 
-class TypeInfrastructure(str, enum.Enum):
-    BATIMENT = "batiment"
-    HANGAR = "hangar"
-    SERRE = "serre"
-    CLOTURE = "cloture"
-    PISTE = "piste"
-    CANAL = "canal"
-    DIGUE = "digue"
-    FORAGE = "forage"
-    PUITS = "puits"
-    RESERVOIR = "reservoir"
-    COMPOSTIERE = "compostiere"
-    AUTRE = "autre"
-
-
 class EtatInfrastructure(str, enum.Enum):
     BON = "bon"
     MOYEN = "moyen"
@@ -91,6 +76,9 @@ class TypeSourceEau(str, enum.Enum):
     RESERVOIR = "reservoir"
     EAU_DE_PLUIE = "eau_de_pluie"
     CANAL_IRRIGATION = "canal_irrigation"
+    RIVIERE = "riviere"
+    FLEUVE = "fleuve"
+    CHATEAU_EAU = "chateau_eau"
 
 
 class QualiteEau(str, enum.Enum):
@@ -140,9 +128,18 @@ class Parcelle(Base):
     variete = Column(String(200), nullable=True)
     stade_culture = Column(String(200), nullable=True)
 
+    # Eau & irrigation (saisies étape 1 du wizard)
+    source_eau_principale = Column(String(100), nullable=True)
+    type_irrigation = Column(String(100), nullable=True)
+
     # Score complétude
     score_completude = Column(SmallInteger, default=0)
     score_detail = Column(JSONB)
+
+    # Wizard de création
+    etape_wizard = Column(SmallInteger, default=1)
+    wizard_complet = Column(Boolean, default=False)
+    date_activation = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=_now)
     updated_at = Column(DateTime(timezone=True), default=_now, onupdate=_now)
@@ -186,6 +183,9 @@ class AnalyseSol(Base):
     parcelle_id = Column(Integer, ForeignKey("champ_parcelles.id"), nullable=False, index=True)
     date_analyse = Column(Date)
 
+    # Source : "satellite" | "capteur_8en1" | "laboratoire"
+    source_analyse = Column(String(50), nullable=True)
+
     # Physique
     texture = Column(Enum(TextureSol))
     profondeur_labour_cm = Column(SmallInteger)
@@ -205,11 +205,19 @@ class AnalyseSol(Base):
     cec = Column(Float)                  # cmol+/kg
     conductivite_ds_m = Column(Float)    # dS/m
 
+    # Capteur 8-en-1
+    temperature_sol = Column(Float)      # °C
+    humidite_sol = Column(Float)         # %
+    salinite = Column(Float)             # mg/L ou ppm
+
     # Méta
     methode_analyse = Column(String(100))
     laboratoire = Column(String(200))
     reference_labo = Column(String(100))
     observations = Column(Text)
+
+    # Analyse satellite complète (JSONB : géographie, admin, topo, hydro, risques, historique, profil)
+    analyse_satellite = Column(JSONB)
 
     created_at = Column(DateTime(timezone=True), default=_now)
 
@@ -222,7 +230,9 @@ class Infrastructure(Base):
     id = Column(Integer, primary_key=True, index=True)
     parcelle_id = Column(Integer, ForeignKey("champ_parcelles.id"), nullable=False, index=True)
 
-    type = Column(Enum(TypeInfrastructure), nullable=False)
+    # type est désormais VARCHAR libre (migration b2c3d4e5f6g7)
+    type = Column(String(100), nullable=False)
+    categorie = Column(String(100))        # Eau | Irrigation | Production végétale | etc.
     nom = Column(String(200))
     description = Column(Text)
     longueur_m = Column(Float)
@@ -231,7 +241,8 @@ class Infrastructure(Base):
     unite_capacite = Column(String(20))
     etat = Column(Enum(EtatInfrastructure))
     annee_construction = Column(SmallInteger)
-    localisation = Column(JSONB)   # {lat, lon}
+    localisation = Column(JSONB)           # {lat, lon}
+    photo_url = Column(String(500))
 
     created_at = Column(DateTime(timezone=True), default=_now)
 
@@ -254,7 +265,8 @@ class SourceEau(Base):
     disponibilite = Column(Enum(DisponibiliteEau))
     partage = Column(Boolean, default=False)
     superficie_m2 = Column(Float)
-    localisation = Column(JSONB)   # {lat, lon}
+    localisation = Column(JSONB)           # {lat, lon}
+    notes = Column(Text)
 
     created_at = Column(DateTime(timezone=True), default=_now)
 

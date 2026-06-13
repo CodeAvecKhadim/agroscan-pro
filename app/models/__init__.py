@@ -47,10 +47,15 @@ class SubStatus(str, enum.Enum):
 
 
 class UserRole(str, enum.Enum):
-    OWNER = "owner"          # propriétaire de l'organisation (facturation)
-    ADMIN = "admin"          # gère les membres et exploitations
-    MEMBER = "member"        # technicien / agriculteur membre
-    VIEWER = "viewer"        # lecture seule (ex : bailleur, ONG)
+    SUPER_ADMIN = "super_admin"    # administrateur plateforme
+    OWNER = "owner"                # propriétaire organisation (facturation)
+    ADMIN = "admin"                # gère membres et exploitations
+    CONSEILLER = "conseiller"      # conseiller agricole
+    PRODUCTEUR = "producteur"      # agriculteur / producteur
+    TECHNICIEN = "technicien"      # technicien terrain
+    LABORATOIRE = "laboratoire"    # technicien laboratoire
+    MEMBER = "member"              # membre générique
+    VIEWER = "viewer"              # lecture seule
 
 
 # --------- Tables ---------
@@ -73,13 +78,23 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     full_name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    phone = Column(String)                       # numéro WhatsApp
+    email = Column(String, unique=True, index=True, nullable=True)   # facultatif
+    phone = Column(String, index=True)           # identifiant principal obligatoire
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.OWNER)
     profil = Column(String, nullable=False, default="producteur")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=now_utc)
+    # Reset mot de passe
+    reset_token = Column(String(128), nullable=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
+    # Vérification email
+    email_verified = Column(Boolean, default=False)
+    email_verification_token = Column(String(128), nullable=True)
+    # Vérification téléphone / OTP
+    phone_verified = Column(Boolean, default=False)
+    phone_otp = Column(String(8), nullable=True)
+    phone_otp_expires = Column(DateTime(timezone=True), nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     analyses = relationship("Analysis", back_populates="user")
@@ -206,3 +221,6 @@ from app.models.satellite import (  # noqa: F401, E402
     SatelliteProduct, SatelliteJob, SatelliteConfig, SatelliteMetrics,
     SensorType, JobStatus, JobType,
 )
+
+# OTP SMS — stockage sécurisé des codes OTP
+from app.models.otp import OTPRecord  # noqa: F401, E402

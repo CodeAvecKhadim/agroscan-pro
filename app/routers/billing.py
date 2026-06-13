@@ -11,6 +11,8 @@ Endpoints :
   GET  /api/billing/me               — abonnement courant + jours restants
   GET  /api/billing/usage            — consommation IA/satellite du jour/semaine
   POST /api/billing/change           — changer de plan
+  POST /api/billing/checkout         — initier un paiement (Wave / Orange Money / PayDunya)
+  GET  /api/billing/checkout/{id}    — statut d'un paiement
   POST /api/billing/webhook          — confirmation PSP générique
   POST /api/billing/webhook-paydunya — IPN PayDunya
   POST /api/billing/webhook-wave     — Wave Money (HMAC-SHA256)
@@ -18,7 +20,10 @@ Endpoints :
 """
 import hashlib
 import hmac
+from typing import Optional
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -148,6 +153,280 @@ def change_subscription(
 ):
     """Change de plan. Renvoie l'instruction de paiement pour les plans payants."""
     return change_plan(db, sub, data.plan, data.seats, billing=data.billing)
+
+
+# ── CHECKOUT INITIATION ──────────────────────────────────────────────────────
+
+class CheckoutIn(BaseModel):
+    plan: PlanType
+    billing: str = "monthly"
+    provider: str = "wave"
+    seats: int = 1
+    phone: Optional[str] = None
+
+
+@router.post("/checkout")
+def initiate_checkout(
+    data: CheckoutIn,
+    user: User = Depends(require_role(UserRole.OWNER, UserRole.ADMIN)),
+    sub: Subscription = Depends(current_subscription),
+    db: Session = Depends(get_db),
+):
+    """
+    Initie un paiement auprès du PSP choisi et retourne le lien/code de paiement.
+
+    - Wave       : retourne `checkout_url` (lien Wave) + `wave_launch_url`
+    - Orange Money: retourne `ussd_code` + instructions
+    - PayDunya   : retourne `checkout_url` (page de paiement PayDunya)
+    - Manuel     : retourne instructions de virement
+    """
+    if data.plan == PlanType.GRATUIT:
+        return change_plan(db, sub, PlanType.GRATUIT)
+
+    from app.services.plans import price_ttc, features_for
+    feats = features_for(data.plan)
+    seats = max(1, min(data.seats, feats["max_seats"]))
+    pricing = price_ttc(data.plan, billing=data.billing)
+    amount_ttc = pricing["ttc"]
+
+    # Créer le paiement en attente
+    payment = Payment(
+        subscription_id=sub.id,
+        provider=data.provider,
+        amount_ht=pricing["ht"],
+        vat=pricing["vat"],
+        amount_ttc=amount_ttc,
+        status="pending",
+    )
+    sub.plan = data.plan
+    sub.seats = seats
+    sub.status = SubStatus.PAST_DUE
+    sub.campaign_billing = data.billing if data.plan == PlanType.COOPERATIVE else "campaign"
+    db.add(payment)
+    db.commit()
+    db.refresh(payment)
+
+    result = {
+        "payment_id": payment.id,
+        "plan": data.plan.value,
+        "amount_ttc": amount_ttc,
+        "currency": settings.CURRENCY,
+        "provider": data.provider,
+        "billing": data.billing,
+    }
+
+    if data.provider == "wave":
+        result.update(_initiate_wave(payment, amount_ttc))
+    elif data.provider == "orange_money":
+        result.update(_initiate_orange_money(payment, amount_ttc, data.phone))
+    elif data.provider == "paydunya":
+        result.update(_initiate_paydunya(payment, amount_ttc, data.plan, data.billing))
+    else:
+        result.update({
+            "type": "manuel",
+            "instruction": (
+                f"Envoyez {amount_ttc:,} FCFA à Social Technologie "
+                f"({settings.CONTACT_PHONE}) via Wave ou Orange Money "
+                f"en indiquant votre email {user.email} en référence. "
+                f"L'activation est manuelle sous 24h."
+            ),
+        })
+
+    return result
+
+
+@router.get("/checkout/{payment_id}")
+def checkout_status(
+    payment_id: int,
+    user: User = Depends(current_user),
+    sub: Subscription = Depends(current_subscription),
+    db: Session = Depends(get_db),
+):
+    """Statut d'un paiement en cours."""
+    payment = db.query(Payment).filter_by(
+        id=payment_id, subscription_id=sub.id
+    ).first()
+    if not payment:
+        raise HTTPException(404, "Paiement introuvable.")
+    return {
+        "payment_id": payment.id,
+        "status": payment.status,
+        "provider": payment.provider,
+        "amount_ttc": payment.amount_ttc,
+        "provider_ref": payment.provider_ref,
+        "created_at": payment.created_at,
+    }
+
+
+# ── Helpers PSP ───────────────────────────────────────────────────────────────
+
+def _initiate_wave(payment: Payment, amount_ttc: int) -> dict:
+    """Crée une session Wave Checkout et retourne le lien de paiement."""
+    if not settings.WAVE_API_KEY:
+        return {
+            "type": "wave_manual",
+            "instruction": (
+                f"Payez {amount_ttc:,} FCFA via Wave Money. "
+                f"Envoyez au marchand AgroScan Pro. "
+                f"Référence : AGRO-{payment.id:06d}."
+            ),
+            "wave_merchant": settings.CONTACT_PHONE,
+        }
+    try:
+        resp = httpx.post(
+            settings.WAVE_CHECKOUT_URL,
+            headers={
+                "Authorization": f"Bearer {settings.WAVE_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "amount": str(amount_ttc),
+                "currency": "XOF",
+                "client_reference": str(payment.id),
+                "success_url": settings.PAYMENT_SUCCESS_URL + f"&ref={payment.id}",
+                "error_url": settings.PAYMENT_ERROR_URL + f"&ref={payment.id}",
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return {
+            "type": "wave_checkout",
+            "checkout_url": data.get("wave_launch_url", ""),
+            "wave_session_id": data.get("id", ""),
+        }
+    except httpx.HTTPError as e:
+        return {
+            "type": "wave_error",
+            "error": f"Wave API indisponible : {str(e)[:100]}",
+            "fallback": f"Payez {amount_ttc:,} FCFA via Wave au {settings.CONTACT_PHONE}, réf AGRO-{payment.id:06d}.",
+        }
+
+
+def _initiate_orange_money(payment: Payment, amount_ttc: int, phone: Optional[str]) -> dict:
+    """Initie un paiement Orange Money (Orange Money Webpayment API Sénégal)."""
+    if not settings.ORANGE_API_KEY or not settings.ORANGE_AUTH_HEADER:
+        ussd = f"*144*{amount_ttc}#"
+        return {
+            "type": "orange_manual",
+            "ussd_code": ussd,
+            "instruction": (
+                f"Composez {ussd} sur votre téléphone Orange Money, "
+                f"envoyez {amount_ttc:,} FCFA au numéro {settings.CONTACT_PHONE} "
+                f"et indiquez la référence AGRO-{payment.id:06d}."
+            ),
+        }
+    try:
+        resp = httpx.post(
+            settings.ORANGE_CHECKOUT_URL,
+            headers={
+                "Authorization": settings.ORANGE_AUTH_HEADER,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json={
+                "merchant_key": settings.ORANGE_API_KEY,
+                "currency": "OUV",
+                "order_id": f"AGRO-{payment.id:06d}",
+                "amount": amount_ttc,
+                "return_url": settings.PAYMENT_SUCCESS_URL,
+                "cancel_url": settings.PAYMENT_ERROR_URL,
+                "notif_url": f"{settings.PAYMENT_SUCCESS_URL.rsplit('/', 1)[0]}/api/billing/webhook-orange-money",
+                "lang": "fr",
+                "reference": str(payment.id),
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return {
+            "type": "orange_checkout",
+            "checkout_url": data.get("payment_url", ""),
+            "notif_token": data.get("notif_token", ""),
+        }
+    except httpx.HTTPError as e:
+        return {
+            "type": "orange_error",
+            "error": f"Orange Money API indisponible : {str(e)[:100]}",
+            "fallback": (
+                f"Composez *144# sur votre téléphone Orange et payez "
+                f"{amount_ttc:,} FCFA, réf AGRO-{payment.id:06d}."
+            ),
+        }
+
+
+def _initiate_paydunya(payment: Payment, amount_ttc: int,
+                        plan: PlanType, billing: str) -> dict:
+    """Crée une facture PayDunya et retourne l'URL de paiement."""
+    mode = settings.PAYDUNYA_MODE
+    if mode == "live":
+        base_url = "https://app.paydunya.com/api/v1"
+    else:
+        base_url = "https://app.paydunya.com/sandbox-api/v1"
+
+    if not settings.PAYDUNYA_MASTER_KEY:
+        return {
+            "type": "paydunya_manual",
+            "instruction": (
+                f"Payez {amount_ttc:,} FCFA via PayDunya. "
+                f"Contactez {settings.CONTACT_PHONE} pour recevoir le lien de paiement. "
+                f"Référence : AGRO-{payment.id:06d}."
+            ),
+        }
+
+    label = {
+        PlanType.PREMIUM: f"AgroScan Pro — Campagne agricole 3 mois",
+        PlanType.COOPERATIVE: f"AgroScan Pro — Coopérative {billing}",
+    }.get(plan, "AgroScan Pro — Abonnement")
+
+    try:
+        resp = httpx.post(
+            f"{base_url}/checkout-invoice/create",
+            headers={
+                "PAYDUNYA-MASTER-KEY": settings.PAYDUNYA_MASTER_KEY,
+                "PAYDUNYA-PRIVATE-KEY": settings.PAYDUNYA_PRIVATE_KEY,
+                "PAYDUNYA-TOKEN": settings.PAYDUNYA_TOKEN,
+                "PAYDUNYA-PUBLIC-KEY": settings.PAYDUNYA_PUBLIC_KEY,
+                "Content-Type": "application/json",
+            },
+            json={
+                "invoice": {
+                    "total_amount": amount_ttc,
+                    "description": label,
+                },
+                "store": {
+                    "name": settings.PAYDUNYA_STORE_NAME,
+                },
+                "actions": {
+                    "cancel_url": settings.PAYMENT_ERROR_URL,
+                    "return_url": settings.PAYMENT_SUCCESS_URL + f"&ref={payment.id}",
+                    "callback_url": f"{settings.PAYMENT_SUCCESS_URL.rsplit('/', 1)[0]}/api/billing/webhook-paydunya",
+                },
+                "custom_data": {
+                    "payment_id": str(payment.id),
+                },
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("response_code") == "00":
+            token = data.get("token", "")
+            return {
+                "type": "paydunya_checkout",
+                "checkout_url": f"https://app.paydunya.com/sandbox/checkout-invoice/confirm/{token}" if mode == "test" else f"https://app.paydunya.com/checkout-invoice/confirm/{token}",
+                "paydunya_token": token,
+            }
+        return {
+            "type": "paydunya_error",
+            "error": data.get("response_text", "Erreur PayDunya"),
+        }
+    except httpx.HTTPError as e:
+        return {
+            "type": "paydunya_error",
+            "error": f"PayDunya indisponible : {str(e)[:100]}",
+            "fallback": f"Payez {amount_ttc:,} FCFA via PayDunya, réf AGRO-{payment.id:06d}.",
+        }
 
 
 @router.post("/webhook")

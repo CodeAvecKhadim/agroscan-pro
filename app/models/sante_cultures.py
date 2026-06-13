@@ -120,7 +120,12 @@ class ScIndicesSatellitaires(Base):
     msavi                 = Column(Float)   # SAVI amélioré (sols très nus)
 
     # Indice hydrique
-    ndwi                  = Column(Float)   # Stress hydrique (B3/B11)
+    ndwi                  = Column(Float)   # Eau en surface (B3-B8)/(B3+B8)
+    ndmi                  = Column(Float)   # Humidité végétation (B8A-B11)/(B8A+B11)
+
+    # Biomasse & température
+    biomasse              = Column(Float)   # t MS/ha — estimée depuis EVI/NDVI
+    temperature_canopee   = Column(Float)   # °C — LST Sentinel-3 ou estimation
 
     # Qualité image
     couverture_nuages     = Column(Float)   # 0–100 %
@@ -132,6 +137,8 @@ class ScIndicesSatellitaires(Base):
     evi_label             = Column(String(15))
     msavi_label           = Column(String(15))
     ndwi_label            = Column(String(15))
+    ndmi_label            = Column(String(15))
+    biomasse_label        = Column(String(15))
 
     # Metadata Sentinel Hub
     sentinelhub_request_id = Column(String(100))

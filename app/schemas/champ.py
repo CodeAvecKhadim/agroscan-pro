@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.models.champ import (
     StatutParcelle, TypeGeometrie, SourceMesure, TextureSol, ErosionSol,
-    TypeInfrastructure, EtatInfrastructure, TypeSourceEau, QualiteEau, DisponibiliteEau,
+    EtatInfrastructure, TypeSourceEau, QualiteEau, DisponibiliteEau,
 )
 
 
@@ -24,7 +24,10 @@ class CoordGPS(BaseModel):
 class ParcelleCreate(BaseModel):
     nom: str = Field(..., min_length=1, max_length=200)
     code_parcelle: Optional[str] = Field(None, max_length=50)
-    type_culture: Optional[str] = None
+    # Étape 1 wizard — la culture est obligatoire (PRD M2)
+    type_culture: str = Field(..., min_length=1, max_length=100, description="Culture principale (obligatoire)")
+    source_eau_principale: Optional[str] = None
+    type_irrigation: Optional[str] = None
     culture_id: Optional[int] = None
     zone_agro: Optional[str] = None
     region: Optional[str] = None
@@ -34,10 +37,13 @@ class ParcelleCreate(BaseModel):
     date_semis: Optional[date] = None
     variete: Optional[str] = Field(None, max_length=200)
     stade_culture: Optional[str] = Field(None, max_length=200)
+    etape_wizard: Optional[int] = Field(1, ge=1, le=12)
 
 
 class ParcelleUpdate(BaseModel):
     nom: Optional[str] = Field(None, max_length=200)
+    source_eau_principale: Optional[str] = None
+    type_irrigation: Optional[str] = None
     type_culture: Optional[str] = None
     culture_id: Optional[int] = None
     zone_agro: Optional[str] = None
@@ -48,6 +54,7 @@ class ParcelleUpdate(BaseModel):
     date_semis: Optional[date] = None
     variete: Optional[str] = Field(None, max_length=200)
     stade_culture: Optional[str] = Field(None, max_length=200)
+    etape_wizard: Optional[int] = Field(None, ge=1, le=12)
 
 
 class ParcelleSummary(BaseModel):
@@ -62,6 +69,8 @@ class ParcelleSummary(BaseModel):
     score_completude: int
     date_semis: Optional[date] = None
     stade_culture: Optional[str] = None
+    wizard_complet: bool = False
+    etape_wizard: int = 1
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -72,6 +81,8 @@ class ParcelleOut(BaseModel):
     org_id: int
     nom: str
     code_parcelle: Optional[str] = None
+    source_eau_principale: Optional[str] = None
+    type_irrigation: Optional[str] = None
     type_culture: Optional[str] = None
     culture_id: Optional[int] = None
     zone_agro: Optional[str] = None
@@ -89,6 +100,9 @@ class ParcelleOut(BaseModel):
     date_semis: Optional[date] = None
     variete: Optional[str] = None
     stade_culture: Optional[str] = None
+    wizard_complet: bool = False
+    etape_wizard: int = 1
+    date_activation: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -144,6 +158,7 @@ class CartographieOut(BaseModel):
 
 class AnalyseSolCreate(BaseModel):
     date_analyse: Optional[date] = None
+    source_analyse: Optional[str] = None   # "satellite" | "capteur_8en1" | "laboratoire"
     texture: Optional[TextureSol] = None
     profondeur_labour_cm: Optional[int] = Field(None, ge=0, le=200)
     pierrosite_pct: Optional[float] = Field(None, ge=0, le=100)
@@ -159,10 +174,15 @@ class AnalyseSolCreate(BaseModel):
     sodium: Optional[float] = Field(None, ge=0)
     cec: Optional[float] = Field(None, ge=0)
     conductivite_ds_m: Optional[float] = Field(None, ge=0)
+    # Capteur 8-en-1
+    temperature_sol: Optional[float] = None
+    humidite_sol: Optional[float] = Field(None, ge=0, le=100)
+    salinite: Optional[float] = Field(None, ge=0)
     methode_analyse: Optional[str] = None
     laboratoire: Optional[str] = None
     reference_labo: Optional[str] = None
     observations: Optional[str] = None
+    analyse_satellite: Optional[Dict[str, Any]] = None
 
 
 class AnalyseSolOut(AnalyseSolCreate):
@@ -176,7 +196,8 @@ class AnalyseSolOut(AnalyseSolCreate):
 # ── INFRASTRUCTURE ──────────────────────────────────────────────────────────────
 
 class InfrastructureCreate(BaseModel):
-    type: TypeInfrastructure
+    type: str = Field(..., max_length=100)
+    categorie: Optional[str] = Field(None, max_length=100)
     nom: Optional[str] = Field(None, max_length=200)
     description: Optional[str] = None
     longueur_m: Optional[float] = Field(None, ge=0)
@@ -186,6 +207,7 @@ class InfrastructureCreate(BaseModel):
     etat: Optional[EtatInfrastructure] = None
     annee_construction: Optional[int] = Field(None, ge=1900, le=2100)
     localisation: Optional[CoordGPS] = None
+    photo_url: Optional[str] = None
 
 
 class InfrastructureUpdate(BaseModel):
@@ -198,12 +220,14 @@ class InfrastructureUpdate(BaseModel):
     etat: Optional[EtatInfrastructure] = None
     annee_construction: Optional[int] = None
     localisation: Optional[CoordGPS] = None
+    photo_url: Optional[str] = None
 
 
 class InfrastructureOut(BaseModel):
     id: int
     parcelle_id: int
-    type: TypeInfrastructure
+    type: str
+    categorie: Optional[str] = None
     nom: Optional[str] = None
     description: Optional[str] = None
     longueur_m: Optional[float] = None
@@ -213,6 +237,7 @@ class InfrastructureOut(BaseModel):
     etat: Optional[EtatInfrastructure] = None
     annee_construction: Optional[int] = None
     localisation: Optional[Dict[str, float]] = None
+    photo_url: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -232,6 +257,7 @@ class SourceEauCreate(BaseModel):
     partage: bool = False
     superficie_m2: Optional[float] = Field(None, ge=0)
     localisation: Optional[CoordGPS] = None
+    notes: Optional[str] = None
 
 
 class SourceEauUpdate(BaseModel):
@@ -245,6 +271,7 @@ class SourceEauUpdate(BaseModel):
     partage: Optional[bool] = None
     superficie_m2: Optional[float] = None
     localisation: Optional[CoordGPS] = None
+    notes: Optional[str] = None
 
 
 class SourceEauOut(BaseModel):
@@ -261,6 +288,7 @@ class SourceEauOut(BaseModel):
     partage: bool
     superficie_m2: Optional[float] = None
     localisation: Optional[Dict[str, float]] = None
+    notes: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -269,7 +297,7 @@ class SourceEauOut(BaseModel):
 # ── SCORE COMPLÉTUDE ────────────────────────────────────────────────────────────
 
 class DimensionScore(BaseModel):
-    score: int        # 0 ou valeur partielle
+    score: int
     max: int
     pct: float
     complete: bool
@@ -277,7 +305,7 @@ class DimensionScore(BaseModel):
 
 
 class ScoreCompletude(BaseModel):
-    total: int        # 0-100
+    total: int
     cartographie: DimensionScore
     sol: DimensionScore
     culture_zone: DimensionScore
@@ -296,6 +324,20 @@ class RapportInitial(BaseModel):
     infrastructures: List[InfrastructureOut] = []
     sources_eau: List[SourceEauOut] = []
     score: ScoreCompletude
+    genere_le: datetime
+
+
+# ── ANALYSE SOL SATELLITE ───────────────────────────────────────────────────────
+
+class AnalyseSatelliteSolOut(BaseModel):
+    parcelle_id: int
+    geographie: Dict[str, Any]
+    administration: Dict[str, Any]
+    topographie: Dict[str, Any]
+    hydrologie: Dict[str, Any]
+    risques: Dict[str, Any]
+    historique: Dict[str, Any]
+    profil_sol: Dict[str, Any]
     genere_le: datetime
 
 

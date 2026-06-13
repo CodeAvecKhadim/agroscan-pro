@@ -12,16 +12,16 @@ from app.models import PlanType, SubStatus, UserRole
 # ---------- Authentification ----------
 class RegisterIn(BaseModel):
     full_name: str
-    email: EmailStr
-    phone: Optional[str] = None
+    phone: str                             # obligatoire — identifiant principal
+    email: Optional[EmailStr] = None       # facultatif
     password: str = Field(min_length=6)
-    org_name: Optional[str] = None        # nom de la coopérative (sinon compte individuel)
+    org_name: Optional[str] = None
     is_cooperative: bool = False
     profil: Optional[str] = "producteur"
 
 
 class LoginIn(BaseModel):
-    email: EmailStr
+    username: str                          # email OU téléphone
     password: str
 
 
@@ -34,11 +34,14 @@ class TokenOut(BaseModel):
 class UserOut(BaseModel):
     id: int
     full_name: str
-    email: EmailStr
-    phone: Optional[str]
+    email: Optional[str] = None   # facultatif — certains comptes n'ont qu'un téléphone
+    phone: Optional[str] = None
     role: UserRole
     profil: str = "producteur"
     org_id: int
+    email_verified: bool = False
+    phone_verified: bool = False
+    is_active: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 

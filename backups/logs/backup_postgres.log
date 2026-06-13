@@ -13,3 +13,8 @@
 [2026-06-12 02:00:02] Succès: /opt/agroscan/backups/postgres/agroscan_20260612_020001.sql.gz (164K)
 [2026-06-12 02:00:02] Total backups conservés: 3 | Espace dispo: 37G
 [2026-06-12 02:00:02] === Sauvegarde terminée ===
+[2026-06-13 02:00:01] === Démarrage sauvegarde PostgreSQL ===
+[2026-06-13 02:00:01] Dump de la base 'agroscan' → /opt/agroscan/backups/postgres/agroscan_20260613_020001.sql.gz
+[2026-06-13 02:00:03] Succès: /opt/agroscan/backups/postgres/agroscan_20260613_020001.sql.gz (164K)
+[2026-06-13 02:00:03] Total backups conservés: 4 | Espace dispo: 37G
+[2026-06-13 02:00:03] === Sauvegarde terminée ===

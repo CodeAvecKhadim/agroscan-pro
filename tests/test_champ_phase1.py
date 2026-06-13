@@ -109,7 +109,7 @@ class TestParcelleSchemas:
 
     def test_parcelle_create_champs_optionnels(self):
         from app.schemas.champ import ParcelleCreate
-        p = ParcelleCreate(nom="Sans agronomie")
+        p = ParcelleCreate(nom="Sans agronomie", type_culture="Mil")
         assert p.date_semis is None
         assert p.variete is None
         assert p.stade_culture is None

@@ -15,12 +15,14 @@ import os
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.limiter import limiter
-from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin
+from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin, conseiller, rapports_pdf
 from app.routers import sante_cultures as sante_cultures_router
 from app.routers import satellite
+from app.routers import otp as otp_router
 from app.routers import app_activites, app_exploitation, app_photo, app_satellite, app_export_pdf, app_export_excel
 from app.services.crop_health import identifier_maladie, CropHealthError
 import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* dans Base.metadata
+import app.models.otp  # noqa: F401 — enregistre la table otp_records dans Base.metadata
 import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
 import app.models.exploitation   # noqa: F401 — enregistre la table exploitations dans Base.metadata
 import app.models.observations      # noqa: F401 — enregistre la table observations dans Base.metadata
@@ -88,6 +90,9 @@ app.include_router(app_satellite.router)
 app.include_router(app_export_pdf.router)
 app.include_router(app_export_excel.router)
 app.include_router(admin.router)
+app.include_router(conseiller.router)
+app.include_router(rapports_pdf.router)
+app.include_router(otp_router.router)
 
 
 @app.get("/api/health", tags=["Système"])
@@ -194,6 +199,12 @@ def page_meteo():
 def page_ia():
     """Module IA Agricole — assistant, recommandations, conversations."""
     return _page("ia.html")
+
+
+@app.get("/coop", include_in_schema=False)
+def page_coop():
+    """Tableau de bord Coopérative — membres, stats, rapport consolidé."""
+    return _page("coop.html")
 
 
 @app.get("/conseiller", include_in_schema=False)

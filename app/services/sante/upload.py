@@ -13,12 +13,13 @@ from fastapi import UploadFile, HTTPException
 BASE_UPLOAD = Path("/opt/agroscan/uploads")
 
 _SOUS_DOSSIERS = {
-    "maladie":      BASE_UPLOAD / "maladies",
-    "ravageur":     BASE_UPLOAD / "ravageurs",
-    "parcelle":     BASE_UPLOAD / "parcelles",
-    "activite":     BASE_UPLOAD / "activites",
-    "rapport":      BASE_UPLOAD / "rapports",
-    "observation":  BASE_UPLOAD / "observations",
+    "maladie":        BASE_UPLOAD / "maladies",
+    "ravageur":       BASE_UPLOAD / "ravageurs",
+    "parcelle":       BASE_UPLOAD / "parcelles",
+    "activite":       BASE_UPLOAD / "activites",
+    "rapport":        BASE_UPLOAD / "rapports",
+    "observation":    BASE_UPLOAD / "observations",
+    "infrastructure": BASE_UPLOAD / "infrastructures",
 }
 
 _MIME_AUTORISE = {"image/jpeg", "image/png", "image/webp"}

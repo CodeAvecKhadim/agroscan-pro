@@ -49,11 +49,16 @@ class AnalyseSanteRequest(BaseModel):
 
 class IndicesResult(BaseModel):
     """Indices satellitaires traduits. Valeurs brutes jamais exposées."""
-    date_image:     Optional[date]  = None
-    vigueur:        Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible (NDVI)")
-    chlorophylle:   Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible (NDRE)")
-    stress_hydrique: Optional[str]  = Field(None, description="Excellent|Bon|Moyen|Faible (NDWI inversé)")
-    vigueur_detail: Optional[str]   = Field(None, description="EVI label")
+    date_image:      Optional[date]  = None
+    vigueur:         Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible (NDVI)")
+    chlorophylle:    Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible (NDRE)")
+    stress_hydrique: Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible (NDWI)")
+    humidite_vegetation: Optional[str] = Field(None, description="Excellent|Bon|Moyen|Faible (NDMI)")
+    vigueur_detail:  Optional[str]   = Field(None, description="EVI label")
+    savi_label:      Optional[str]   = Field(None, description="SAVI label (sols nus)")
+    msavi_label:     Optional[str]   = Field(None, description="MSAVI label")
+    biomasse:        Optional[float] = Field(None, description="t MS/ha estimée")
+    biomasse_label:  Optional[str]   = Field(None, description="Excellent|Bon|Moyen|Faible")
     couverture_nuages: Optional[float] = None
 
 
@@ -174,12 +179,18 @@ class CarteInfo(BaseModel):
 # ── Série temporelle indices ─────────────────────────────────────────────────
 
 class IndicesHistorique(BaseModel):
-    date_image:   date
-    satellite:    str
-    ndvi_label:   Optional[str] = None
-    ndre_label:   Optional[str] = None
-    ndwi_label:   Optional[str] = None
+    date_image:    date
+    satellite:     str
+    ndvi_label:    Optional[str]   = None
+    ndre_label:    Optional[str]   = None
+    savi_label:    Optional[str]   = None
+    evi_label:     Optional[str]   = None
+    msavi_label:   Optional[str]   = None
+    ndwi_label:    Optional[str]   = None
+    ndmi_label:    Optional[str]   = None
+    biomasse:      Optional[float] = None
+    biomasse_label: Optional[str]  = None
     couverture_nuages: Optional[float] = None
-    analyse_id:   Optional[int] = None
+    analyse_id:    Optional[int]   = None
 
     model_config = ConfigDict(from_attributes=True)

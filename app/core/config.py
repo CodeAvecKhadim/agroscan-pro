@@ -48,10 +48,28 @@ class Settings(BaseSettings):
     # --- CORS (séparer par virgule dans .env : https://mondomaine.com,https://api.mondomaine.com) ---
     ALLOWED_ORIGINS: str = "http://localhost:8000,http://localhost:3000"
 
-    # --- Connecteurs de paiement (à remplir : Wave / Orange Money / PayDunya) ---
+    # --- Connecteurs de paiement ---
     PAYMENT_PROVIDER: str = "manuel"   # manuel | wave | orange_money | paydunya
     PAYMENT_API_KEY: str = ""
     PAYMENT_WEBHOOK_SECRET: str = ""
+    # URL de retour post-paiement (surcharger en production)
+    PAYMENT_SUCCESS_URL: str = "http://localhost:8000/app?payment=success"
+    PAYMENT_ERROR_URL: str = "http://localhost:8000/app?payment=error"
+    # Wave Money (Sénégal)
+    WAVE_API_KEY: str = ""             # Bearer token Wave Merchant API
+    WAVE_CHECKOUT_URL: str = "https://api.wave.com/v1/checkout/sessions"
+    # Orange Money (Sénégal)
+    ORANGE_API_KEY: str = ""           # clé Orange Money Merchant API
+    ORANGE_AUTH_HEADER: str = ""       # Authorization header Orange API
+    ORANGE_CHECKOUT_URL: str = "https://api.orange.com/orange-money-webpay/dev/v1/webpayment"
+    # PayDunya
+    PAYDUNYA_MASTER_KEY: str = ""
+    PAYDUNYA_PRIVATE_KEY: str = ""
+    PAYDUNYA_TOKEN: str = ""
+    PAYDUNYA_PUBLIC_KEY: str = ""
+    PAYDUNYA_MODE: str = "test"        # test | live
+    PAYDUNYA_STORE_NAME: str = "AgroScan Pro"
+    PAYDUNYA_CHECKOUT_URL: str = ""    # auto-résolu depuis PAYDUNYA_MODE
 
     # --- Moteur de conseil (API Claude, optionnel) ---
     ANTHROPIC_API_KEY: str = ""
@@ -66,10 +84,15 @@ class Settings(BaseSettings):
     # --- Notifications (webhook + SMS) ---
     NOTIFICATION_WEBHOOK_URL: str = ""
     NOTIFICATION_SECRET: str = ""
-    SMS_PROVIDER: str = ""           # africastalking | twilio | "" (désactivé)
+    SMS_PROVIDER: str = "mock"       # mock | auto | orange | free | expresso | africas_talking
     SMS_API_KEY: str = ""
+    SMS_API_SECRET: str = ""         # utilisé par certains opérateurs (ex. Free Sénégal)
     SMS_USERNAME: str = "sandbox"
     SMS_SENDER_ID: str = "AgroScan"
+    # URLs passerelle SMS (opérateurs directs)
+    ORANGE_SMS_URL: str = "https://api.orange.com/smsmessaging/v1"
+    FREE_SMS_URL: str = "https://sms.free.sn/api/v1"
+    EXPRESSO_SMS_URL: str = "https://sms.expresso.sn/api"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

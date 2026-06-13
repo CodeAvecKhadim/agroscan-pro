@@ -296,6 +296,10 @@ select,input,textarea{font-family:inherit}
       <span id="form-niveau-badge" class="niveau-badge n1">Niveau 1</span>
     </div>
 
+    <div id="prefill-banner" style="display:none;background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:var(--gdeep);font-weight:600">
+      ✓ Données pré-remplies depuis votre dernière analyse
+    </div>
+
     <div class="field">
       <label>Culture cultivée *</label>
       <select id="f-culture" onchange="updateNiveauBadge()">
@@ -409,7 +413,7 @@ select,input,textarea{font-family:inherit}
       <div class="loading-steps" id="loading-steps">
         <div class="step-item active" id="step-sat">
           <div class="step-dot"></div>
-          Récupération indices satellitaires (Sentinel-2)
+          Analyse satellite Sentinel-2 en cours
         </div>
         <div class="step-item" id="step-re">
           <div class="step-dot"></div>
@@ -638,13 +642,69 @@ async function chargerCultures() {
 function selectParcelle(p) {
   currentParcelle = p;
   document.getElementById('form-parcelle-name').textContent = '🌾 ' + p.nom;
-  // Pré-remplir culture si définie
+  document.getElementById('prefill-banner').style.display = 'none';
+
+  // Pré-remplir culture depuis la parcelle
   if (p.type_culture) {
     const sel = document.getElementById('f-culture');
     for (let o of sel.options) { if (o.value === p.type_culture) { sel.value = p.type_culture; break; } }
   }
+
+  // Pré-remplir le mois courant
+  document.getElementById('f-mois').value = new Date().getMonth() + 1;
+
   updateNiveauBadge();
   showView('v-form');
+
+  // Charger données de la dernière analyse pour pré-remplissage
+  preFillFromLastAnalysis(p.id);
+}
+
+async function preFillFromLastAnalysis(parcelleId) {
+  try {
+    const data = await api('/api/sante-cultures/analyses/' + parcelleId + '?limit=1');
+    const analyses = Array.isArray(data) ? data : [];
+    if (!analyses.length) return;
+    const last = analyses[0];
+    const ctx = last.contexte_entree || {};
+    let filled = false;
+
+    // Pré-remplir stade phénologique
+    if (ctx.stade_actuel) {
+      const stageSel = document.getElementById('f-stade');
+      for (let o of stageSel.options) {
+        if (o.value === ctx.stade_actuel || o.textContent === ctx.stade_actuel) {
+          stageSel.value = o.value; filled = true; break;
+        }
+      }
+    }
+
+    // Pré-remplir données capteur si disponibles
+    if (ctx.capteur) {
+      const cap = ctx.capteur;
+      const map = {
+        'sol_pH': 'c-ph', 'sol_humidite': 'c-hum', 'sol_conductivite': 'c-ec',
+        'sol_temperature': 'c-temp', 'sol_azote': 'c-n', 'sol_phosphore': 'c-p',
+        'sol_potassium': 'c-k', 'sol_matiere_organique': 'c-mo'
+      };
+      let hasCapteur = false;
+      for (const [key, id] of Object.entries(map)) {
+        if (cap[key] != null) {
+          const el = document.getElementById(id);
+          if (el) { el.value = cap[key]; hasCapteur = true; filled = true; }
+        }
+      }
+      if (hasCapteur) {
+        document.getElementById('toggle-capteur').checked = true;
+        toggleCapteur();
+      }
+    }
+
+    if (filled) {
+      document.getElementById('prefill-banner').style.display = 'block';
+      updateNiveauBadge();
+    }
+  } catch(_) {}
 }
 
 // ── Niveau badge ───────────────────────────────────────────────────────────
@@ -815,17 +875,23 @@ function afficherResultats(res) {
   // Indices satellitaires
   const idx = res.indices || {};
   const indicesItems = [
-    {key:'vigueur',         label:'Vigueur (NDVI)'},
-    {key:'chlorophylle',    label:'Chlorophylle (NDRE)'},
-    {key:'stress_hydrique', label:'Hydrique (NDWI)'},
-    {key:'vigueur_detail',  label:'EVI'},
+    {key:'vigueur',              label:'Vigueur des cultures'},
+    {key:'chlorophylle',         label:'Teneur en chlorophylle'},
+    {key:'stress_hydrique',      label:'Niveau d\'eau'},
+    {key:'humidite_vegetation',  label:'Humidité de la végétation'},
+    {key:'vigueur_detail',       label:'Vigueur renforcée (EVI)'},
+    {key:'savi_label',           label:'Vigueur (sol nu)'},
+    {key:'msavi_label',          label:'Vigueur ajustée'},
+    {key:'biomasse_label',       label:'Poids végétal'},
   ];
   document.getElementById('indices-grid').innerHTML = indicesItems.map(i => {
     const val = idx[i.key];
     const cls = val ? val.toLowerCase() : 'na';
+    const extra = i.key === 'biomasse_label' && idx.biomasse != null
+      ? `<div style="font-size:.7rem;color:#64748b;margin-top:2px">${idx.biomasse} t MS/ha</div>` : '';
     return `<div class="indice-cell">
       <div class="indice-name">${i.label}</div>
-      <div class="indice-label ${cls}">${val || '—'}</div>
+      <div class="indice-label ${cls}">${val || '—'}</div>${extra}
     </div>`;
   }).join('');
   if (idx.date_image) {
