@@ -13,6 +13,19 @@ from slowapi.errors import RateLimitExceeded
 import os
 
 from app.core.config import settings
+
+# ── Sentry — monitoring d'erreurs production ──────────────────────────────────
+if settings.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=0.05,   # 5 % des requetes tracees (ajustable)
+        environment=settings.ENV,
+        send_default_pii=False,    # jamais de donnees personnelles
+    )
 from app.core.database import Base, engine
 from app.core.limiter import limiter
 from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin, conseiller, rapports_pdf

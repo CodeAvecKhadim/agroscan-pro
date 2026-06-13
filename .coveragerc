@@ -1,0 +1,14 @@
+[run]
+source = app
+omit =
+    app/data/*
+    app/migrations/*
+    */tests/*
+
+[report]
+show_missing = true
+skip_covered = false
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError

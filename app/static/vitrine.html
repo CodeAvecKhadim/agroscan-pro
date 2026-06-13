@@ -49,8 +49,10 @@ h2.title{font-family:var(--serif);font-weight:900;font-size:2rem;color:var(--lat
 .btn-primary{background:var(--laterite);color:#fff;box-shadow:0 6px 16px -6px rgba(158,59,33,.6)}.btn-primary:hover{transform:translateY(-2px)}
 .btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}.btn-ghost:hover{transform:translateY(-2px)}
 .visual{background:linear-gradient(150deg,var(--baobab),var(--baobab-dk));border-radius:24px;aspect-ratio:4/3;display:grid;place-items:center;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-.visual::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(232,184,75,.35),transparent 55%)}
-.visual .big{font-size:7rem;filter:drop-shadow(0 8px 16px rgba(0,0,0,.25))}
+.visual::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(232,184,75,.35),transparent 55%);z-index:1}
+.visual .big{font-size:7rem;filter:drop-shadow(0 8px 16px rgba(0,0,0,.25));position:relative;z-index:2}
+.visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:24px;z-index:0}
+.visual.photo::before{background:linear-gradient(160deg,rgba(6,95,70,.18),rgba(4,120,87,.42))}
 .trust{display:flex;gap:26px;flex-wrap:wrap;margin-top:30px;color:var(--ink-soft);font-size:.86rem}
 @media(max-width:860px){.trust{justify-content:center}}
 .trust b{color:var(--laterite-dk);font-family:var(--serif);font-size:1.3rem;display:block}
@@ -150,7 +152,11 @@ footer{background:var(--laterite-deep);color:#fff;padding:40px 18px;margin-top:3
       <div><b>100%</b> adapté au Sénégal</div>
     </div>
   </div>
-  <div class="visual"><div class="big">🌱</div></div>
+  <div class="visual photo">
+    <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80"
+         alt="Agriculteurs au travail dans les champs africains"
+         loading="eager" fetchpriority="high">
+  </div>
 </section>
 
 <!-- ===== FONCTIONNALITÉS ===== -->
@@ -230,7 +236,11 @@ footer{background:var(--laterite-deep);color:#fff;padding:40px 18px;margin-top:3
         <p>Une équipe sénégalaise, un support de proximité, et une connaissance fine des filières agricoles.</p></div></div>
     </div>
   </div>
-  <div class="visual" style="background:linear-gradient(150deg,var(--gold),var(--millet))"><div class="big">🌾</div></div>
+  <div class="visual photo" style="aspect-ratio:1/1;max-width:360px">
+    <img src="https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=720&q=80"
+         alt="Rangées de cultures bien organisées dans un champ agricole"
+         loading="lazy">
+  </div>
 </section>
 </div>
 
@@ -251,11 +261,18 @@ footer{background:var(--laterite-deep);color:#fff;padding:40px 18px;margin-top:3
         Écrire sur WhatsApp
       </a>
     </div>
-    <div class="contact-card" style="background:linear-gradient(150deg,var(--baobab),var(--baobab-dk));color:#fff;display:flex;flex-direction:column;justify-content:center;text-align:center">
-      <div style="font-size:3rem;margin-bottom:10px">🚀</div>
-      <h3 style="font-family:var(--serif);font-weight:900;font-size:1.4rem;margin-bottom:8px">Prêt à essayer ?</h3>
-      <p style="opacity:.92;font-size:.95rem;margin-bottom:18px">Créez votre compte gratuit et lancez votre première analyse en quelques minutes.</p>
-      <a href="/" class="btn" style="background:var(--gold);color:var(--laterite-deep);justify-content:center">Créer mon compte</a>
+    <div class="contact-card" style="position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:center;text-align:center;border:none;min-height:280px">
+      <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=700&q=75"
+           alt="Légumes frais récoltés au marché africain"
+           loading="lazy"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(6,95,70,.78),rgba(4,120,87,.88));z-index:1"></div>
+      <div style="position:relative;z-index:2;padding:26px">
+        <div style="font-size:2.6rem;margin-bottom:10px">🚀</div>
+        <h3 style="font-family:var(--serif);font-weight:900;font-size:1.4rem;margin-bottom:8px">Prêt à essayer ?</h3>
+        <p style="opacity:.92;font-size:.95rem;margin-bottom:18px">Créez votre compte gratuit et lancez votre première analyse en quelques minutes.</p>
+        <a href="/" class="btn" style="background:var(--gold);color:var(--laterite-deep);justify-content:center">Créer mon compte</a>
+      </div>
     </div>
   </div>
 </section>

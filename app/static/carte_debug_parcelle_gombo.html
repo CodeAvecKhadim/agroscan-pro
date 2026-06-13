@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>AgroScan — Debug Parcelle Gombo (points GPS aberrants)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; }
+    #map { width: 100%; height: 100vh; }
+    #panel {
+      position: absolute; top: 12px; right: 12px; z-index: 1000;
+      background: rgba(15,15,15,0.92); border: 1px solid #333;
+      border-radius: 8px; padding: 16px 18px; min-width: 280px;
+      backdrop-filter: blur(6px);
+    }
+    #panel h2 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .legend-item { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 12px; }
+    .swatch { width: 32px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+    .swatch.dashed { background: repeating-linear-gradient(90deg,#ef4444 0,#ef4444 6px,transparent 6px,transparent 10px); height: 3px; }
+    .swatch.solid  { background: #22c55e; height: 3px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: #f59e0b; border: 2px solid #fff; flex-shrink: 0; }
+    .stat-table { margin-top: 14px; border-top: 1px solid #333; padding-top: 12px; width: 100%; border-collapse: collapse; }
+    .stat-table td { font-size: 11px; padding: 3px 0; }
+    .stat-table td:first-child { color: #888; padding-right: 12px; }
+    .stat-table .val-bad  { color: #ef4444; font-weight: 600; }
+    .stat-table .val-good { color: #22c55e; font-weight: 600; }
+    #btn-toggle { margin-top: 12px; width: 100%; padding: 7px; background: #1d4ed8; border: none;
+                  border-radius: 5px; color: #fff; font-size: 12px; cursor: pointer; }
+    #btn-toggle:hover { background: #2563eb; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <h2>🐛 Bug GPS — Parcelle Gombo</h2>
+  <div class="legend-item"><div class="swatch dashed"></div><span>Contour original (39 pts) — bugué</span></div>
+  <div class="legend-item"><div class="dot"></div><span>Points 7 &amp; 8 — outliers GPS supprimés</span></div>
+  <div class="legend-item"><div class="swatch solid"></div><span>Contour corrigé (37 pts) — après fix</span></div>
+  <table class="stat-table">
+    <tr><td>Surface AVANT</td><td class="val-bad">67 435 m² (6.74 ha)</td></tr>
+    <tr><td>Surface APRÈS</td><td class="val-good">23 201 m² (2.32 ha)</td></tr>
+    <tr><td>Périmètre AVANT</td><td class="val-bad">2 143 m</td></tr>
+    <tr><td>Périmètre APRÈS</td><td class="val-good">967 m</td></tr>
+    <tr><td>Pt 7 (saut in)</td><td class="val-bad">318 m</td></tr>
+    <tr><td>Pt 8 (saut in)</td><td class="val-bad">659 m</td></tr>
+  </table>
+  <button id="btn-toggle">Masquer contour original</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── Données GPS ─────────────────────────────────────────────────────────────
+
+const ALL_COORDS = [
+  [12.6336079, -12.8172065],  // 0
+  [12.633622,  -12.8173149],  // 1
+  [12.6338094, -12.8173981],  // 2
+  [12.6341648, -12.8174767],  // 3
+  [12.6345996, -12.8174197],  // 4
+  [12.6349136, -12.8171632],  // 5
+  [12.6359291, -12.8168689],  // 6
+  [12.6333951, -12.8182336],  // 7  ← OUTLIER
+  [12.6391983, -12.8169833],  // 8  ← OUTLIER
+  [12.6365683, -12.8161017],  // 9
+  [12.6362392, -12.816053 ],  // 10
+  [12.6359785, -12.8159954],  // 11
+  [12.6357016, -12.815991 ],  // 12
+  [12.6354518, -12.8160136],  // 13
+  [12.6350183, -12.816145 ],  // 14
+  [12.6337955, -12.8171528],  // 15
+  [12.6335312, -12.8176044],  // 16
+  [12.6334861, -12.8176903],  // 17
+  [12.6334628, -12.8177151],  // 18
+  [12.6334733, -12.8177477],  // 19
+  [12.6334903, -12.817781 ],  // 20
+  [12.6334927, -12.817827 ],  // 21
+  [12.6334922, -12.8178575],  // 22
+  [12.6334661, -12.8178318],  // 23
+  [12.6334403, -12.8178193],  // 24
+  [12.6334144, -12.8178115],  // 25
+  [12.6333855, -12.8178125],  // 26
+  [12.6333613, -12.8177858],  // 27
+  [12.6333432, -12.8177433],  // 28
+  [12.6333009, -12.8177409],  // 29
+  [12.6332733, -12.8177385],  // 30
+  [12.6332482, -12.817726 ],  // 31
+  [12.6332177, -12.8176864],  // 32
+  [12.6331993, -12.8176582],  // 33
+  [12.6331843, -12.8176309],  // 34
+  [12.6331685, -12.8175857],  // 35
+  [12.6331398, -12.8175953],  // 36
+  [12.6331072, -12.8176149],  // 37
+  [12.6331125, -12.8176422],  // 38
+];
+
+const OUTLIER_INDICES = [7, 8];
+const CORRECTED_COORDS = ALL_COORDS.filter((_, i) => !OUTLIER_INDICES.includes(i));
+
+// ── Carte ───────────────────────────────────────────────────────────────────
+
+const map = L.map('map', { zoomControl: true }).setView([12.636, -12.817], 16);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 22
+}).addTo(map);
+
+// Polygone original (rouge pointillé)
+const polyOrig = L.polygon(ALL_COORDS, {
+  color: '#ef4444',
+  weight: 2.5,
+  dashArray: '8 5',
+  fillColor: '#ef4444',
+  fillOpacity: 0.08
+}).addTo(map);
+
+// Flèches des sauts aberrants (segments 6→7→8→9)
+const jumpSegs = [
+  [ALL_COORDS[6], ALL_COORDS[7]],
+  [ALL_COORDS[7], ALL_COORDS[8]],
+  [ALL_COORDS[8], ALL_COORDS[9]],
+];
+jumpSegs.forEach(([a, b], i) => {
+  L.polyline([a, b], {
+    color: '#f97316',
+    weight: 2,
+    dashArray: '4 4',
+    opacity: 0.85
+  }).addTo(map);
+});
+
+// Polygone corrigé (vert plein)
+const polyFixed = L.polygon(CORRECTED_COORDS, {
+  color: '#22c55e',
+  weight: 2.5,
+  fillColor: '#22c55e',
+  fillOpacity: 0.15
+}).addTo(map);
+
+// Tous les points normaux (petits points bleus)
+ALL_COORDS.forEach((latlng, i) => {
+  if (OUTLIER_INDICES.includes(i)) return;
+  L.circleMarker(latlng, {
+    radius: 4, color: '#60a5fa', fillColor: '#60a5fa',
+    fillOpacity: 0.9, weight: 1
+  }).bindTooltip(`Point ${i}`, { permanent: false }).addTo(map);
+});
+
+// Points outliers (gros point orange avec numéro)
+OUTLIER_INDICES.forEach(i => {
+  const latlng = ALL_COORDS[i];
+  const distances = { 7: '318 m', 8: '659 m' };
+
+  // Cercle pulsant
+  L.circleMarker(latlng, {
+    radius: 14, color: '#f59e0b', fillColor: '#f59e0b',
+    fillOpacity: 0.25, weight: 3
+  }).addTo(map);
+
+  L.circleMarker(latlng, {
+    radius: 7, color: '#fff', fillColor: '#f59e0b',
+    fillOpacity: 1, weight: 2
+  }).bindPopup(
+    `<b>⚠️ Point GPS aberrant — index ${i}</b><br>
+     lat: ${latlng[0].toFixed(7)}<br>
+     lon: ${latlng[1].toFixed(7)}<br>
+     <span style="color:#ef4444">Saut entrant : ${distances[i]}</span><br>
+     <i>Supprimé par le filtre IQR</i>`
+  , { maxWidth: 240 }).addTo(map)
+   .openPopup();
+});
+
+// Labels "Pt 7" et "Pt 8"
+OUTLIER_INDICES.forEach(i => {
+  L.marker(ALL_COORDS[i], {
+    icon: L.divIcon({
+      className: '',
+      html: `<div style="background:#f59e0b;color:#000;font-size:10px;font-weight:700;
+                          padding:2px 5px;border-radius:3px;white-space:nowrap;border:1px solid #fff">
+               ✕ Pt ${i} — OUTLIER
+             </div>`,
+      anchor: [0, -14]
+    })
+  }).addTo(map);
+});
+
+// Fit bounds sur l'ensemble des points
+map.fitBounds(L.polygon(ALL_COORDS).getBounds().pad(0.15));
+
+// ── Toggle contour original ──────────────────────────────────────────────────
+let origVisible = true;
+document.getElementById('btn-toggle').addEventListener('click', function () {
+  origVisible = !origVisible;
+  if (origVisible) {
+    map.addLayer(polyOrig);
+    this.textContent = 'Masquer contour original';
+  } else {
+    map.removeLayer(polyOrig);
+    this.textContent = 'Afficher contour original';
+  }
+});
+</script>
+</body>
+</html>

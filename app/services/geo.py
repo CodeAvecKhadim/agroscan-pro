@@ -18,6 +18,54 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * _R * math.asin(math.sqrt(a))
 
 
+def _filter_gps_outliers(coords: List[Dict]) -> List[Dict]:
+    """
+    Supprime les points GPS aberrants qui créent des polygones auto-intersectants.
+    Un point est aberrant si SES DEUX segments adjacents dépassent le seuil
+    calculé via Q3+3×IQR (ou 5×Q3 quand IQR ≈ 0, cas grille uniforme).
+    Itère jusqu'à convergence.
+    """
+    if len(coords) < 4:
+        return coords
+
+    pts = list(coords)
+    for _ in range(10):
+        n = len(pts)
+        if n < 4:
+            break
+
+        dists = [
+            haversine_m(pts[i]["lat"], pts[i]["lon"],
+                        pts[(i + 1) % n]["lat"], pts[(i + 1) % n]["lon"])
+            for i in range(n)
+        ]
+
+        sorted_d = sorted(dists)
+        q1 = sorted_d[n // 4]
+        q3 = sorted_d[3 * n // 4]
+        iqr = q3 - q1
+
+        # Quand IQR ≈ 0 (segments uniformes), on bascule sur 5×Q3
+        # pour éviter un seuil nul ou trivial.
+        if iqr < 1.0:
+            if q3 < 0.1:
+                break  # tous les points sont au même endroit
+            threshold = max(q3 * 5.0, q3 + 20.0)
+        else:
+            threshold = q3 + 3.0 * iqr
+
+        new_pts = [
+            pts[i] for i in range(n)
+            if not (dists[(i - 1) % n] > threshold and dists[i] > threshold)
+        ]
+
+        if len(new_pts) == n:
+            break
+        pts = new_pts
+
+    return pts if len(pts) >= 3 else coords
+
+
 def _to_local_xy(coords: List[Dict], ref_lat: float, ref_lon: float) -> List[Tuple[float, float]]:
     """Convertit des points GPS en mètres cartésiens (origine = ref_lat, ref_lon)."""
     xy = []
@@ -34,7 +82,11 @@ def surface_m2(coords: List[Dict]) -> float:
     Superficie en m² d'un polygone GPS (liste de {lat, lon}).
     Formule de Shoelace (Gauss) sur projection locale.
     Précision ±1% pour parcelles <50 km².
+    Les points GPS aberrants sont filtrés avant calcul.
     """
+    if len(coords) < 3:
+        return 0.0
+    coords = _filter_gps_outliers(coords)
     if len(coords) < 3:
         return 0.0
     ref_lat = sum(c["lat"] for c in coords) / len(coords)
@@ -55,9 +107,11 @@ def superficie_ha(coords: List[Dict]) -> float:
 
 
 def perimetre_m(coords: List[Dict]) -> float:
-    """Périmètre en mètres : somme des distances Haversine entre points consécutifs."""
+    """Périmètre en mètres : somme des distances Haversine entre points consécutifs.
+    Les points GPS aberrants sont filtrés avant calcul."""
     if len(coords) < 2:
         return 0.0
+    coords = _filter_gps_outliers(coords)
     total = 0.0
     n = len(coords)
     for i in range(n):
@@ -71,7 +125,9 @@ def centroide(coords: List[Dict]) -> Tuple[float, float]:
     """
     Centre géométrique (centroïde) du polygone.
     Retourne (lat, lon) du barycentre pondéré par les aires des triangles.
+    Les points GPS aberrants sont filtrés avant calcul.
     """
+    coords = _filter_gps_outliers(coords)
     if len(coords) < 3:
         lat = sum(c["lat"] for c in coords) / len(coords)
         lon = sum(c["lon"] for c in coords) / len(coords)

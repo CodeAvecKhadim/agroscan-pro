@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     PAYDUNYA_STORE_NAME: str = "AgroScan Pro"
     PAYDUNYA_CHECKOUT_URL: str = ""    # auto-résolu depuis PAYDUNYA_MODE
 
+    # --- Sentry (monitoring erreurs production) ---
+    SENTRY_DSN: str = ""            # ex : https://xxx@oXXX.ingest.sentry.io/YYY
+
     # --- Moteur de conseil (API Claude, optionnel) ---
     ANTHROPIC_API_KEY: str = ""
 
