@@ -123,6 +123,10 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 @app.get("/", include_in_schema=False)
 def index():
+    return FileResponse(os.path.join(STATIC_DIR, "vitrine.html"))
+
+@app.get("/login", include_in_schema=False)
+def login():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 
