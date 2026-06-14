@@ -151,57 +151,54 @@ footer a{color:var(--millet)}
 
 <div class="hero">
   <span class="eyebrow">Tarifs &amp; abonnements</span>
-  <h2>Choisissez l'offre adaptée à votre exploitation</h2>
-  <p>Commencez gratuitement, souscrivez une campagne quand vous êtes prêt. Plans coopérative disponibles en mensuel ou annuel.</p>
+  <h2>Simple, transparent, adapté au terrain</h2>
+  <p>Commencez gratuitement 7 jours, sans carte bancaire. Souscrivez quand vous êtes prêt.</p>
 
-  <!-- Sélecteur mensuel/annuel (coopérative uniquement) -->
-  <div class="toggle-band" id="toggleBand">
+  <!-- Toggle mensuel/annuel — conservé pour plans futurs, masqué publiquement -->
+  <div class="toggle-band" id="toggleBand" style="display:none">
     <button class="on" data-billing="monthly" onclick="setBilling(this)">Mensuel</button>
     <button data-billing="annual" onclick="setBilling(this)">Annuel<span class="save">Économisez ~17%</span></button>
   </div>
   <div class="toggle-note" id="toggleNote"></div>
 </div>
 
-<!-- ===== PLANS ===== -->
+<!-- ===== PLANS PUBLICS ===== -->
 <div class="plans">
 
-  <!-- GRATUIT -->
+  <!-- DÉCOUVERTE -->
   <div class="plan">
-    <h3>Gratuit</h3>
-    <p class="who">Pour découvrir AgroScan sans engagement</p>
+    <h3>Découverte</h3>
+    <p class="who">Testez AgroScan Pro gratuitement pendant 7 jours</p>
     <div class="price-box">
       <div class="price-free">Gratuit</div>
-      <div class="price-daily" style="margin-top:4px">Sans engagement · à vie</div>
+      <div class="price-daily" style="margin-top:4px">7 jours · Accès complet · Sans carte bancaire</div>
     </div>
     <div class="specs">
-      <div class="spec"><b>2</b><span>parcelles</span></div>
-      <div class="spec"><b>3 ha</b><span>max/parcelle</span></div>
-      <div class="spec"><b>3/jour</b><span>analyses IA</span></div>
-      <div class="spec"><b>1/sem.</b><span>satellite</span></div>
+      <div class="spec"><b>7j</b><span>d'essai</span></div>
+      <div class="spec"><b>∞</b><span>parcelles</span></div>
+      <div class="spec"><b>∞</b><span>analyses</span></div>
+      <div class="spec"><b>∞</b><span>satellite</span></div>
     </div>
     <ul>
-      <li>Tableau de bord producteur</li>
-      <li>Mon Champ</li>
-      <li>Carte GPS</li>
-      <li>Météo</li>
+      <li>Toutes les fonctionnalités incluses</li>
+      <li>Cartographie GPS de parcelles</li>
+      <li>Santé des cultures</li>
+      <li>Météo agricole</li>
+      <li>Diagnostic photo IA</li>
       <li>Calendrier cultural</li>
-      <li>Diagnostic photo</li>
-      <li>Santé des cultures (limité)</li>
-      <li class="no">Agriculture de précision</li>
-      <li class="no">Rapports PDF</li>
-      <li class="no">Assistant IA</li>
+      <li>Aucun engagement</li>
     </ul>
-    <a href="/" class="btn btn-ghost">Commencer gratuitement</a>
+    <a href="/" class="btn btn-ghost">Essayer gratuitement →</a>
   </div>
 
-  <!-- PRODUCTEUR PREMIUM -->
+  <!-- AGROSCAN PRO PRODUCTEUR — VEDETTE -->
   <div class="plan pop">
-    <h3>Producteur Premium</h3>
-    <p class="who">Pour le producteur individuel actif</p>
+    <h3>AgroScan Pro Producteur</h3>
+    <p class="who">Pour le producteur actif qui veut décider avec les données</p>
     <div class="price-box">
-      <div class="price">14 900 <small>FCFA</small></div>
-      <div class="price-sub">par campagne agricole (3 mois)</div>
-      <div class="price-daily">Soit moins de 170 FCFA par jour</div>
+      <div class="price">5 000 <small>FCFA</small></div>
+      <div class="price-sub">par mois · sans engagement</div>
+      <div class="price-daily">Soit moins de 167 FCFA par jour</div>
     </div>
     <div class="specs">
       <div class="spec"><b>∞</b><span>parcelles</span></div>
@@ -213,21 +210,50 @@ footer a{color:var(--millet)}
       <li>Toutes les fonctionnalités AgroScan</li>
       <li>Agriculture de précision</li>
       <li>Analyse satellite illimitée</li>
-      <li>Assistant IA</li>
+      <li>Assistant IA Polélé</li>
       <li>Analyse de sol avancée</li>
       <li>Santé des cultures avancée</li>
-      <li>Diagnostic photo</li>
       <li>Rapports PDF</li>
       <li>Historique complet</li>
       <li>Gestion des activités</li>
-      <li>Gestion de ferme</li>
     </ul>
-    <button onclick="souscrire('premium')" class="btn btn-gold">Souscrire — 14 900 FCFA</button>
-    <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Campagne valable 90 jours dès le paiement</p>
+    <button onclick="souscrire('producteur')" class="btn btn-gold">Commencer maintenant — 5 000 FCFA/mois</button>
+    <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Résiliable à tout moment · Paiement Wave ou Orange Money</p>
   </div>
 
-  <!-- COOPÉRATIVE -->
+  <!-- ANALYSE AGRICOLE -->
   <div class="plan">
+    <h3>Analyse Agricole</h3>
+    <p class="who">Un diagnostic ponctuel, sans abonnement</p>
+    <div class="price-box">
+      <div class="price">1 500 <small>FCFA</small></div>
+      <div class="price-sub">à partir de · par analyse</div>
+      <div class="price-daily">Sol, culture, satellite ou diagnostic photo</div>
+    </div>
+    <div class="specs">
+      <div class="spec"><b>1</b><span>analyse</span></div>
+      <div class="spec"><b>PDF</b><span>rapport</span></div>
+      <div class="spec"><b>24h</b><span>résultat</span></div>
+      <div class="spec"><b>0</b><span>abonnement</span></div>
+    </div>
+    <ul>
+      <li>Analyse de sol complète</li>
+      <li>Diagnostic maladie photo</li>
+      <li>Rapport PDF personnalisé</li>
+      <li>Recommandations agronomiques</li>
+      <li>Sans compte obligatoire</li>
+    </ul>
+    <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+commander+une+analyse+agricole+AgroScan+Pro."
+       target="_blank" rel="noopener" class="btn btn-primary">Commander une analyse →</a>
+    <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Via WhatsApp · Réponse sous 24h</p>
+  </div>
+
+</div>
+
+<!-- ===== PLANS RÉSERVÉS — usage futur, masqués publiquement ===== -->
+<div style="display:none" id="plansReserves">
+  <!-- Coopérative -->
+  <div class="plan" id="planCoop">
     <h3>Coopérative</h3>
     <p class="who">Coopératives, ONG, entreprises agricoles</p>
     <div class="price-box" id="coopPriceBox">
@@ -251,10 +277,7 @@ footer a{color:var(--millet)}
       <li>Recommandations agronomiques</li>
       <li>Extensions hectares disponibles</li>
     </ul>
-
-    <!-- Extensions ha -->
     <div style="margin:8px 0 16px">
-      <p style="font-size:.78rem;font-weight:700;color:var(--gdk);margin-bottom:6px">Extensions de superficie :</p>
       <table class="ext-table" id="extTable">
         <thead><tr><th>Superficie</th><th>Mensuel</th><th>Annuel</th></tr></thead>
         <tbody>
@@ -264,15 +287,30 @@ footer a{color:var(--millet)}
         </tbody>
       </table>
     </div>
-
     <button onclick="souscrire('cooperative')" class="btn btn-primary">Souscrire — <span id="coopBtnPrice">25 000 FCFA/mois</span></button>
-    <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+souscrire+au+plan+Coop%C3%A9rative+AgroScan+Pro."
-       target="_blank" rel="noopener"
-       style="display:block;text-align:center;font-size:.82rem;color:var(--g);margin-top:8px;text-decoration:underline">
-      💬 Parler à notre équipe
-    </a>
   </div>
+  <!-- Plans futurs : Conseiller Agricole, ONG, Entreprise, Services Drone -->
+  <!-- À activer dans une prochaine version -->
+</div>
 
+<!-- ===== BESOINS SPÉCIFIQUES ===== -->
+<div style="max-width:760px;margin:0 auto 50px;padding:0 18px">
+  <div style="background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:32px 28px;text-align:center;box-shadow:var(--shadow-lg)">
+    <div style="font-size:2rem;margin-bottom:10px">🤝</div>
+    <h3 style="font-family:var(--serif);font-weight:900;font-size:1.5rem;margin-bottom:8px">Besoins spécifiques ?</h3>
+    <p style="opacity:.92;font-size:.95rem;max-width:480px;margin:0 auto 20px">Coopérative, ONG, entreprise agricole, services drone — nous construisons une offre sur mesure pour votre structure.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+un+devis+AgroScan+Pro+pour+mon+organisation."
+         target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--gdeep);padding:13px 22px;border-radius:12px;font-weight:700;font-size:.95rem;text-decoration:none">
+        💬 Demander un devis
+      </a>
+      <a href="tel:+221784919011"
+         style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);color:#fff;padding:13px 22px;border-radius:12px;font-weight:600;font-size:.95rem;border:1.5px solid rgba(255,255,255,.35);text-decoration:none">
+        📞 +221 78 491 90 11
+      </a>
+    </div>
+  </div>
 </div>
 
 <!-- ===== CONFIGURATEUR ===== -->
@@ -339,6 +377,9 @@ let billing = 'monthly';   // 'monthly' | 'annual'
 let selectedPlan = null;
 
 const PRICES = {
+  // Plans publics actifs
+  producteur: {ht: 5000, billing: 'monthly', label: 'AgroScan Pro Producteur', duree: 'Par mois (sans engagement)'},
+  // Plans conservés pour usage futur (non affichés publiquement)
   premium: {ht: 14900, billing: 'campaign', label: 'Producteur Premium', duree: 'Campagne 90 jours (3 mois)'},
   cooperative: {
     monthly: {ht: 25000, label: 'Coopérative mensuelle', duree: 'Par mois'},
@@ -387,17 +428,24 @@ function souscrire(plan) {
 
 function updateRecap() {
   if (!selectedPlan) return;
-  let ht, label, duree;
+  let ht, label, duree, detail;
 
-  if (selectedPlan === 'premium') {
+  if (selectedPlan === 'producteur') {
+    ht = PRICES.producteur.ht;
+    label = PRICES.producteur.label;
+    duree = PRICES.producteur.duree;
+    detail = '5 000 FCFA HT/mois. Résiliable à tout moment.';
+  } else if (selectedPlan === 'premium') {
     ht = PRICES.premium.ht;
     label = PRICES.premium.label;
     duree = PRICES.premium.duree;
+    detail = '14 900 FCFA HT × 1 campagne. Soit moins de 170 FCFA/jour.';
   } else {
     const p = billing === 'annual' ? PRICES.cooperative.annual : PRICES.cooperative.monthly;
-    ht = p.ht;
-    label = p.label;
-    duree = p.duree;
+    ht = p.ht; label = p.label; duree = p.duree;
+    detail = billing === 'annual'
+      ? `250 000 FCFA HT/an — économie de ${fmt(25000*12 - 250000)} FCFA vs. mensuel × 12.`
+      : '25 000 FCFA HT/mois — sans engagement.';
   }
 
   const vat = Math.round(ht * VAT);
@@ -408,15 +456,6 @@ function updateRecap() {
   document.getElementById('recapHT').textContent = fmt(ht) + ' FCFA';
   document.getElementById('recapTVA').textContent = fmt(vat) + ' FCFA';
   document.getElementById('recapTotal').textContent = fmt(ttc) + ' FCFA';
-
-  let detail = '';
-  if (selectedPlan === 'premium') {
-    detail = '14 900 FCFA HT × 1 campagne. Soit moins de 170 FCFA/jour.';
-  } else {
-    detail = billing === 'annual'
-      ? `250 000 FCFA HT/an — économie de ${fmt(25000*12 - 250000)} FCFA vs. mensuel × 12.`
-      : '25 000 FCFA HT/mois — sans engagement.';
-  }
   document.getElementById('recapDetail').textContent = detail;
 }
 
@@ -435,7 +474,7 @@ async function initierPaiement() {
 
   const provider = document.querySelector('input[name="provider"]:checked')?.value || 'wave';
   const phone = document.getElementById('phoneInput').value.replace(/\s/g,'') || null;
-  const planMap = { premium: 'producteur', cooperative: 'cooperative' };
+  const planMap = { producteur: 'producteur', premium: 'producteur', cooperative: 'cooperative' };
   const plan = planMap[selectedPlan] || selectedPlan;
   const billingVal = selectedPlan === 'premium' ? 'campaign' : billing;
 
