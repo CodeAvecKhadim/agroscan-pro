@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#047857">
+<meta name="theme-color" content="#1A8B4F">
 <link rel="manifest" href="/static/manifest.json">
 <title>AgroScan Pro — Tarifs &amp; Abonnements</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
 <style>
 :root{
-  --g:#059669;--gdk:#047857;--gdeep:#065f46;
-  --gold:#34d399;--millet:#6ee7b7;
-  --paper:#f5faf7;--paper2:#fbf6ec;--card:#fff;
-  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --g:#1A8B4F;--gdk:#136B3C;--gdeep:#0D4D2B;
+  --gold:#F5A623;--millet:#CBE9D8;
+  --paper:#F4FAF7;--paper2:#fbf6ec;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
   --shadow:0 1px 2px rgba(60,40,20,.06),0 8px 24px -12px rgba(90,50,20,.22);
   --shadow-lg:0 30px 60px -25px rgba(90,50,20,.4);
   --r:18px;--r-sm:12px;
-  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+  --sans:'Plus Jakarta Sans',sans-serif;--serif:'Sora',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -29,8 +29,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g) 60%,var(--gdk));color:#fff;box-shadow:0 6px 22px -10px rgba(5,100,60,.5)}
 .nav-in{max-width:1100px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
 .brand{display:flex;align-items:center;gap:12px}
-.mark{width:42px;height:42px;border-radius:11px;background:linear-gradient(150deg,var(--gold),var(--millet));display:grid;place-items:center;font-size:23px;box-shadow:inset 0 -2px 6px rgba(0,0,0,.18)}
-.brand h1{font-family:var(--serif);font-weight:900;font-size:1.18rem;line-height:1}
+.mark{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);display:grid;place-items:center;font-size:23px;}
+.brand h1{font-family:var(--title);font-weight:900;font-size:1.18rem;line-height:1}
 .brand p{font-size:.7rem;opacity:.85}.brand p b{color:var(--millet)}
 .nav-links{margin-left:auto;display:flex;align-items:center;gap:22px}
 .nav-links a{font-size:.9rem;opacity:.9}.nav-links a:hover{opacity:1}
@@ -40,7 +40,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* HERO */
 .hero{max-width:1100px;margin:0 auto;padding:52px 18px 24px;text-align:center}
 .eyebrow{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g);background:#fff;border:1px solid var(--line);padding:5px 14px;border-radius:20px;margin-bottom:14px}
-.hero h2{font-family:var(--serif);font-weight:900;font-size:2.2rem;color:var(--gdk);line-height:1.1;margin-bottom:10px}
+.hero h2{font-family:var(--title);font-weight:900;font-size:2.2rem;color:var(--gdk);line-height:1.1;margin-bottom:10px}
 .hero p{color:var(--soft);font-size:1.05rem;max-width:640px;margin:0 auto}
 
 /* TOGGLE COOP */
@@ -56,22 +56,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative}
 .plan.pop{border:2px solid var(--gold);box-shadow:var(--shadow-lg)}
 .plan.pop::before{content:"⭐ Le plus populaire";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--gdeep);font-size:.74rem;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap}
-.plan h3{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdk)}
+.plan h3{font-family:var(--title);font-weight:900;font-size:1.4rem;color:var(--gdk)}
 .plan .who{font-size:.84rem;color:var(--soft);margin:4px 0 18px;min-height:36px}
 
 /* Prix */
 .price-box{margin-bottom:16px;min-height:72px}
-.price{font-family:var(--serif);font-weight:900;font-size:2.2rem;color:var(--gdk);line-height:1}
+.price{font-family:var(--title);font-weight:900;font-size:2.2rem;color:var(--gdk);line-height:1}
 .price small{font-size:.82rem;font-weight:600;color:var(--soft);font-family:var(--sans)}
 .price-sub{font-size:.8rem;color:var(--g);font-weight:700;margin-top:2px}
 .price-daily{font-size:.75rem;color:var(--soft);opacity:.85;font-style:italic}
-.price-free{font-family:var(--serif);font-weight:900;font-size:2.2rem;color:var(--g)}
+.price-free{font-family:var(--title);font-weight:900;font-size:2.2rem;color:var(--g)}
 .price-old{font-size:.85rem;color:var(--soft);text-decoration:line-through;opacity:.7}
 
 /* Specs */
 .specs{display:flex;gap:8px;margin:14px 0;padding:12px;background:var(--paper2);border-radius:12px;border:1px solid var(--line);flex-wrap:wrap}
 .spec{flex:1;text-align:center;min-width:60px}
-.spec b{display:block;font-family:var(--serif);font-weight:900;color:var(--gdk);font-size:1.05rem}
+.spec b{display:block;font-family:var(--title);font-weight:900;color:var(--gdk);font-size:1.05rem}
 .spec span{font-size:.7rem;color:var(--soft)}
 
 /* Features */
@@ -100,15 +100,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .config{max-width:760px;margin:0 auto 50px;padding:0 18px}
 .config-card{background:var(--card);border:2px solid var(--gold);border-radius:var(--r);box-shadow:var(--shadow-lg);overflow:hidden}
 .config-head{background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;padding:18px 22px}
-.config-head h3{font-family:var(--serif);font-weight:900;font-size:1.3rem}
+.config-head h3{font-family:var(--title);font-weight:900;font-size:1.3rem}
 .config-head p{font-size:.85rem;opacity:.9;margin-top:4px}
 .config-body{padding:22px;display:none}
 .recap-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .recap-row span{color:var(--soft);font-size:.9rem}
 .recap-row strong{color:var(--gdk);font-size:.95rem}
 .recap-total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 6px;border-top:2px solid var(--g)}
-.recap-total-label{font-family:var(--serif);font-weight:700;font-size:1.1rem;color:var(--gdk)}
-.recap-total-val{font-family:var(--serif);font-weight:900;font-size:1.8rem;color:var(--gdk)}
+.recap-total-label{font-family:var(--title);font-weight:700;font-size:1.1rem;color:var(--gdk)}
+.recap-total-val{font-family:var(--title);font-weight:900;font-size:1.8rem;color:var(--gdk)}
 .recap-detail{font-size:.76rem;color:var(--soft);margin-bottom:16px}
 
 /* PAYMENTS */
@@ -297,7 +297,7 @@ footer a{color:var(--millet)}
 <div style="max-width:760px;margin:0 auto 50px;padding:0 18px">
   <div style="background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:32px 28px;text-align:center;box-shadow:var(--shadow-lg)">
     <div style="font-size:2rem;margin-bottom:10px">🤝</div>
-    <h3 style="font-family:var(--serif);font-weight:900;font-size:1.5rem;margin-bottom:8px">Besoins spécifiques ?</h3>
+    <h3 style="font-family:var(--title);font-weight:900;font-size:1.5rem;margin-bottom:8px">Besoins spécifiques ?</h3>
     <p style="opacity:.92;font-size:.95rem;max-width:480px;margin:0 auto 20px">Coopérative, ONG, entreprise agricole, services drone — nous construisons une offre sur mesure pour votre structure.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+un+devis+AgroScan+Pro+pour+mon+organisation."
@@ -347,7 +347,7 @@ footer a{color:var(--millet)}
           style="width:100%;margin-top:10px;padding:10px 12px;border:1.5px solid #dde;border-radius:8px;font-size:.9rem;display:none">
       </div>
       <button class="btn btn-primary" onclick="initierPaiement()" id="btnPayer">Payer maintenant →</button>
-      <div id="payMsg" style="margin-top:10px;font-size:.84rem;text-align:center;color:#059669"></div>
+      <div id="payMsg" style="margin-top:10px;font-size:.84rem;text-align:center;color:#1A8B4F"></div>
       <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:10px">
         💳 Wave · Orange Money · PayDunya · Carte (bientôt)
       </p>
@@ -496,7 +496,7 @@ async function initierPaiement() {
     // Rediriger si URL checkout dispo
     const url = d.wave_checkout || d.orange_checkout || d.paydunya_checkout;
     if (url) {
-      msg.style.color='#059669'; msg.textContent = 'Redirection vers la page de paiement…';
+      msg.style.color='#1A8B4F'; msg.textContent = 'Redirection vers la page de paiement…';
       setTimeout(() => { window.location.href = url; }, 800);
     } else {
       // Instructions manuelles
@@ -508,7 +508,7 @@ async function initierPaiement() {
           (instruct.ussd ? `<br>🔢 ${instruct.ussd}` : '') +
           (instruct.reference ? `<br>Référence : <b>${instruct.reference}</b>` : '');
       } else {
-        msg.style.color='#059669'; msg.textContent = 'Commande enregistrée. Notre équipe vous contacte sous 24h.';
+        msg.style.color='#1A8B4F'; msg.textContent = 'Commande enregistrée. Notre équipe vous contacte sous 24h.';
       }
     }
   } catch(e) {

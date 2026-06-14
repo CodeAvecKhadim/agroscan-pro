@@ -3,22 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#047857">
+<meta name="theme-color" content="#1A8B4F">
 <link rel="manifest" href="/static/manifest.json">
 <title>Mon Champ — AgroScan Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
-  --g:#059669;--gdk:#047857;--gdeep:#065f46;
-  --gold:#34d399;--paper:#f5faf7;--card:#fff;
-  --ink:#0f2a1e;--soft:#4b5d52;--line:#d1fae5;
+  --g:#1A8B4F;--gdk:#136B3C;--gdeep:#0D4D2B;
+  --gold:#F5A623;--paper:#F4FAF7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
   --red:#dc2626;--orange:#d97706;--blue:#2563eb;
   --shadow:0 1px 3px rgba(0,0,0,.07),0 8px 24px -12px rgba(0,60,30,.18);
   --r:18px;--r-sm:12px;
-  --sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+  --sans:'Plus Jakarta Sans',sans-serif;--serif:'Sora',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:80px}
@@ -30,7 +30,7 @@ img{max-width:100%}
 .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;box-shadow:0 4px 20px -8px rgba(0,60,20,.5)}
 .tb{max-width:600px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
 .tb-back{color:#fff;font-size:1.4rem;text-decoration:none;line-height:1;flex-shrink:0}
-.tb-title{flex:1;font-family:var(--serif);font-weight:900;font-size:1.1rem}
+.tb-title{flex:1;font-family:var(--title);font-weight:900;font-size:1.1rem}
 .tb-sub{font-size:.72rem;opacity:.8}
 
 /* MAIN */
@@ -45,7 +45,7 @@ img{max-width:100%}
 .step-dot.done{background:var(--gold)}
 .step-dot.active{background:var(--g)}
 .step-label{font-size:.78rem;color:var(--soft);font-weight:600}
-.step-label span{color:var(--g);font-family:var(--serif);font-weight:900;font-size:1rem}
+.step-label span{color:var(--g);font-family:var(--title);font-weight:900;font-size:1rem}
 
 .wizard-content{max-width:600px;margin:0 auto;padding:16px}
 
@@ -53,7 +53,7 @@ img{max-width:100%}
 .step-card.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.step-title{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdeep);margin-bottom:6px}
+.step-title{font-family:var(--title);font-weight:900;font-size:1.4rem;color:var(--gdeep);margin-bottom:6px}
 .step-desc{font-size:.88rem;color:var(--soft);margin-bottom:20px}
 
 /* FORM */
@@ -81,7 +81,7 @@ img{max-width:100%}
 .method-card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:20px;cursor:pointer;transition:all .2s;display:flex;gap:16px;align-items:center}
 .method-card:hover,.method-card.selected{border-color:var(--g);background:#f0fdf4}
 .method-icon{font-size:2.4rem;flex-shrink:0}
-.method-body h3{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:4px}
+.method-body h3{font-family:var(--title);font-weight:700;font-size:1rem;color:var(--gdeep);margin-bottom:4px}
 .method-body p{font-size:.82rem;color:var(--soft)}
 
 /* LOADING BARS */
@@ -111,7 +111,7 @@ img{max-width:100%}
 /* METRICS GRID */
 .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .metric-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
-.metric-val{font-family:var(--serif);font-weight:900;font-size:1.4rem;color:var(--gdeep)}
+.metric-val{font-family:var(--title);font-weight:900;font-size:1.4rem;color:var(--gdeep)}
 .metric-unit{font-size:.72rem;color:var(--soft)}
 .metric-label{font-size:.78rem;color:var(--soft);margin-top:4px}
 
@@ -125,13 +125,13 @@ img{max-width:100%}
 .sat-key{color:var(--soft)}
 .sat-val{font-weight:600;text-align:right;max-width:60%}
 .sat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.sat-chip{background:#d1fae5;color:var(--gdeep);padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:600}
+.sat-chip{background:#CBE9D8;color:var(--gdeep);padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:600}
 
 /* PROFIL SOL */
 .profil-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .profil-card{background:linear-gradient(135deg,#f0fdf4,var(--card));border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;text-align:center}
 .profil-icon{font-size:1.8rem;margin-bottom:6px}
-.profil-val{font-family:var(--serif);font-weight:700;font-size:.9rem;color:var(--gdeep)}
+.profil-val{font-family:var(--title);font-weight:700;font-size:.9rem;color:var(--gdeep)}
 .profil-key{font-size:.72rem;color:var(--soft);margin-top:3px}
 
 /* CAPTEUR 8-EN-1 */
@@ -171,11 +171,11 @@ input[type=file]{display:none}
 .score-dim{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px}
 .score-dim-head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px}
 .score-dim-label{font-weight:700;color:var(--ink)}
-.score-dim-val{font-family:var(--serif);font-weight:900;color:var(--g)}
+.score-dim-val{font-family:var(--title);font-weight:900;color:var(--g)}
 .score-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--g));transition:width 1s}
 .score-global{background:linear-gradient(135deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:20px;text-align:center;margin:16px 0}
-.score-global-val{font-family:var(--serif);font-weight:900;font-size:3rem;line-height:1}
+.score-global-val{font-family:var(--title);font-weight:900;font-size:3rem;line-height:1}
 .score-global-label{font-size:.85rem;opacity:.85;margin-top:4px}
 
 /* RAPPORT */
@@ -188,7 +188,7 @@ input[type=file]{display:none}
 /* ACTIVATION */
 .activation-hero{text-align:center;padding:24px 0 16px}
 .activation-hero .ah-icon{font-size:4rem;margin-bottom:12px}
-.activation-hero h2{font-family:var(--serif);font-weight:900;font-size:1.6rem;color:var(--gdeep);margin-bottom:8px}
+.activation-hero h2{font-family:var(--title);font-weight:900;font-size:1.6rem;color:var(--gdeep);margin-bottom:8px}
 .activation-hero p{font-size:.88rem;color:var(--soft);max-width:280px;margin:0 auto}
 .features-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .feature-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center}
@@ -199,19 +199,19 @@ input[type=file]{display:none}
 #viewList{display:none}
 
 .list-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.list-topbar h2{font-family:var(--serif);font-weight:900;font-size:1.1rem;color:var(--gdeep)}
+.list-topbar h2{font-family:var(--title);font-weight:900;font-size:1.1rem;color:var(--gdeep)}
 
 .parcelle-list{display:flex;flex-direction:column;gap:10px}
 .parcelle-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:transform .15s;display:flex;gap:12px;align-items:flex-start}
 .parcelle-card:active{transform:scale(.98)}
 .parcelle-card:hover{transform:translateY(-1px)}
-.pc-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
+.pc-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#CBE9D8,#a7f3d0);display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
 .pc-body{flex:1;min-width:0}
 .pc-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-meta{font-size:.75rem;color:var(--soft);margin-top:2px}
 .pc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .tag{padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
-.tag.active{background:#d1fae5;color:var(--gdeep)}
+.tag.active{background:#CBE9D8;color:var(--gdeep)}
 .tag.en_repos{background:#fef9c3;color:#713f12}
 .tag.en_preparation{background:#e0f2fe;color:#0c4a6e}
 .tag.archive{background:#f3f4f6;color:#6b7280}
@@ -219,13 +219,13 @@ input[type=file]{display:none}
 .pc-score{flex-shrink:0;text-align:right}
 .score-ring{width:44px;height:44px;position:relative}
 .score-ring svg{transform:rotate(-90deg)}
-.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:.78rem;color:var(--gdk)}
+.score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--title);font-weight:900;font-size:.78rem;color:var(--gdk)}
 .continue-btn{display:inline-flex;align-items:center;gap:4px;background:var(--g);color:#fff;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;margin-top:6px}
 
 /* EMPTY STATE */
 .empty-state{text-align:center;padding:60px 20px}
 .empty-state .es-icon{font-size:4rem;margin-bottom:16px}
-.empty-state h3{font-family:var(--serif);font-weight:700;font-size:1.2rem;color:var(--gdeep);margin-bottom:8px}
+.empty-state h3{font-family:var(--title);font-weight:700;font-size:1.2rem;color:var(--gdeep);margin-bottom:8px}
 .empty-state p{font-size:.88rem;color:var(--soft);margin-bottom:24px;max-width:280px;margin-left:auto;margin-right:auto}
 
 /* FAB */
@@ -239,7 +239,7 @@ input[type=file]{display:none}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:12px auto 0}
 .sheet-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.sheet-head h2{font-family:var(--serif);font-weight:900;font-size:1.2rem;flex:1}
+.sheet-head h2{font-family:var(--title);font-weight:900;font-size:1.2rem;flex:1}
 .sheet-close{font-size:1.4rem;color:var(--soft);width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
 .sheet-close:hover{background:var(--paper)}
 .sheet-body{overflow-y:auto;flex:1;padding:16px 20px 24px}
@@ -816,9 +816,9 @@ function renderParcelles() {
     const ha = p.superficie_ha ? `${p.superficie_ha.toFixed(2)} ha` : 'Surface non définie';
     const sc = p.score_completude || 0;
     const r = 18, c = 2 * Math.PI * r;
-    const col = sc >= 80 ? '#059669' : sc >= 50 ? '#d97706' : '#dc2626';
+    const col = sc >= 80 ? '#1A8B4F' : sc >= 50 ? '#d97706' : '#dc2626';
     const dash = (sc / 100) * c;
-    const ring = `<div class="score-ring"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="${r}" fill="none" stroke="#d1fae5" stroke-width="4"/><circle cx="22" cy="22" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="${dash} ${c}" stroke-linecap="round" transform="rotate(-90 22 22)"/></svg><div class="val">${sc}%</div></div>`;
+    const ring = `<div class="score-ring"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="${r}" fill="none" stroke="#CBE9D8" stroke-width="4"/><circle cx="22" cy="22" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-dasharray="${dash} ${c}" stroke-linecap="round" transform="rotate(-90 22 22)"/></svg><div class="val">${sc}%</div></div>`;
 
     const isConfig = !p.wizard_complet;
     return `<div class="parcelle-card" onclick="${isConfig ? `continuerWizard(${p.id},${p.etape_wizard})` : `openDetail(${p.id})`}">
@@ -1121,13 +1121,13 @@ function updateMapDrawing(pts) {
   const lls = pts.map(p => [p.lat, p.lon]);
 
   if (pts.length >= 3) {
-    leafletPolygon = L.polygon(lls, {color:'#059669', fillColor:'#059669', fillOpacity:.25, weight:2}).addTo(leafletMap);
+    leafletPolygon = L.polygon(lls, {color:'#1A8B4F', fillColor:'#1A8B4F', fillOpacity:.25, weight:2}).addTo(leafletMap);
   } else {
-    leafletPolyline = L.polyline(lls, {color:'#059669', weight:2}).addTo(leafletMap);
+    leafletPolyline = L.polyline(lls, {color:'#1A8B4F', weight:2}).addTo(leafletMap);
   }
 
   lls.forEach((ll, i) => {
-    const m = L.circleMarker(ll, {radius:6, color:'#047857', fillColor:'#fff', fillOpacity:1, weight:2}).addTo(leafletMap);
+    const m = L.circleMarker(ll, {radius:6, color:'#136B3C', fillColor:'#fff', fillOpacity:1, weight:2}).addTo(leafletMap);
     leafletMarkers.push(m);
   });
 }
@@ -1667,10 +1667,10 @@ async function loadDetailSol(id) {
     if (!sol) { el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune analyse de sol.</p>'; return; }
     el.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        ${sol.pH_eau != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.pH_eau.toFixed(1)}</div><div style="font-size:.73rem;color:var(--soft)">pH eau</div></div>` : ''}
-        ${sol.matiere_organique != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.matiere_organique.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">M.O.</div></div>` : ''}
-        ${sol.temperature_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.temperature_sol.toFixed(1)}°C</div><div style="font-size:.73rem;color:var(--soft)">Temp. sol</div></div>` : ''}
-        ${sol.humidite_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.humidite_sol.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">Humidité</div></div>` : ''}
+        ${sol.pH_eau != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--title);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.pH_eau.toFixed(1)}</div><div style="font-size:.73rem;color:var(--soft)">pH eau</div></div>` : ''}
+        ${sol.matiere_organique != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--title);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.matiere_organique.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">M.O.</div></div>` : ''}
+        ${sol.temperature_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--title);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.temperature_sol.toFixed(1)}°C</div><div style="font-size:.73rem;color:var(--soft)">Temp. sol</div></div>` : ''}
+        ${sol.humidite_sol != null ? `<div class="sol-card" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px"><div style="font-family:var(--title);font-weight:900;font-size:1.2rem;color:var(--gdk)">${sol.humidite_sol.toFixed(1)}%</div><div style="font-size:.73rem;color:var(--soft)">Humidité</div></div>` : ''}
       </div>
       <div class="info-row"><span class="irl">Source</span><span class="irv">${sol.source_analyse ? sol.source_analyse.replace(/_/g,' ') : '—'}</span></div>
       ${sol.texture ? `<div class="info-row"><span class="irl">Texture</span><span class="irv">${sol.texture}</span></div>` : ''}
