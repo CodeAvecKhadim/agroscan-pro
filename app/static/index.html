@@ -2,10 +2,11 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <link rel="manifest" href="/static/manifest.json">
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/static/assets/favicon.png">
 <title>AgroScan Pro — Social Technologie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -130,7 +131,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
 
 <header class="topbar" id="topbar" style="display:none">
   <div class="topbar-in">
-    <div class="brand"><div class="mark">🌾</div><div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div></div>
+    <div class="brand"><div class="mark"><img src="/static/assets/logo-emblem.webp" alt="AgroScan" style="width:24px;height:24px;object-fit:contain;display:block"></div><div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div></div>
     <div class="right">
       <span class="plan-badge" id="planBadge">gratuit</span>
       <span class="lk" id="userName"></span>
@@ -145,11 +146,12 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
   <div class="auth-split">
     <!-- Panneau gauche : photo agricole (desktop uniquement) -->
     <div class="auth-photo-panel">
-      <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80"
-           alt="Agriculteurs africains au travail dans les champs" loading="eager" fetchpriority="high">
+      <img src="/static/assets/photos/producer-smartphone.webp"
+           alt="Producteur agricole sénégalais" loading="eager" fetchpriority="high"
+           onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80'">
       <div class="auth-photo-overlay">
         <div>
-          <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:14px;display:grid;place-items:center;font-size:28px;margin-bottom:16px">🌾</div>
+          <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:14px;display:grid;place-items:center;margin-bottom:16px"><img src="/static/assets/logo-emblem.webp" alt="" style="width:30px;height:30px;object-fit:contain" onerror="this.outerHTML='🌾'"></div>
           <h2 style="font-family:var(--title);font-weight:800;font-size:1.85rem;color:#fff;line-height:1.1;margin-bottom:10px">AgroScan Pro</h2>
           <p style="color:rgba(255,255,255,.88);font-size:.93rem;line-height:1.6;max-width:280px">L'agriculture de précision au Sénégal — analysez votre sol, cartographiez vos parcelles, décidez mieux.</p>
         </div>
@@ -163,7 +165,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
     <!-- Panneau droit : formulaire -->
     <div class="auth-wrap"><div class="auth-card">
       <div class="auth-hero">
-        <div class="mark">🌾</div>
+        <div class="mark"><img src="/static/assets/logo-emblem.webp" alt="AgroScan Pro" style="width:36px;height:36px;object-fit:contain;display:block"></div>
         <h1>AgroScan Pro</h1>
         <p>Analyse de sol & cultures · Sénégal — une solution Social Technologie</p>
       </div>

@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>AgroScan Pro — Assistant IA</title>
@@ -174,7 +175,8 @@ body{padding-bottom:80px}
   <div id="convThreadView" style="display:none">
     <div class="thread-header">
       <span class="thread-back" onclick="retourListe()">‹</span>
-      <span class="thread-title" id="threadTitle">Conversation</span>
+      <img src="/static/assets/polele-avatar.svg" alt="Polélé" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+      <span class="thread-title" id="threadTitle">Polélé — Assistante agronomique</span>
     </div>
     <div class="messages" id="threadMessages"></div>
     <div class="send-bar">

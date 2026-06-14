@@ -80,7 +80,7 @@ self.addEventListener('fetch', event => {
 // ── Push Notifications ────────────────────────────────────────────────────────
 
 self.addEventListener('push', event => {
-  let data = { title: 'AgroScan Pro', body: 'Nouvelle notification', icon: '/static/icons/icon-192.png', tag: 'agroscan' };
+  let data = { title: 'AgroScan Pro', body: 'Nouvelle notification', icon: '/static/assets/favicon.png', tag: 'agroscan' };
   try {
     if (event.data) Object.assign(data, event.data.json());
   } catch (_) {}
@@ -88,8 +88,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: data.icon || '/static/icons/icon-192.png',
-      badge: '/static/icons/icon-192.png',
+      icon: data.icon || '/static/assets/favicon.png',
+      badge: '/static/assets/favicon.png',
       tag: data.tag || 'agroscan',
       requireInteraction: data.urgent || false,
       data: { url: data.url || '/app' },
