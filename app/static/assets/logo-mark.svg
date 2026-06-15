@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AgroScan">
+  <defs>
+    <linearGradient id="agBg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F9A57"></stop>
+      <stop offset="1" stop-color="#0F5C33"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#agBg)"></rect>
+  
+  <g opacity="0.9">
+    <line x1="13" y1="46" x2="51" y2="46" stroke="#9BD4F5" stroke-width="2" stroke-linecap="round"></line>
+    <circle cx="13" cy="46" r="2.4" fill="#CDEAFB"></circle>
+    <circle cx="32" cy="46" r="2.4" fill="#CDEAFB"></circle>
+    <circle cx="51" cy="46" r="2.4" fill="#CDEAFB"></circle>
+  </g>
+  
+  <path d="M32 44 V30" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round"></path>
+  <path d="M31.5 33 C23 33 17.5 27.5 18.5 19 C27 19 32.5 24.5 31.5 33 Z" fill="#FFFFFF"></path>
+  <path d="M32.5 30 C40.5 30 45.8 24.8 45 17 C37 17 31.6 22.2 32.5 30 Z" fill="#C6F0D5"></path>
+</svg>

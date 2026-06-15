@@ -1,0 +1,19 @@
+<svg width="248" height="56" viewBox="0 0 248 56" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AgroScan Pro">
+  <g transform="translate(4,4)">
+    <rect width="48" height="48" rx="12" fill="#0F5C33" stroke="#2E9B4E" stroke-width="1"></rect>
+    <g opacity="0.9">
+      <line x1="10" y1="34.5" x2="38" y2="34.5" stroke="#9BD4F5" stroke-width="1.6" stroke-linecap="round"></line>
+      <circle cx="10" cy="34.5" r="1.8" fill="#CDEAFB"></circle>
+      <circle cx="24" cy="34.5" r="1.8" fill="#CDEAFB"></circle>
+      <circle cx="38" cy="34.5" r="1.8" fill="#CDEAFB"></circle>
+    </g>
+    <path d="M24 33 V22.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path>
+    <path d="M23.6 24.8 C17.2 24.8 13.1 20.6 13.9 14.3 C20.3 14.3 24.4 18.5 23.6 24.8 Z" fill="#FFFFFF"></path>
+    <path d="M24.4 22.5 C30.4 22.5 34.4 18.6 33.8 12.8 C27.8 12.8 23.7 16.7 24.4 22.5 Z" fill="#C6F0D5"></path>
+  </g>
+  <text x="66" y="35" font-family="Sora, &#39;Plus Jakarta Sans&#39;, sans-serif" font-size="25" font-weight="700" letter-spacing="-0.5" fill="#FFFFFF">Agro<tspan fill="#6FD095">Scan</tspan></text>
+  <g transform="translate(206,14)">
+    <rect width="34" height="20" rx="6" fill="rgba(155,212,245,0.16)" stroke="#63BCEC" stroke-width="1"></rect>
+    <text x="17" y="14.5" text-anchor="middle" font-family="&#39;Plus Jakarta Sans&#39;, sans-serif" font-size="11" font-weight="700" letter-spacing="0.5" fill="#9BD4F5">PRO</text>
+  </g>
+</svg>

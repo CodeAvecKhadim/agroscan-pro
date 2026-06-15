@@ -1,0 +1,10 @@
+/* AgroScan Pro — Webfonts
+   NOTE: Fonts are loaded from Google Fonts CDN as the nearest match to the intended
+   brand type. For production/offline, replace these @import lines with self-hosted
+   @font-face declarations pointing at local .woff2 files.
+
+   Display / headings : Sora        (geometric, modern ag-tech)
+   UI / body          : Plus Jakarta Sans (humanist, warm, highly legible)
+   Data / numeric     : IBM Plex Mono     (coordinates, NDVI values, readouts)
+*/
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');

@@ -1,0 +1,103 @@
+/* AgroScan Pro — Color tokens
+   Primary  : Vert agricole (agricultural green)
+   Secondary: Bleu clair (sky / satellite blue)
+   Plus a dedicated NDVI agronomic ramp, soil accent, neutrals & semantics. */
+
+:root {
+  /* ---- Brand green (Vert agricole) ---- */
+  --green-50:  #ECFAF0;
+  --green-100: #D2F2DC;
+  --green-200: #A7E5BC;
+  --green-300: #6FD095;
+  --green-400: #3DB46F;
+  --green-500: #1A8B4F;  /* primary action */
+  --green-600: #13743F;
+  --green-700: #0F5C33;
+  --green-800: #0C4527;
+  --green-900: #08301B;
+
+  /* ---- Sky / satellite blue (Bleu clair) ---- */
+  --blue-50:  #EAF6FD;
+  --blue-100: #CDEAFB;
+  --blue-200: #9BD4F5;
+  --blue-300: #63BCEC;
+  --blue-400: #38A8E0;
+  --blue-500: #1B8FCC;  /* secondary */
+  --blue-600: #1573A8;
+  --blue-700: #115B85;
+
+  /* ---- Soil / earth accent (Ferme) ---- */
+  --soil-100: #F0E3D6;
+  --soil-300: #D2A878;
+  --soil-500: #B0774A;
+  --soil-700: #7C5333;
+
+  /* ---- NDVI agronomic ramp (stressed -> dense vegetation) ---- */
+  --ndvi-0: #A11B0E;
+  --ndvi-1: #D45F2C;
+  --ndvi-2: #E8A33D;
+  --ndvi-3: #F4D03F;
+  --ndvi-4: #B7D94C;
+  --ndvi-5: #6FBF3B;
+  --ndvi-6: #2E9B4E;
+  --ndvi-7: #0F6B34;
+
+  /* ---- Neutrals (cool slate) ---- */
+  --n-0:   #FFFFFF;
+  --n-25:  #FAFBFC;
+  --n-50:  #F4F6F8;
+  --n-100: #E9EDF1;
+  --n-200: #D6DDE4;
+  --n-300: #B6C1CB;
+  --n-400: #8995A1;
+  --n-500: #5F6B77;
+  --n-600: #44505B;
+  --n-700: #313A43;
+  --n-800: #1E252B;
+  --n-900: #11161A;
+
+  /* ---- Map canvas (dark satellite surface) ---- */
+  --map-canvas: #0D1B14;
+  --map-canvas-2: #122620;
+
+  /* ---- Semantic raw ---- */
+  --c-success: #1A8B4F;
+  --c-info:    #1B8FCC;
+  --c-warning: #E8A33D;
+  --c-danger:  #D9483B;
+  --c-stress:  #D45F2C;
+
+  /* =========================================================
+     Semantic aliases — prefer these in components
+     ========================================================= */
+  --brand:            var(--green-500);
+  --brand-strong:     var(--green-600);
+  --brand-soft:       var(--green-50);
+  --brand-contrast:   #FFFFFF;
+  --accent:           var(--blue-500);
+  --accent-soft:      var(--blue-50);
+
+  --text-strong:      var(--n-900);
+  --text-body:        var(--n-700);
+  --text-muted:       var(--n-500);
+  --text-subtle:      var(--n-400);
+  --text-on-brand:    #FFFFFF;
+  --text-on-dark:     #EAF1ED;
+  --text-link:        var(--green-600);
+
+  --surface-page:     var(--n-50);
+  --surface-card:     var(--n-0);
+  --surface-sunken:   var(--n-100);
+  --surface-raised:   var(--n-0);
+  --surface-brand:    var(--green-500);
+  --surface-dark:     var(--map-canvas);
+  --surface-overlay:  rgba(17, 22, 26, 0.55);
+
+  --border-subtle:    var(--n-100);
+  --border-default:   var(--n-200);
+  --border-strong:    var(--n-300);
+  --border-brand:     var(--green-500);
+
+  --focus-ring:       rgba(26, 139, 79, 0.35);
+  --focus-ring-blue:  rgba(27, 143, 204, 0.35);
+}

@@ -1,0 +1,15 @@
+/* AgroScan Pro — Motion tokens
+   Calm, confident transitions. No bounce on UI; gentle ease for surfaces. */
+
+:root {
+  --dur-instant: 80ms; /* @kind other */
+  --dur-fast:    140ms; /* @kind other */
+  --dur-base:    220ms; /* @kind other */
+  --dur-slow:    360ms; /* @kind other */
+  --dur-slower:  560ms; /* @kind other */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); /* @kind other */     /* enter/exit UI */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */  /* surfaces appearing */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-spring:   cubic-bezier(0.34, 1.4, 0.5, 1); /* @kind other */ /* sparingly — toggles, pins drop */
+}

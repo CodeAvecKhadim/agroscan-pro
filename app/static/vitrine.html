@@ -1,316 +1,89 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<link rel="icon" href="/static/assets/favicon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1A8B4F">
-<title>AgroScan Pro — L'agriculture de précision au Sénégal</title>
-<meta property="og:title" content="AgroScan Pro">
-<meta property="og:description" content="Agriculture de précision au Sénégal — analyse de sol, cartographie, météo agricole.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroScan Pro — Agriculture de précision au Sénégal</title>
+<meta name="description" content="AgroScan Pro : analyse de sol, cartographie GPS, NDVI satellite, diagnostic des cultures et météo agricole pour les producteurs d'Afrique. Solution Social Technologie.">
+<meta property="og:title" content="AgroScan Pro — Agriculture de précision">
+<meta property="og:description" content="Cartographiez vos parcelles, suivez la santé de vos cultures par satellite et dialoguez avec Polélé, votre conseillère IA agricole.">
 <meta property="og:image" content="/static/assets/photos/hero-composed.webp">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="description" content="AgroScan Pro : analyse de sol, cartographie de parcelle, diagnostic des maladies et météo agricole pour les producteurs du Sénégal. Une solution Social Technologie.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
+<link rel="icon" type="image/png" href="/static/assets/favicon.png">
+<link rel="apple-touch-icon" href="/static/assets/favicon.png">
+<link rel="stylesheet" href="/static/css/design-system.css">
+<link rel="stylesheet" href="/static/css/landing.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="/static/_ds_bundle.js"></script>
 <style>
-:root{--laterite:#1A8B4F;--laterite-dk:#136B3C;--laterite-deep:#0D4D2B;--gold:#F5A623;--millet:#CBE9D8;--baobab:#1A8B4F;--baobab-dk:#0D4D2B;--paper:#F4FAF7;--paper-2:#fbf6ec;--card:#ffffff;--ink:#0f2a1e;--ink-soft:#4b5d52;--line:#CBE9D8;--shadow:0 1px 2px rgba(0,0,0,.06),0 8px 24px -12px rgba(0,60,30,.18);--shadow-lg:0 30px 60px -25px rgba(0,60,30,.28);--r:18px;--r-sm:12px;--sans:'Plus Jakarta Sans',sans-serif;--serif:'Sora',sans-serif;--title:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;--brand:#1A8B4F;--brand-dk:#136B3C;--brand-deep:#0D4D2B;--accent:#1B8FCC}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 12% 8%,rgba(26,139,79,.05),transparent 40%),radial-gradient(circle at 88% 92%,rgba(27,143,204,.04),transparent 42%)}
-a{color:inherit;text-decoration:none}
-button{font-family:inherit;cursor:pointer;border:none;background:none}
-
-/* ----- Barre de navigation ----- */
-.nav{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--brand-deep),var(--brand) 60%,var(--brand-dk));color:#fff;box-shadow:0 6px 22px -10px rgba(0,60,20,.4)}
-.nav-in{max-width:1100px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
-.brand{display:flex;align-items:center;gap:12px}
-.brand .mark{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);display:grid;place-items:center;font-size:23px;}
-.brand h1{font-family:var(--title);font-weight:900;font-size:1.18rem;line-height:1}
-.brand p{font-size:.7rem;opacity:.85}.brand p b{color:rgba(255,255,255,.85)}
-.nav-links{margin-left:auto;display:flex;align-items:center;gap:22px}
-.nav-links a{font-size:.9rem;opacity:.9;transition:opacity .15s}.nav-links a:hover{opacity:1}
-.nav-cta{background:var(--gold);color:#fff;padding:9px 18px;border-radius:10px;font-weight:700;font-size:.88rem}
-.burger{display:none;margin-left:auto;font-size:1.6rem}
-@media(max-width:760px){.nav-links{display:none}.burger{display:block}}
-
-/* ----- Sections ----- */
-section{max-width:1100px;margin:0 auto;padding:64px 18px;scroll-margin-top:70px}
-.eyebrow{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);background:#fff;border:1px solid var(--line);padding:5px 14px;border-radius:20px;margin-bottom:16px}
-h2.title{font-family:var(--title);font-weight:900;font-size:2rem;color:var(--brand-dk);line-height:1.1;margin-bottom:10px}
-.lead{color:var(--ink-soft);font-size:1.05rem;max-width:640px}
-
-/* ----- Hero (Accueil) ----- */
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-top:54px}
-@media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center}.hero .visual{order:-1}}
-.hero h2{font-family:var(--title);font-weight:900;font-size:2.8rem;line-height:1.05;color:var(--brand-dk);margin-bottom:16px}
-@media(max-width:860px){.hero h2{font-size:2.1rem}}
-.hero h2 .em{color:var(--gold)}
-.hero p.lead{margin-bottom:26px}
-@media(max-width:860px){.hero p.lead{margin-inline:auto}}
-.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
-@media(max-width:860px){.hero-cta{justify-content:center}}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:12px;font-weight:600;font-size:.98rem;transition:transform .14s}
-.btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px -6px rgba(26,139,79,.45)}.btn-primary:hover{transform:translateY(-2px)}
-.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}.btn-ghost:hover{transform:translateY(-2px)}
-.visual{background:linear-gradient(150deg,var(--brand),var(--brand-dk));border-radius:24px;aspect-ratio:4/3;display:grid;place-items:center;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-.visual::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(26,139,79,.2),transparent 55%);z-index:1}
-.visual .big{font-size:7rem;filter:drop-shadow(0 8px 16px rgba(0,0,0,.25));position:relative;z-index:2}
-.visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:24px;z-index:0}
-.visual.photo::before{background:linear-gradient(160deg,rgba(6,95,70,.18),rgba(4,120,87,.42))}
-.trust{display:flex;gap:26px;flex-wrap:wrap;margin-top:30px;color:var(--ink-soft);font-size:.86rem}
-@media(max-width:860px){.trust{justify-content:center}}
-.trust b{color:var(--brand-dk);font-family:var(--title);font-size:1.3rem;display:block}
-
-/* ----- Cartes fonctionnalités ----- */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
-@media(max-width:860px){.grid{grid-template-columns:1fr}}
-.feat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);transition:transform .15s}
-.feat:hover{transform:translateY(-4px)}
-.feat .ico{width:50px;height:50px;border-radius:14px;background:var(--paper-2);border:1px solid var(--line);display:grid;place-items:center;font-size:26px;margin-bottom:14px}
-.feat h3{font-family:var(--title);font-weight:700;font-size:1.15rem;color:var(--brand-dk);margin-bottom:6px}
-.feat p{color:var(--ink-soft);font-size:.92rem}
-.alt{background:var(--paper-2)}
-.alt-band{background:var(--paper-2);border-block:1px solid var(--line)}
-
-/* ----- Tarifs ----- */
-.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px}
-@media(max-width:860px){.plans{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.plans{grid-template-columns:1fr}}
-.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column}
-.plan.featured{border:2px solid var(--gold);position:relative}
-.plan.featured::after{content:"Populaire";position:absolute;top:-11px;right:16px;background:var(--gold);color:#fff;font-size:.72rem;font-weight:700;padding:3px 12px;border-radius:20px}
-.plan h3{font-family:var(--title);font-weight:700;font-size:1.25rem;color:var(--brand-dk);margin-bottom:4px}
-.plan .who{font-size:.84rem;color:var(--ink-soft);margin-bottom:14px;min-height:34px}
-.plan ul{list-style:none;margin:0 0 20px;padding:0;flex:1}
-.plan li{font-size:.88rem;color:var(--ink);padding:6px 0 6px 24px;position:relative}
-.plan li::before{content:"✓";position:absolute;left:0;color:var(--brand,#1A8B4F);font-weight:700}
-.plan .price{font-family:var(--mono);font-weight:900;color:var(--brand-dk);font-size:1.1rem;margin-bottom:16px}
-
-/* ----- À propos ----- */
-.about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-@media(max-width:860px){.about{grid-template-columns:1fr}}
-.about .visual{aspect-ratio:1/1;max-width:360px}
-.values{display:grid;gap:14px;margin-top:20px}
-.value{display:flex;gap:14px;align-items:flex-start}
-.value .v-ico{font-size:1.6rem;flex-shrink:0}
-.value h4{font-family:var(--title);font-weight:700;color:var(--brand-dk);font-size:1.05rem}
-.value p{color:var(--ink-soft);font-size:.9rem}
-
-/* ----- Contact ----- */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:34px}
-@media(max-width:860px){.contact-grid{grid-template-columns:1fr}}
-.contact-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
-.contact-row{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.contact-row:last-child{border-bottom:none}
-.contact-row .c-ico{width:42px;height:42px;border-radius:11px;background:var(--paper-2);display:grid;place-items:center;font-size:20px;flex-shrink:0}
-.contact-row b{display:block;color:var(--brand-dk);font-size:.95rem}
-.contact-row span{color:var(--ink-soft);font-size:.88rem}
-.wa-big{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;padding:15px;border-radius:14px;font-weight:700;font-size:1rem;margin-top:16px}
-
-/* ----- Pied ----- */
-footer{background:var(--brand-deep);color:#fff;padding:40px 18px;margin-top:30px}
-.foot-in{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
-.foot-in p{font-size:.85rem;opacity:.85}
-.foot-links{display:flex;gap:20px;flex-wrap:wrap}
-.foot-links a{font-size:.85rem;opacity:.85}.foot-links a:hover{opacity:1}
-
-/* apparition au scroll */
-.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
-.reveal.in{opacity:1;transform:none}
+  html { scroll-behavior: smooth; }
+  body { margin: 0; }
+  #boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font: 500 15px/1.4 var(--font-ui, system-ui); }
 </style>
 </head>
-<body>
+<body class="lp">
+<div id="root"><div id="boot">Chargement d'AgroScan Pro…</div></div>
 
-<!-- ===== NAVIGATION ===== -->
-<nav class="nav">
-  <div class="nav-in">
-    <a href="#accueil" class="brand">
-      <div class="mark"><img src="/static/assets/logo-emblem.webp" alt="AgroScan" style="width:24px;height:24px;object-fit:contain;display:block"></div>
-      <div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div>
-    </a>
-    <div class="nav-links">
-      <a href="#fonctionnalites">Fonctionnalités</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="#apropos">À propos</a>
-      <a href="#contact">Contact</a>
-      <a href="/login" class="nav-cta">Se connecter</a>
-    </div>
-    <button class="burger" onclick="document.querySelector('.nav-links').style.display = document.querySelector('.nav-links').style.display==='flex'?'none':'flex'">☰</button>
-  </div>
-</nav>
+<script type="text/babel" data-presets="react">
+  window.Icon = ({ n, size = 20, color, sw = 2, style = {}, ...p }) => (
+    <i data-lucide={n} style={{ width: size, height: size, color, strokeWidth: sw, display: 'inline-flex', ...style }} {...p}></i>
+  );
+</script>
+<script src="/static/landing/asset-data.js"></script>
+<script type="text/babel" src="/static/landing/nav.jsx"></script>
+<script type="text/babel" src="/static/landing/hero.jsx"></script>
+<script type="text/babel" src="/static/landing/modules.jsx"></script>
+<script type="text/babel" src="/static/landing/demo.jsx"></script>
+<script type="text/babel" src="/static/landing/soil-sensor.jsx"></script>
+<script type="text/babel" src="/static/landing/sections.jsx"></script>
+<script type="text/babel" src="/static/landing/pricing-contact.jsx"></script>
+<script type="text/babel" src="/static/landing/auth-legal.jsx"></script>
 
-<!-- ===== ACCUEIL / HERO ===== -->
-<section id="accueil" class="hero">
-  <div>
-    <span class="eyebrow">🇸🇳 Agriculture de précision · Sénégal</span>
-    <h2>Cultivez mieux,<br>décidez avec <span class="em">les bonnes données</span>.</h2>
-    <p class="lead">AgroScan Pro aide les producteurs, coopératives et agronomes du Sénégal à analyser leur sol,
-       cartographier leurs parcelles, détecter les maladies et suivre la météo — le tout depuis un simple téléphone.</p>
-    <div class="hero-cta">
-      <a href="/register" class="btn btn-primary">Commencer maintenant →</a>
-      <a href="#fonctionnalites" class="btn btn-ghost">Découvrir</a>
-    </div>
-    <div class="trust">
-      <div><b>29</b> cultures couvertes</div>
-      <div><b>8-en-1</b> paramètres de sol</div>
-      <div><b>100%</b> adapté au Sénégal</div>
-    </div>
-  </div>
-  <div class="visual photo">
-    <img src="/static/assets/photos/hero-composed.webp"
-         alt="Agriculture de précision au Sénégal"
-         loading="eager" fetchpriority="high"
-         onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80'">
-  </div>
-</section>
+<script type="text/babel" data-presets="react">
+  function Landing() {
+    React.useEffect(() => {
+      if (window.lucide) window.lucide.createIcons();
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      document.querySelectorAll('.reveal:not(.is-visible)').forEach((el) => io.observe(el));
+      return () => io.disconnect();
+    });
+    return (
+      <React.Fragment>
+        <window.LandingNav />
+        <window.LandingHero />
+        <window.LandingModules />
+        <window.LandingSteps />
+        <window.LandingDemo />
+        <window.LandingSoilSensor />
+        <window.LandingWhy />
+        <window.LandingStats />
+        <window.LandingPricing />
+        <window.LandingTestimonials />
+        <window.LandingPartners />
+        <window.LandingContact />
+        <window.LandingFooter />
+        <window.AuthLegalModals />
+      </React.Fragment>
+    );
+  }
 
-<!-- ===== FONCTIONNALITÉS ===== -->
-<div class="alt-band">
-<section id="fonctionnalites">
-  <span class="eyebrow">Fonctionnalités</span>
-  <h2 class="title">Tout ce qu'il faut pour décider</h2>
-  <p class="lead">Des outils simples et puissants, pensés pour le terrain et les connexions mobiles.</p>
-  <div class="grid">
-    <div class="feat reveal"><div class="ico">🔬</div><h3>Analyse de sol</h3>
-      <p>Saisissez les 8 mesures de votre capteur (pH, humidité, EC, salinité, N, P, K, température) et recevez un diagnostic adapté à votre culture.</p></div>
-    <div class="feat reveal"><div class="ico">🗺️</div><h3>Cartographie de parcelle</h3>
-      <p>Dessinez votre champ sur une carte satellite et obtenez sa superficie exacte en hectares, par GPS.</p></div>
-    <div class="feat reveal"><div class="ico">📷</div><h3>Diagnostic des maladies</h3>
-      <p>Photographiez une feuille malade : l'intelligence artificielle identifie le problème et propose un traitement.</p></div>
-    <div class="feat reveal"><div class="ico">🌤️</div><h3>Météo agricole</h3>
-      <p>Température, humidité et évapotranspiration en temps réel, pour choisir le bon moment d'irriguer ou de traiter.</p></div>
-    <div class="feat reveal"><div class="ico">🔊</div><h3>Conseils en voix</h3>
-      <p>Les recommandations peuvent être lues à voix haute, pour les producteurs qui lisent peu.</p></div>
-    <div class="feat reveal"><div class="ico">📄</div><h3>Rapports PDF</h3>
-      <p>Générez un rapport clair de chaque analyse, à garder, imprimer ou partager.</p></div>
-  </div>
-</section>
-</div>
-
-<!-- ===== TARIFS ===== -->
-<section id="tarifs">
-  <span class="eyebrow">Tarifs</span>
-  <h2 class="title">Simple, transparent, adapté au terrain</h2>
-  <p class="lead">Commencez gratuitement 7 jours. Abonnez-vous ou commandez une analyse à l'acte.</p>
-  <div class="plans">
-    <div class="plan reveal">
-      <h3>Découverte</h3>
-      <p class="who">7 jours d'essai gratuit, accès complet</p>
-      <ul><li>Toutes les fonctionnalités</li><li>Cartographie GPS</li><li>Météo agricole</li><li>Sans carte bancaire</li></ul>
-      <a href="/register" class="btn btn-ghost btn-block">Essayer gratuitement →</a>
-    </div>
-    <div class="plan featured reveal">
-      <h3>AgroScan Pro Producteur</h3>
-      <p class="who">5 000 FCFA / mois · sans engagement</p>
-      <ul><li>Toutes les fonctionnalités</li><li>Satellite illimité</li><li>Assistant IA Polélé</li><li>Rapports PDF</li></ul>
-      <a href="/tarifs" class="btn btn-primary btn-block">Commencer maintenant →</a>
-    </div>
-    <div class="plan reveal">
-      <h3>Analyse Agricole</h3>
-      <p class="who">À partir de 1 500 FCFA · sans abonnement</p>
-      <ul><li>1 analyse complète</li><li>Sol, culture ou photo</li><li>Rapport PDF inclus</li><li>Via WhatsApp</li></ul>
-      <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+commander+une+analyse+agricole." target="_blank" rel="noopener" class="btn btn-ghost btn-block">Commander une analyse →</a>
-    </div>
-  </div>
-  <p style="text-align:center;color:var(--ink-soft);font-size:.85rem;margin-top:22px">
-    🤝 Coopérative, ONG, entreprise ? <a href="#contact" style="color:var(--brand-dk);text-decoration:underline">Demandez un devis personnalisé →</a>
-  </p>
-</section>
-
-<!-- ===== À PROPOS ===== -->
-<div class="alt-band">
-<section id="apropos" class="about">
-  <div>
-    <span class="eyebrow">À propos</span>
-    <h2 class="title">Une solution sénégalaise, pour le Sénégal</h2>
-    <p class="lead">AgroScan Pro est développé par <b>Social Technologie</b>, entreprise sénégalaise spécialisée
-       dans les technologies au service de l'agriculture et de la sécurité. Notre mission : mettre l'agriculture
-       de précision à la portée de chaque producteur, quel que soit son niveau.</p>
-    <div class="values">
-      <div class="value"><div class="v-ico">🎯</div><div><h4>Adapté au terrain</h4>
-        <p>Conçu pour les réalités du Sénégal : chaleur, salinité des Niayes, sols acides de Casamance, connexions mobiles.</p></div></div>
-      <div class="value"><div class="v-ico">🤝</div><div><h4>Accessible à tous</h4>
-        <p>Interface simple, conseils en voix, prix pensés pour les producteurs et les coopératives.</p></div></div>
-      <div class="value"><div class="v-ico">🌍</div><div><h4>Ancré localement</h4>
-        <p>Une équipe sénégalaise, un support de proximité, et une connaissance fine des filières agricoles.</p></div></div>
-    </div>
-  </div>
-  <div class="visual photo" style="aspect-ratio:1/1;max-width:360px">
-    <img src="/static/assets/photos/drone-ag.webp"
-         alt="Vue drone d'une parcelle agricole"
-         loading="lazy"
-         onerror="this.src='https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=720&q=80'">
-  </div>
-</section>
-</div>
-
-<!-- ===== CONTACT ===== -->
-<section id="contact">
-  <span class="eyebrow">Contact</span>
-  <h2 class="title">Parlons de votre projet</h2>
-  <p class="lead">Une question, une demande de devis, un partenariat ? Nous répondons vite.</p>
-  <div class="contact-grid">
-    <div class="contact-card">
-      <div class="contact-row"><div class="c-ico">📞</div><div><b>Téléphone</b><span>+221 78 491 90 11</span></div></div>
-      <div class="contact-row"><div class="c-ico">✉️</div><div><b>Email</b><span>Via WhatsApp ou téléphone pour le moment</span></div></div>
-      <div class="contact-row"><div class="c-ico">📍</div><div><b>Localisation</b><span>Dakar, Sénégal</span></div></div>
-      <div class="contact-row"><div class="c-ico">🌐</div><div><b>Site</b><span>www.agroscanpro.com</span></div></div>
-      <a href="https://wa.me/221784919011?text=Bonjour%20AgroScan%20Pro%2C%20je%20souhaite%20des%20informations."
-         target="_blank" rel="noopener" class="wa-big">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.15-1.8-.9-2.05-1-.27-.1-.47-.15-.67.15s-.77.97-.95 1.17c-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.07-.12-.27-.2-.57-.35z"/></svg>
-        Écrire sur WhatsApp
-      </a>
-    </div>
-    <div class="contact-card" style="position:relative;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:center;text-align:center;border:none;min-height:280px">
-      <img src="/static/assets/photos/field-rice.webp"
-           alt="Rizière agricole au Sénégal"
-           loading="lazy"
-           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0"
-           onerror="this.src='https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=700&q=75'">
-      <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(6,95,70,.78),rgba(4,120,87,.88));z-index:1"></div>
-      <div style="position:relative;z-index:2;padding:26px">
-        <div style="font-size:2.6rem;margin-bottom:10px">🚀</div>
-        <h3 style="font-family:var(--title);font-weight:900;font-size:1.4rem;margin-bottom:8px">Prêt à essayer ?</h3>
-        <p style="opacity:.92;font-size:.95rem;margin-bottom:18px">Créez votre compte gratuit et lancez votre première analyse en quelques minutes.</p>
-        <a href="/register" class="btn" style="background:var(--gold);color:#fff;justify-content:center">Créer mon compte</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== PIED ===== -->
-<footer>
-  <div class="foot-in">
-    <div>
-      <div class="brand" style="margin-bottom:8px"><div class="mark"><img src="/static/assets/logo-emblem.webp" alt="AgroScan" style="width:24px;height:24px;object-fit:contain;display:block"></div>
-        <div><h1 style="font-size:1.1rem">AgroScan Pro</h1><p style="opacity:.8">par Social Technologie</p></div></div>
-      <p>Agriculture de précision · Dakar, Sénégal · +221 78 491 90 11</p>
-    </div>
-    <div class="foot-links">
-      <a href="#fonctionnalites">Fonctionnalités</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="#apropos">À propos</a>
-      <a href="#contact">Contact</a>
-      <a href="/login">Se connecter</a>
-    </div>
-  </div>
-</footer>
-
-<script>
-// Apparition douce des cartes au défilement
-const obs = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-
-// Ferme le menu mobile après un clic sur un lien
-document.querySelectorAll('.nav-links a').forEach(a => {
-  a.addEventListener('click', () => {
-    if(window.innerWidth <= 760) document.querySelector('.nav-links').style.display = 'none';
-  });
-});
+  function ready() {
+    return window.AgroScanProDesignSystem_74357e && window.LandingNav && window.LandingHero &&
+      window.LandingModules && window.LandingDemo && window.LandingSteps && window.LandingWhy &&
+      window.LandingStats && window.LandingTestimonials && window.LandingPartners && window.LandingFooter &&
+      window.LandingPricing && window.LandingContact && window.AuthLegalModals && window.LandingSoilSensor;
+  }
+  (function boot(tries) {
+    if (ready()) { ReactDOM.createRoot(document.getElementById('root')).render(<Landing />); }
+    else if (tries < 160) { setTimeout(() => boot(tries + 1), 40); }
+    else { document.getElementById('boot').textContent = "Erreur de chargement — vérifiez la console."; }
+  })(0);
 </script>
 </body>
 </html>
