@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>Météo — AgroScan Pro</title>
+<meta property="og:title" content="Météo agricole — AgroScan Pro">
+<meta property="og:description" content="Alertes météo et prévisions adaptées à vos cultures au Sénégal.">
+<meta property="og:image" content="/static/assets/photos/sky-weather.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
@@ -296,7 +301,7 @@ select,input,textarea{font-family:inherit}
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 let alertes = [];
 let parcelles = [];
@@ -370,7 +375,7 @@ async function loadConditions() {
     const dt = c.date_releve ? new Date(c.date_releve).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'}) : '';
     document.getElementById('tbSub').textContent = 'Mis à jour' + (dt ? ' ' + dt : '');
   } catch(e) {
-    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     document.getElementById('heroDesc').textContent = 'Données indisponibles';
     document.getElementById('tbSub').textContent = 'Erreur de chargement';
   }

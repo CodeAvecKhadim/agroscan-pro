@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>AgroScan Pro — Espace Conseiller</title>
+<meta property="og:title" content="Conseiller — AgroScan Pro">
+<meta property="og:description" content="Suivi et accompagnement des producteurs par votre conseiller agronomique.">
+<meta property="og:image" content="/static/assets/photos/producer-smartphone.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
@@ -129,7 +134,7 @@
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 function _decodeJWT(token) {
   try {
@@ -165,7 +170,7 @@ async function api(path, opts = {}) {
   return data;
 }
 
-function logout() { localStorage.removeItem('agro_token'); location.href = '/'; }
+function logout() { localStorage.removeItem('agro_token'); location.href = '/login'; }
 
 function formatDate(d) {
   if (!d) return '—';
@@ -324,7 +329,7 @@ async function boot() {
       api(`/api/app/satellite/${p.id}`).then(s => { _satData[p.id] = s; })
     )).then(() => renderParcelles());
   } catch(e) {
-    if (e.status === 401 || e.status === 403) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401 || e.status === 403) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     document.getElementById('parcList').innerHTML =
       '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement.</p></div>';
   }

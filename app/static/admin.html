@@ -187,7 +187,7 @@ async function api(path) {
   return r.json();
 }
 
-function logout() { localStorage.removeItem('agro_token'); location.href = '/'; }
+function logout() { localStorage.removeItem('agro_token'); location.href = '/login'; }
 
 function toast(msg, type) {
   document.querySelectorAll('.toast').forEach(t => t.remove());
@@ -328,7 +328,7 @@ function _esc(s) {
 
 // ── Boot ──
 async function boot() {
-  if (!TOKEN) { location.href = '/'; return; }
+  if (!TOKEN) { location.href = '/login'; return; }
   try {
     const me = await api('/api/auth/me');
     document.getElementById('adminEmail').textContent = me.email + ' · ' + me.profil;

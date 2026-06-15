@@ -7,6 +7,11 @@
 <meta name="theme-color" content="#1A8B4F">
 <link rel="manifest" href="/static/manifest.json">
 <title>Mon Champ — AgroScan Pro</title>
+<meta property="og:title" content="Mon Champ — AgroScan Pro">
+<meta property="og:description" content="Gérez vos parcelles, sol et cartographie GPS.">
+<meta property="og:image" content="/static/assets/photos/field-rice.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -722,7 +727,7 @@ input[type=file]{display:none}
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 // ── STATE ──────────────────────────────────────────────────────────────────────
 let state = {
@@ -796,7 +801,7 @@ async function loadParcelles() {
     document.getElementById('topSub').textContent =
       `${state.parcelles.length} parcelle${state.parcelles.length > 1 ? 's' : ''}`;
   } catch(e) {
-    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     document.getElementById('parcelleList').innerHTML =
       '<div style="text-align:center;padding:24px;color:var(--soft)">Erreur de chargement</div>';
   }

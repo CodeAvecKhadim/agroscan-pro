@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>AgroScan Pro — Mes activités</title>
+<meta property="og:title" content="Activités — AgroScan Pro">
+<meta property="og:description" content="Calendrier cultural et gestion des tâches agricoles.">
+<meta property="og:image" content="/static/assets/photos/field-rice.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
@@ -107,7 +112,7 @@
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 let _allActs = [];
 let _filtre = 'tous';
@@ -132,7 +137,7 @@ async function api(path, opts = {}) {
 
 function logout() {
   localStorage.removeItem('agro_token');
-  location.href = '/';
+  location.href = '/login';
 }
 
 function exportExcel() {
@@ -231,7 +236,7 @@ async function boot() {
     updateStats();
     renderList();
   } catch(e) {
-    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     document.getElementById('actsList').innerHTML =
       '<div class="empty"><div class="eico">⚠️</div><p>Impossible de charger les activités.</p></div>';
   }

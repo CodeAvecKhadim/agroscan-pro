@@ -2,10 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Coopérative — AgroScan Pro</title>
+<meta property="og:title" content="Coopérative — AgroScan Pro">
+<meta property="og:description" content="Gestion et suivi des membres de votre coopérative agricole.">
+<meta property="og:image" content="/static/assets/photos/drone-ag.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <style>
+:root{
+  --brand:#1A8B4F;--brand-dk:#136B3C;--brand-deep:#0D4D2B;--brand-light:#E8F5EE;
+  --accent:#1B8FCC;--gold:#F5A623;--paper:#F4FAF7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
+  --sans:'Plus Jakarta Sans',sans-serif;--title:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --green:#1a7a3c;--green-light:#e8f5ee;--ink:#1a1a1a;--ink-soft:#6b7280;
@@ -177,7 +191,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 function toast(msg, type) {
   const t = document.createElement('div');
@@ -318,7 +332,7 @@ async function boot() {
     }
 
   } catch(e) {
-    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     if (e.status === 403) {
       document.querySelector('.content').innerHTML =
         '<div class="empty" style="margin-top:60px"><div style="font-size:2.5rem">🔒</div><p style="margin-top:12px">Accès réservé aux coopératives.<br>Votre plan ne permet pas l\'accès à ce module.</p><button class="btn btn-green" onclick="location.href=\'/tarifs\'" style="margin-top:16px">Voir les offres →</button></div>';

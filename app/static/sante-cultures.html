@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>Santé des Cultures Pro — AgroScan</title>
+<meta property="og:title" content="Santé des cultures Pro — AgroScan">
+<meta property="og:description" content="Score composite, cartes de précision et prévision de rendement.">
+<meta property="og:image" content="/static/assets/photos/leaf-disease.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
@@ -548,7 +553,7 @@ async function api(url, opts = {}) {
   if (opts.body && !opts.headers['Content-Type'])
     opts.headers['Content-Type'] = 'application/json';
   const r = await fetch(url, opts);
-  if (r.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+  if (r.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
     throw { status: r.status, detail: err.detail || r.statusText };

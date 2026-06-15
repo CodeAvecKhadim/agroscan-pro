@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>Santé des Cultures — AgroScan Pro</title>
+<meta property="og:title" content="Santé des cultures — AgroScan Pro">
+<meta property="og:description" content="Diagnostiquez maladies et ravageurs sur vos parcelles.">
+<meta property="og:image" content="/static/assets/photos/leaf-disease.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
@@ -442,7 +447,7 @@ select,input,textarea{font-family:inherit}
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 let consultations = [];
 let currentCons = null;
@@ -477,7 +482,7 @@ async function loadConsultations(statut = '') {
     renderList();
     document.getElementById('tbSub').textContent = `${consultations.length} consultation${consultations.length > 1 ? 's' : ''}`;
   } catch(e) {
-    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/'; }
+    if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
     document.getElementById('consList').innerHTML = '<div class="empty"><div class="eico">⚠️</div><p>Erreur de chargement</p></div>';
     toast('Erreur: ' + e.detail, 'err');
   }

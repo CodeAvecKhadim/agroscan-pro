@@ -7,6 +7,11 @@
 <meta name="theme-color" content="#1A8B4F">
 <link rel="manifest" href="/static/manifest.json">
 <title>AgroScan Pro — Tarifs &amp; Abonnements</title>
+<meta property="og:title" content="Tarifs — AgroScan Pro">
+<meta property="og:description" content="Plans Découverte, Producteur, Coopérative et Agronome. À partir de 0 FCFA.">
+<meta property="og:image" content="/static/assets/photos/hero-composed.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
 <style>
@@ -471,7 +476,7 @@ document.querySelectorAll('input[name="provider"]').forEach(r => {
 async function initierPaiement() {
   if (!selectedPlan) { alert('Choisissez un plan.'); return; }
   const token = localStorage.getItem('agro_token');
-  if (!token) { window.location.href = '/'; return; }
+  if (!token) { window.location.href = '/login'; return; }
 
   const provider = document.querySelector('input[name="provider"]:checked')?.value || 'wave';
   const phone = document.getElementById('phoneInput').value.replace(/\s/g,'') || null;

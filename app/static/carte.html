@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#1A8B4F">
 <title>AgroScan Pro — Cartographie de parcelle</title>
+<meta property="og:title" content="Cartographie — AgroScan Pro">
+<meta property="og:description" content="Cartographiez vos parcelles avec GPS et obtenez la surface cultivée.">
+<meta property="og:image" content="/static/assets/photos/drone-ag.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 
 <!-- Leaflet (carte) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -18,14 +23,20 @@
   tailwind.config = { theme:{ extend:{
     colors:{ brand:{50:'#ecfdf5',100:'#CBE9D8',200:'#a7f3d0',300:'#CBE9D8',400:'#F5A623',500:'#10b981',600:'#1A8B4F',700:'#136B3C',800:'#0D4D2B',900:'#064e3b'} },
     boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
-    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
+    fontFamily:{ sans:['Plus Jakarta Sans','system-ui','sans-serif'] }
   }}}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-  html,body{font-family:'Inter',system-ui,sans-serif;height:100%;margin:0}
+:root{
+  --brand:#1A8B4F;--brand-dk:#136B3C;--brand-deep:#0D4D2B;--brand-light:#E8F5EE;
+  --accent:#1B8FCC;--gold:#F5A623;--paper:#F4FAF7;--card:#fff;
+  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
+  --sans:'Plus Jakarta Sans',sans-serif;--title:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+  html,body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;height:100%;margin:0}
   /* La carte occupe tout l'espace disponible entre le bandeau et le bouton */
   #map{width:100%;height:100%;background:#e5e7eb;z-index:0}
   .leaflet-container{font-family:ui-sans-serif,system-ui,sans-serif}

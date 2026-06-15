@@ -289,7 +289,7 @@ async function api(path, opts = {}) {
 
 function logout() {
   localStorage.removeItem('agro_token');
-  location.href = '/';
+  location.href = '/login';
 }
 
 const ALERTE_ICONS = {
@@ -432,7 +432,7 @@ async function boot() {
   } catch(e) {
     if (e.status === 401) {
       localStorage.removeItem('agro_token');
-      location.href = '/';
+      location.href = '/login';
     }
     toast('Erreur de chargement', 'err');
     document.getElementById('greetSub').textContent = 'Erreur — vérifiez votre connexion';
