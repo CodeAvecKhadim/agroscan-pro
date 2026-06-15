@@ -8,6 +8,11 @@
 <link rel="manifest" href="/static/manifest.json">
 <link rel="apple-touch-icon" href="/static/assets/favicon.png">
 <title>AgroScan Pro — Mon espace</title>
+<meta property="og:title" content="AgroScan Pro — Mon espace">
+<meta property="og:description" content="Analysez votre sol, cartographiez vos parcelles, décidez mieux — agriculture de précision au Sénégal.">
+<meta property="og:image" content="/static/assets/photos/hero-composed.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -71,7 +76,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mod:active{transform:scale(.97)}
 .mod:hover{transform:translateY(-2px);box-shadow:0 8px 30px -10px rgba(0,60,20,.25)}
 .mod-icon{font-size:2rem;line-height:1}
-.mod-name{font-weight:700;font-size:.95rem;line-height:1.2}
+.mod-name{font-family:var(--title);font-weight:700;font-size:.95rem;line-height:1.2}
 .mod-sub{font-size:.76rem;color:var(--soft);line-height:1.3}
 .mod-badge{position:absolute;top:12px;right:12px;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;padding:0 5px}
 .mod-badge.ok{background:var(--g)}
@@ -79,7 +84,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mod.highlight{border-color:var(--brand);background:linear-gradient(135deg,var(--brand-light),#fff)}
 
 /* QUICK ALERTS */
-.section-title{font-family:var(--title);font-weight:700;font-size:1.1rem;color:var(--brand-deep);margin-bottom:12px}
+.section-title{font-family:var(--title);font-weight:700;font-size:1.1rem;color:var(--brand-deep);margin-bottom:12px;letter-spacing:-.01em}
 .alert-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
 .alerte{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow)}
 .alerte.critique{border-left:4px solid var(--red)}
@@ -95,7 +100,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .empty p{font-size:.9rem}
 
 /* BOTTOM MENU */
-.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;box-shadow:0 -4px 20px -8px rgba(0,60,20,.12)}
+.bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;box-shadow:0 -4px 20px -8px rgba(0,60,20,.12);padding-bottom:env(safe-area-inset-bottom)}
 .bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;cursor:pointer;transition:color .15s;border:none;background:none;font-family:inherit}
 .bm-item.active,.bm-item:hover{color:var(--brand)}
 .bm-item .bm-icon{font-size:1.3rem;line-height:1}
@@ -105,6 +110,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:90%;text-align:center}
 .toast.err{background:#7F1D1D}.toast.ok{background:var(--brand-deep)}
 @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@media(max-width:360px){.greet h2{font-size:1.3rem}}
 
 /* PLAN CARD */
 .plan-card{background:linear-gradient(135deg,var(--brand-deep),var(--brand));color:#fff;border-radius:var(--r);padding:16px 18px;margin-bottom:22px;display:flex;align-items:center;gap:14px}
@@ -261,7 +267,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 <script>
 const TOKEN = localStorage.getItem('agro_token') || '';
-if (!TOKEN) location.href = '/';
+if (!TOKEN) location.href = '/login';
 
 function toast(msg, type) {
   const t = document.createElement('div');
