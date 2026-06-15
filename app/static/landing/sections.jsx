@@ -6,7 +6,7 @@ function LandingSteps() {
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
   const steps = [
     { n: '01', icon: 'map-pinned', title: 'Cartographiez votre champ', desc: 'Tracez vos parcelles par GPS depuis votre téléphone — la superficie est calculée automatiquement.' },
-    { n: '02', icon: 'satellite', title: 'AgroScan analyse vos données', desc: 'Imagerie satellite, NDVI, météo et historique sont croisés par notre intelligence artificielle agricole.' },
+    { n: '02', icon: 'satellite', title: 'AgroScan analyse vos données', desc: 'Imagerie satellite, NDVI, météo, capteurs et historique sont croisés par notre intelligence artificielle agricole.' },
     { n: '03', icon: 'lightbulb', title: 'Recevez des recommandations', desc: 'Des conseils clairs et priorisés : quand irriguer, fertiliser, traiter — parcelle par parcelle.' },
   ];
   return (
@@ -17,11 +17,11 @@ function LandingSteps() {
           <h2 className="lp-h2">Trois étapes, des résultats concrets</h2>
         </div>
         <div className="reveal" style={{ marginTop: 36, position: 'relative', borderRadius: 'var(--radius-2xl)', overflow: 'hidden', boxShadow: 'var(--shadow-md)', aspectRatio: '21 / 9' }}>
-          <img src={(window.IMG && window.IMG.drone) || "../../assets/photos/drone-ag.webp"} alt="Drone agricole pulvérisant un champ de cultures" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={(window.IMG && window.IMG.drone) || "/static/assets/photos/drone-ag.webp"} alt="Drone agricole pulvérisant un champ de cultures" loading="lazy" width="1400" height="600" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(15,92,51,0.10) 0%, rgba(15,92,51,0.46) 100%)' }} />
           <div style={{ position: 'absolute', left: 24, bottom: 20 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderRadius: 'var(--radius-pill)', background: 'rgba(255,255,255,.16)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,.26)', color: '#fff', font: 'var(--fw-semibold) var(--text-xs)/1 var(--font-ui)' }}>
-              <Icon n="plane" size={14} color="#fff" /> Drones &amp; données satellite au service de vos cultures
+              <Icon n="plane" size={14} color="#fff" /> Capteurs, satellite, IA et météo au service de vos cultures
             </span>
           </div>
         </div>
@@ -48,24 +48,24 @@ function LandingWhy() {
   const { Icon } = window;
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
   const feats = [
-    { icon: 'crosshair', title: 'Agriculture de précision', desc: 'Gérez chaque parcelle à l\u2019hectare près, avec des données fiables et actualisées.' },
+    { icon: 'crosshair', title: 'Agriculture de précision', desc: 'Gérez chaque parcelle à l\'hectare près, avec des données fiables et actualisées.' },
     { icon: 'bot', title: 'Intelligence artificielle', desc: 'Un moteur agronomique qui transforme vos données en décisions simples.' },
     { icon: 'map-pinned', title: 'Cartographie GPS', desc: 'Délimitez et mesurez vos parcelles directement depuis le terrain.' },
-    { icon: 'satellite', title: 'Données satellitaires', desc: 'Suivi NDVI régulier pour repérer le stress avant qu\u2019il ne soit visible.' },
-    { icon: 'cloud-sun-rain', title: 'Météo agricole', desc: 'Prévisions locales et fenêtres d\u2019intervention adaptées à vos cultures.' },
-    { icon: 'camera', title: 'Diagnostic intelligent', desc: 'Identifiez maladies et carences à partir d\u2019une simple photo.' },
+    { icon: 'satellite', title: 'Données satellitaires', desc: 'Suivi NDVI régulier pour repérer le stress avant qu\'il ne soit visible.' },
+    { icon: 'cloud-sun-rain', title: 'Météo agricole', desc: 'Prévisions locales et fenêtres d\'intervention adaptées à vos cultures.' },
+    { icon: 'camera', title: 'Diagnostic intelligent', desc: 'Identifiez maladies et carences à partir d\'une simple photo.' },
   ];
   return (
     <section className="lp-section lp-container">
       <div id="apropos" className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40, alignItems: 'center', marginBottom: 72 }}>
         <div style={{ position: 'relative', borderRadius: 'var(--radius-2xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', aspectRatio: '4 / 3' }}>
-          <img src={(window.IMG && window.IMG.producer) || "../../assets/photos/producer-smartphone.webp"} alt="Producteur sénégalais utilisant AgroScan Pro sur son smartphone" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={(window.IMG && window.IMG.producer) || "/static/assets/photos/producer-smartphone.webp"} alt="Producteur sénégalais utilisant AgroScan Pro sur son smartphone" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, rgba(26,139,79,0.10) 0%, rgba(15,92,51,0.24) 100%)' }} />
         </div>
         <div>
           <span className="lp-eyebrow"><Icon n="sprout" size={14} /> À propos</span>
           <h2 className="lp-h2" style={{ fontSize: 'clamp(24px,3.6vw,36px)' }}>Conçu pour les producteurs africains</h2>
-          <p className="lp-lead">AgroScan Pro met l'agriculture de précision — satellite, IA et météo — entre les mains des producteurs, coopératives et conseillers du Sénégal. Une interface simple, en français et en wolof, pensée pour le terrain et le plein soleil.</p>
+          <p className="lp-lead">AgroScan Pro met l'agriculture de précision — capteurs de sol, satellite, IA et météo — entre les mains des producteurs, coopératives et conseillers du Sénégal. Une interface simple, en français et en wolof, pensée pour le terrain et le plein soleil.</p>
         </div>
       </div>
       <div className="lp-center reveal">
@@ -140,43 +140,84 @@ function LandingStats() {
 window.LandingStats = LandingStats;
 
 // ---- S7: Témoignages ----
+function StarRating({ n = 5 }) {
+  return (
+    <div style={{ display: 'flex', gap: 3 }}>
+      {[0,1,2,3,4].map((i) => (
+        <svg key={i} width="16" height="16" viewBox="0 0 24 24"
+          fill={i < n ? 'var(--c-warning)' : 'none'}
+          stroke={i < n ? 'var(--c-warning)' : 'var(--n-300)'}
+          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 function LandingTestimonials() {
-  const { Avatar, Icon } = window.AgroScanProDesignSystem_74357e ? { ...window.AgroScanProDesignSystem_74357e, Icon: window.Icon } : {};
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
-  const quotes = [
-    { text: 'Avant, je découvrais les problèmes trop tard. Avec AgroScan, j\u2019ai vu le stress hydrique sur la carte NDVI avant que les plants ne jaunissent.', name: 'Awa Diop', role: 'Productrice de maïs · Mbour' },
-    { text: 'L\u2019assistant IA répond en wolof à mes questions sur la fertilisation. C\u2019est comme avoir un agronome dans la poche.', name: 'Moussa Sané', role: 'Coopérative de Thiès' },
-    { text: 'La cartographie GPS nous a permis de mesurer précisément 240 hectares répartis sur nos membres. Un gain de temps énorme.', name: 'Fatou Ba', role: 'Conseillère agricole' },
+
+  const placeholders = [
+    { text: '[À remplacer par un vrai avis client — producteur individuel]', name: '[Nom du producteur]', role: 'Producteur · [Région]', stars: 5 },
+    { text: '[À remplacer par un témoignage de coopérative ou ONG]', name: '[Responsable coopérative]', role: '[Coopérative agricole · Région]', stars: 5 },
+    { text: '[À remplacer par un avis de conseiller agricole ou agronome]', name: '[Conseiller agricole]', role: 'Agronome · [Structure]', stars: 5 },
   ];
+
+  const PlaceholderAvatar = () => (
+    <span style={{ width: 48, height: 48, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--green-100), var(--blue-100))', boxShadow: '0 0 0 2px var(--surface-card), 0 0 0 4px var(--green-200)', border: '2px dashed var(--green-300)' }}>
+      <window.Icon n="user-round" size={20} color="var(--green-700)" />
+    </span>
+  );
+
   return (
     <section className="lp-section" style={{ background: 'var(--surface-page)' }}>
       <div className="lp-container">
         <div className="lp-center reveal">
           <span className="lp-eyebrow"><window.Icon n="quote" size={14} /> Témoignages</span>
           <h2 className="lp-h2">Ils cultivent déjà avec AgroScan</h2>
+          <p className="lp-lead">Des producteurs, coopératives et conseillers du Sénégal.</p>
         </div>
         <div className="lp-tgrid">
-          {quotes.map((q, i) => (
-            <figure key={q.name} className="lp-quote reveal" data-delay={(i % 3) + 1} style={{ margin: 0 }}>
-              <div style={{ display: 'flex', gap: 2 }}>{[0, 1, 2, 3, 4].map((s) => <window.Icon key={s} n="star" size={16} color="var(--c-warning)" />)}</div>
-              <blockquote className="lp-quote__text" style={{ margin: 0 }}>« {q.text} »</blockquote>
+          {placeholders.map((q, i) => (
+            <figure key={i} className="lp-quote reveal" data-delay={(i % 3) + 1} style={{ margin: 0, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 10, right: 12, padding: '3px 8px', borderRadius: 'var(--radius-pill)', background: 'var(--c-warning)', color: '#fff', font: 'var(--fw-bold) 10px/1 var(--font-ui)', letterSpacing: 'var(--ls-wide)', textTransform: 'uppercase' }}>À remplacer</div>
+              <StarRating n={q.stars} />
+              <blockquote className="lp-quote__text" style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-subtle)' }}>{q.text}</blockquote>
               <figcaption className="lp-quote__author">
-                <span title="Photo producteur à ajouter" style={{ position: 'relative', width: 48, height: 48, borderRadius: '50%', flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--green-100), var(--blue-100))', boxShadow: '0 0 0 2px var(--surface-card), 0 0 0 4px var(--green-300)' }}>
-                  <window.Icon n="user-round" size={22} color="var(--green-700)" />
-                </span>
-                <div><div style={{ font: 'var(--fw-bold) var(--text-sm)/1.2 var(--font-ui)', color: 'var(--text-strong)' }}>{q.name}</div><div style={{ font: 'var(--fw-medium) var(--text-xs)/1.3 var(--font-ui)', color: 'var(--text-muted)', marginTop: 2 }}>{q.role}</div></div>
+                <PlaceholderAvatar />
+                <div>
+                  <div style={{ font: 'var(--fw-bold) var(--text-sm)/1.2 var(--font-ui)', color: 'var(--text-strong)' }}>{q.name}</div>
+                  <div style={{ font: 'var(--fw-medium) var(--text-xs)/1.3 var(--font-ui)', color: 'var(--text-muted)', marginTop: 2 }}>{q.role}</div>
+                </div>
               </figcaption>
             </figure>
           ))}
         </div>
-        <p className="lp-center" style={{ font: 'var(--fw-medium) var(--text-sm)/1.5 var(--font-ui)', color: 'var(--text-subtle)', marginTop: 22 }}>Producteurs et coopératives du Sénégal — ajoutez ici leurs vraies photos.</p>
+
+        {/* Références institutionnelles réelles */}
+        <div className="reveal" style={{ marginTop: 40, padding: '22px 28px', borderRadius: 'var(--radius-xl)', background: 'linear-gradient(135deg, var(--green-50), var(--blue-50))', border: '1px solid var(--green-200)', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+          <window.Icon n="badge-check" size={28} color="var(--brand)" />
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ font: 'var(--fw-bold) var(--text-md)/1.2 var(--font-display)', color: 'var(--text-strong)' }}>Cohérence agronomique</div>
+            <div style={{ font: 'var(--fw-medium) var(--text-sm)/1.5 var(--font-ui)', color: 'var(--text-muted)', marginTop: 4 }}>Les recommandations d'AgroScan Pro s'appuient sur les référentiels de l'ISRA, de l'ANCAR et d'AfricaRice pour les cultures sénégalaises et ouest-africaines.</div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {['ISRA', 'ANCAR', 'AfricaRice'].map((org) => (
+              <span key={org} style={{ padding: '8px 16px', borderRadius: 'var(--radius-pill)', background: '#fff', border: '1px solid var(--green-200)', font: 'var(--fw-bold) var(--text-sm)/1 var(--font-display)', color: 'var(--brand-strong)', boxShadow: 'var(--shadow-xs)' }}>{org}</span>
+            ))}
+          </div>
+        </div>
+        <p className="lp-center" style={{ font: 'var(--fw-medium) var(--text-xs)/1.5 var(--font-ui)', color: 'var(--text-subtle)', marginTop: 14 }}>
+          Remplacez les témoignages ci-dessus par de vrais avis clients avant publication.
+        </p>
       </div>
     </section>
   );
 }
 window.LandingTestimonials = LandingTestimonials;
 
-// ---- S8: Partenaires ----
+// ---- S8: Partenaires + Cultures ----
 function LandingPartners() {
   const { Icon } = window;
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
@@ -187,6 +228,7 @@ function LandingPartners() {
     { icon: 'graduation-cap', label: 'Instituts' },
     { icon: 'briefcase', label: 'Agro-entreprises' },
   ];
+  const cultures = ['Mil', 'Sorgho', 'Arachide', 'Niébé', 'Riz', 'Maïs', 'Manioc', 'Coton', 'Sésame', 'Oignon', 'Gombo', 'Tomate'];
   return (
     <section className="lp-section lp-container lp-section--tight">
       <div className="lp-center reveal">
@@ -194,11 +236,12 @@ function LandingPartners() {
         <h2 className="lp-h2" style={{ fontSize: 'clamp(22px,3.4vw,32px)' }}>Aux côtés des acteurs de l'agriculture africaine</h2>
       </div>
       <div className="reveal" style={{ marginTop: 40 }}>
-        <p className="lp-center" style={{ font: 'var(--fw-bold) var(--text-2xs)/1 var(--font-ui)', letterSpacing: 'var(--ls-caps)', textTransform: 'uppercase', color: 'var(--text-subtle)', marginBottom: 16 }}>Cultures africaines prises en charge</p>
+        <p className="lp-center" style={{ font: 'var(--fw-bold) var(--text-2xs)/1 var(--font-ui)', letterSpacing: 'var(--ls-caps)', textTransform: 'uppercase', color: 'var(--text-subtle)', marginBottom: 8 }}>Cultures africaines prises en charge <span style={{ fontWeight: 'var(--fw-medium)', textTransform: 'none', letterSpacing: 0, color: 'var(--text-subtle)' }}>(liste non exhaustive)</span></p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-          {['Mil', 'Sorgho', 'Arachide', 'Niébé', 'Riz', 'Maïs', 'Manioc', 'Coton', 'Sésame', 'Oignon'].map((c) => (
+          {cultures.map((c) => (
             <span key={c} style={{ padding: '8px 16px', borderRadius: 'var(--radius-pill)', background: 'var(--brand-soft)', color: 'var(--brand-strong)', font: 'var(--fw-semibold) var(--text-sm)/1 var(--font-ui)', border: '1px solid var(--green-200)' }}>{c}</span>
           ))}
+          <span style={{ padding: '8px 16px', borderRadius: 'var(--radius-pill)', background: 'var(--n-100)', color: 'var(--text-muted)', font: 'var(--fw-semibold) var(--text-sm)/1 var(--font-ui)', border: '1px dashed var(--n-300)' }}>+ et bien d'autres cultures</span>
         </div>
       </div>
       <div className="lp-partners reveal">
@@ -221,9 +264,25 @@ function LandingFooter() {
   const { Icon } = window;
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
   const cols = [
-    { h: 'Produit', links: ['Mon Champ', 'Santé des Cultures Pro', 'IA Agricole', 'Météo Agricole', 'Diagnostic Maladies'] },
-    { h: 'Entreprise', links: ['À propos', 'Tarifs', 'Partenaires', 'Contact'] },
-    { h: 'Ressources', links: ['Centre d\u2019aide', 'Guides agronomiques', 'API'] },
+    { h: 'Produit', links: [
+      { label: 'Mon Champ', href: '/mon-champ' },
+      { label: 'Santé des Cultures', href: '/sante-cultures' },
+      { label: 'IA Agricole — Polélé', href: '/conseiller' },
+      { label: 'Météo Agricole', href: '/meteo' },
+      { label: 'Diagnostic Maladies', href: '/scan' },
+      { label: 'Carte', href: '/carte' },
+      { label: 'Calendrier', href: '/calendrier' },
+    ]},
+    { h: 'Entreprise', links: [
+      { label: 'À propos', href: '#apropos' },
+      { label: 'Tarifs', href: '#tarifs' },
+      { label: 'Partenaires', href: '#fonctionnalites' },
+      { label: 'Contact', href: '#contact' },
+    ]},
+    { h: 'Ressources', links: [
+      { label: 'Centre d\'aide', href: '#contact' },
+      { label: 'Guides agronomiques', href: '#contact' },
+    ]},
   ];
   return (
     <React.Fragment>
@@ -248,7 +307,7 @@ function LandingFooter() {
           <div className="lp-footer__grid">
             <div className="lp-footer__col">
               <span className="lp-brand">
-                <img className="lp-brand__mark" src={(window.IMG && window.IMG.emblem) || "../../assets/logo-emblem.webp"} alt="AgroScan Pro" style={{ width: 44, height: 44 }} />
+                <img className="lp-brand__mark" src={(window.IMG && window.IMG.emblem) || "/static/assets/logo-emblem.webp"} alt="AgroScan Pro" style={{ width: 44, height: 44 }} />
                 <span className="lp-brand__name" style={{ color: '#fff', fontSize: 22 }}>AgroScan<span style={{ color: 'var(--green-300)' }}> Pro</span></span>
               </span>
               <p style={{ font: 'var(--fw-medium) var(--text-sm)/1.6 var(--font-ui)', color: 'rgba(255,255,255,.6)', marginTop: 16, maxWidth: '34ch' }}>L'agriculture de précision au service des producteurs africains.</p>
@@ -261,7 +320,7 @@ function LandingFooter() {
             {cols.map((c) => (
               <div key={c.h} className="lp-footer__col">
                 <h4>{c.h}</h4>
-                {c.links.map((l) => <a key={l}>{l}</a>)}
+                {c.links.map((l) => <a key={l.label} href={l.href}>{l.label}</a>)}
               </div>
             ))}
           </div>

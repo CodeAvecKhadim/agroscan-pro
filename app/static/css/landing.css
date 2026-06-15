@@ -124,8 +124,8 @@
   letter-spacing: var(--ls-caps); text-transform: uppercase; animation: lp-bob 2.4s var(--ease-in-out) infinite; }
 @keyframes lp-bob { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 5px); } }
 @media (prefers-reduced-motion: reduce) { .lp-hero__cue { animation: none; } }
-/* The composed image carries its own logo + nav-style header, so suppress the floating nav while over the hero */
-.lp-nav.is-hero { opacity: 0; pointer-events: none; transform: translateY(-8px); }
+/* Nav always visible — dark green overlay over hero image */
+.lp-nav.is-hero { background: rgba(8,30,16,.75); backdrop-filter: blur(12px); border-bottom-color: rgba(255,255,255,.08); }
 .lp-hero__bg { position: absolute; inset: 0; }
 .lp-hero__scrim { position: absolute; inset: 0; background:
   linear-gradient(180deg, rgba(8,26,16,.62) 0%, rgba(8,26,16,.34) 40%, rgba(7,32,19,.86) 100%); }
@@ -146,11 +146,13 @@
 .lp-mod { position: relative; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); overflow: hidden; cursor: default; box-shadow: var(--shadow-sm); transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out); display: flex; flex-direction: column; }
 .lp-mod:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 .lp-mod__media { position: relative; height: 168px; overflow: hidden; }
-.lp-mod__icon { position: absolute; left: 18px; bottom: 18px; width: 50px; height: 50px; border-radius: var(--radius-lg); display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md), 0 0 0 4px rgba(255,255,255,.9); }
-.lp-mod__body { padding: 20px 20px 22px; display: flex; flex-direction: column; flex: 1; }
+/* Icon sits at the media/body junction: media=168px, icon=50px, centered at 168px → top = 143px */
+.lp-mod__icon { position: absolute; left: 18px; top: 143px; bottom: auto; z-index: 2; width: 50px; height: 50px; border-radius: var(--radius-lg); display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md), 0 0 0 4px rgba(255,255,255,.9); }
+/* padding-top clears the lower half of the icon (25px) + gap */
+.lp-mod__body { padding: 38px 20px 22px; display: flex; flex-direction: column; flex: 1; }
 .lp-mod__title { font: var(--fw-bold) var(--text-lg)/1.15 var(--font-display); color: var(--text-strong); letter-spacing: var(--ls-tight); }
 .lp-mod__desc { font: var(--fw-medium) var(--text-sm)/1.55 var(--font-ui); color: var(--text-muted); margin: 8px 0 16px; flex: 1; text-wrap: pretty; }
-.lp-mod__link { display: inline-flex; align-items: center; gap: 7px; font: var(--fw-bold) var(--text-sm)/1 var(--font-ui); cursor: pointer; align-self: flex-start; }
+.lp-mod__link { display: inline-flex; align-items: center; gap: 7px; font: var(--fw-bold) var(--text-sm)/1 var(--font-ui); cursor: pointer; align-self: flex-start; text-decoration: none; }
 
 /* ---- Steps ---- */
 .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }

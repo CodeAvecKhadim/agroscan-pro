@@ -39,8 +39,23 @@ function LandingPricing() {
           <p className="lp-lead">Commencez avec 7 jours gratuits, passez au Pro quand vous êtes prêt. Sans engagement, résiliable à tout moment.</p>
         </div>
 
+        {/* Quote band — remontée EN PREMIER pour plus de visibilité */}
+        <div className="lp-quoteband reveal" style={{ marginTop: 36, background: 'linear-gradient(135deg, var(--green-800) 0%, var(--n-900) 100%)', boxShadow: 'var(--shadow-xl)', border: '1.5px solid rgba(255,255,255,.12)' }}>
+          <div className="lp-quoteband__icon" style={{ background: 'rgba(255,255,255,.15)', border: '1.5px solid rgba(255,255,255,.25)' }}><Icon n="building-2" size={26} color="#fff" /></div>
+          <div className="lp-quoteband__body">
+            <h3 style={{ fontSize: 'clamp(18px,2.4vw,22px)' }}>Besoins spécifiques ?</h3>
+            <p>Coopérative, ONG, entreprise agricole ou projet de développement ? Services drone, cartographie terrain, études agricoles et accompagnement conseiller sur devis.</p>
+          </div>
+          <div className="lp-quoteband__actions">
+            <Button variant="primary" size="lg" iconLeft={<Icon n="file-text" size={18} color="#fff" />} onClick={goContact}>Demander un devis</Button>
+            <a className="lp-quoteband__wa" href="https://wa.me/221784919011" target="_blank" rel="noopener noreferrer">
+              <Icon n="phone" size={16} color="var(--green-700)" /> +221 78 491 90 11
+            </a>
+          </div>
+        </div>
+
         {/* Billing toggle */}
-        <div className="reveal" style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
+        <div className="reveal" style={{ display: 'flex', justifyContent: 'center', marginTop: 44 }}>
           <div className="lp-billing">
             <button className={'lp-billing__opt' + (!annual ? ' is-active' : '')} onClick={() => setAnnual(false)}>Mensuel</button>
             <button className={'lp-billing__opt' + (annual ? ' is-active' : '')} onClick={() => setAnnual(true)}>Annuel <span className="lp-billing__save">−2 mois</span></button>
@@ -78,20 +93,7 @@ function LandingPricing() {
           Tarifs en FCFA · paiement mobile (Orange Money, Wave) à venir.
         </p>
 
-        {/* Quote band — offers sur devis */}
-        <div className="lp-quoteband reveal">
-          <div className="lp-quoteband__icon"><Icon n="building-2" size={26} color="#fff" /></div>
-          <div className="lp-quoteband__body">
-            <h3>Besoins spécifiques ?</h3>
-            <p>Vous êtes une coopérative, une ONG, une entreprise agricole ou un projet de développement ? Services drone, cartographie terrain, études agricoles et accompagnement conseiller sur devis.</p>
-          </div>
-          <div className="lp-quoteband__actions">
-            <Button variant="primary" size="lg" iconLeft={<Icon n="file-text" size={18} color="#fff" />} onClick={goContact}>Demander un devis</Button>
-            <a className="lp-quoteband__wa" href="https://wa.me/221784919011" target="_blank" rel="noopener">
-              <Icon n="phone" size={16} color="var(--green-700)" /> +221 78 491 90 11
-            </a>
-          </div>
-        </div>
+        {/* quoteband déplacée en haut — voir ci-dessus */}
       </div>
     </section>
   );
