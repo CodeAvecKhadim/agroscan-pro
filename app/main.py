@@ -129,6 +129,10 @@ def index():
 def login():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
+@app.get("/register", include_in_schema=False)
+def register():
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
 
 # --- Pages des modules de l'Outil d'Aide à la Décision (OAD) ---
 def _page(nom):

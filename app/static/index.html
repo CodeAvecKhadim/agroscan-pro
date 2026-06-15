@@ -561,6 +561,7 @@ if(TOKEN){
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/static/sw.js').catch(() => {});
 }
+if (window.location.pathname === '/register') authTab('register');
 </script>
 </body>
 </html>
