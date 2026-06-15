@@ -8,6 +8,11 @@
 <link rel="manifest" href="/static/manifest.json">
 <link rel="apple-touch-icon" href="/static/assets/favicon.png">
 <title>AgroScan Pro — Social Technologie</title>
+<meta property="og:title" content="AgroScan Pro">
+<meta property="og:description" content="Agriculture de précision au Sénégal — analysez votre sol, cartographiez vos parcelles, décidez mieux.">
+<meta property="og:image" content="/static/assets/photos/hero-composed.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/agroscan.css">
@@ -59,7 +64,7 @@ main{max-width:1100px;margin:0 auto;padding:26px 18px 80px}
 h2.sec{font-family:var(--title);font-weight:700;font-size:1.6rem;color:var(--brand-dk);margin-bottom:4px}
 .sub{color:var(--ink-soft);font-size:.95rem;margin-bottom:20px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-weight:600;font-size:.95rem;transition:transform .14s}
-.btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px -6px rgba(26,139,79,.45)}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(26,139,79,.5)}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px -6px rgba(26,139,79,.45)}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(26,139,79,.5)}.btn-primary:active{transform:scale(.97);box-shadow:0 2px 8px -4px rgba(26,139,79,.3)}
 .btn-gold{background:var(--gold);color:#fff}.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}
 .btn-block{width:100%;justify-content:center}
 .field{margin-bottom:14px}.field label{display:block;font-weight:600;font-size:.82rem;color:var(--ink-soft);margin-bottom:6px}
@@ -75,11 +80,12 @@ h2.sec{font-family:var(--title);font-weight:700;font-size:1.6rem;color:var(--bra
 .auth-card{width:100%;max-width:430px}
 .auth-hero{text-align:center;margin-bottom:22px}
 .auth-hero .mark{width:64px;height:64px;border-radius:16px;background:linear-gradient(150deg,var(--brand),var(--brand-dk));display:inline-grid;place-items:center;font-size:34px;box-shadow:0 8px 24px -8px rgba(26,139,79,.4);margin-bottom:12px}
-.auth-hero h1{font-family:var(--title);font-weight:800;font-size:1.85rem;color:var(--brand-deep)}
+.auth-hero h1{font-family:var(--title);font-weight:800;font-size:1.85rem;color:var(--brand-deep);letter-spacing:-.03em;line-height:1.1}
 .auth-hero p{color:var(--ink-soft);font-size:.92rem}
 .tabs2{display:flex;gap:6px;background:var(--paper-2);padding:5px;border-radius:12px;margin-bottom:18px}
-.tabs2 button{flex:1;padding:10px;border-radius:9px;font-weight:600;color:var(--ink-soft);font-size:.9rem}
+.tabs2 button{flex:1;padding:10px;border-radius:9px;font-weight:600;color:var(--ink-soft);font-size:.9rem;transition:background .15s,color .15s}
 .tabs2 button.on{background:var(--brand);color:#fff}
+.tabs2 button:not(.on):hover{background:rgba(26,139,79,.10);color:var(--brand)}
 .check{display:flex;align-items:center;gap:9px;font-size:.9rem;color:var(--ink-soft);margin-bottom:14px;cursor:pointer}
 .check input{width:auto}
 /* NAV */
@@ -155,10 +161,10 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
           <h2 style="font-family:var(--title);font-weight:800;font-size:1.85rem;color:#fff;line-height:1.1;margin-bottom:10px">AgroScan Pro</h2>
           <p style="color:rgba(255,255,255,.88);font-size:.93rem;line-height:1.6;max-width:280px">L'agriculture de précision au Sénégal — analysez votre sol, cartographiez vos parcelles, décidez mieux.</p>
         </div>
-        <div style="display:flex;gap:28px">
-          <div><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">29</b><span style="font-size:.75rem;color:rgba(255,255,255,.75)">cultures</span></div>
-          <div><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">100%</b><span style="font-size:.75rem;color:rgba(255,255,255,.75)">adapté</span></div>
-          <div><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">8-en-1</b><span style="font-size:.75rem;color:rgba(255,255,255,.75)">paramètres sol</span></div>
+        <div style="display:flex;border-top:1px solid rgba(255,255,255,.15);padding-top:20px">
+          <div style="flex:1;text-align:center"><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">29</b><span style="font-size:.72rem;color:rgba(255,255,255,.7)">cultures</span></div>
+          <div style="flex:1;text-align:center;border-left:1px solid rgba(255,255,255,.2)"><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">100%</b><span style="font-size:.72rem;color:rgba(255,255,255,.7)">adapté</span></div>
+          <div style="flex:1;text-align:center;border-left:1px solid rgba(255,255,255,.2)"><b style="font-family:var(--mono);font-size:1.4rem;color:#fff;display:block">8-en-1</b><span style="font-size:.72rem;color:rgba(255,255,255,.7)">paramètres sol</span></div>
         </div>
       </div>
     </div>
@@ -175,7 +181,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
           <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="vous@exemple.sn"></div>
           <div class="field"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
           <button class="btn btn-primary btn-block" onclick="doLogin()">Se connecter →</button>
-          <div style="text-align:center;margin-top:12px"><a href="#" onclick="showReset();return false;" style="font-size:.82rem;color:var(--ink-soft);text-decoration:underline">Mot de passe oublié ?</a></div>
+          <div style="text-align:center;margin-top:12px"><a href="#" onclick="showReset();return false;" style="font-size:.82rem;color:var(--brand);text-decoration:none;font-weight:600">Mot de passe oublié ?</a></div>
         </div>
         <!-- RESET MOT DE PASSE -->
         <div id="formReset" style="display:none">
@@ -211,6 +217,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
         </div>
       </div>
       <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:16px">📞 Social Technologie · +221 78 491 90 11</p>
+      <p style="text-align:center;font-size:.72rem;color:var(--line);margin-top:8px">© 2025 Social Technologie · Tous droits réservés</p>
     </div></div>
   </div><!-- /auth-split -->
   </section>
