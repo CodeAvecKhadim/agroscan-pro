@@ -435,7 +435,7 @@ async function refreshUsage(){
   try{
     const u=await api("/api/billing/usage");
     const txt=document.getElementById("usageTxt"), fill=document.getElementById("usageFill");
-    if(u.analyses_limit===null){txt.textContent="Analyses illimitées ✓";fill.style.width="100%";fill.style.background="var(--baobab)";}
+    if(u.analyses_limit===null){txt.textContent="Analyses illimitées ✓";fill.style.width="100%";fill.style.background="var(--brand)";}
     else{txt.textContent=u.analyses_used+" / "+u.analyses_limit+" analyses";fill.style.width=Math.min(100,u.analyses_used/u.analyses_limit*100)+"%";}
   }catch(e){}
 }
