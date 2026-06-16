@@ -14,7 +14,7 @@ import io
 from app.core.database import get_db
 from app.core.deps import current_user
 from app.models import User, UserRole
-from app.models.champ import Parcelle, AnalyseSol, Infrastructure
+from app.models.champ import Parcelle, AnalyseSol, Infrastructure, StatutParcelle
 from app.models.observations import ObservationDiagnostic as Observation
 from app.models.sante import Consultation, Diagnostic
 
@@ -38,9 +38,14 @@ def dashboard(
     """KPIs globaux du conseiller : parcelles suivies, observations en attente, alertes."""
     org_id = user.org_id
 
-    nb_parcelles = db.query(func.count(Parcelle.id)).filter(Parcelle.org_id == org_id).scalar() or 0
+    nb_parcelles = db.query(func.count(Parcelle.id)).filter(
+        Parcelle.org_id == org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
+    ).scalar() or 0
     nb_actives   = db.query(func.count(Parcelle.id)).filter(
-        Parcelle.org_id == org_id, Parcelle.wizard_complet == True
+        Parcelle.org_id == org_id,
+        Parcelle.wizard_complet == True,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
     ).scalar() or 0
     nb_obs_attente = db.query(func.count(Observation.id)).filter(
         Observation.org_id == org_id,
@@ -99,6 +104,7 @@ def lister_producteurs(
         nb_parcelles = db.query(func.count(Parcelle.id)).filter(
             Parcelle.org_id == user.org_id,
             Parcelle.created_by == p.id if hasattr(Parcelle, 'created_by') else True,
+            Parcelle.statut != StatutParcelle.ARCHIVE,
         ).scalar() or 0
 
         result.append({
@@ -470,28 +476,36 @@ def statistiques_org(
     """Statistiques agrégées de l'organisation pour le conseiller."""
     org_id = user.org_id
 
-    # Parcelles par statut
+    # Parcelles par statut (hors archives)
     statuts = db.query(
         Parcelle.statut, func.count(Parcelle.id)
-    ).filter(Parcelle.org_id == org_id).group_by(Parcelle.statut).all()
+    ).filter(
+        Parcelle.org_id == org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
+    ).group_by(Parcelle.statut).all()
 
-    # Parcelles par zone agro
+    # Parcelles par zone agro (hors archives)
     zones = db.query(
         Parcelle.zone_agro, func.count(Parcelle.id), func.avg(Parcelle.score_completude)
     ).filter(
-        Parcelle.org_id == org_id, Parcelle.zone_agro != None
+        Parcelle.org_id == org_id,
+        Parcelle.zone_agro != None,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
     ).group_by(Parcelle.zone_agro).all()
 
-    # Surface totale
+    # Surface totale (hors archives)
     surface_totale = db.query(func.sum(Parcelle.superficie_ha)).filter(
-        Parcelle.org_id == org_id
+        Parcelle.org_id == org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
     ).scalar() or 0
 
-    # Cultures
+    # Cultures (hors archives)
     cultures = db.query(
         Parcelle.type_culture, func.count(Parcelle.id)
     ).filter(
-        Parcelle.org_id == org_id, Parcelle.type_culture != None
+        Parcelle.org_id == org_id,
+        Parcelle.type_culture != None,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
     ).group_by(Parcelle.type_culture).order_by(func.count(Parcelle.id).desc()).limit(10).all()
 
     return {

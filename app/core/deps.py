@@ -47,12 +47,15 @@ def current_subscription(user: User = Depends(current_user),
     sub = db.query(Subscription).filter(Subscription.org_id == user.org_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Aucun abonnement trouvé.")
-    # Rétrogradation automatique si période échue
+    # Rétrogradation automatique si période échue (TRIAL ou plan payant)
     end = sub.current_period_end
     if end is not None and end.tzinfo is None:
         end = end.replace(tzinfo=timezone.utc)
-    if (end and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc)):
+    was_trial = sub.status == SubStatus.TRIAL
+    if end and sub.status in (SubStatus.TRIAL, SubStatus.ACTIVE) and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc):
         sub.status = SubStatus.EXPIRED
+        if was_trial:
+            sub.plan = PlanType.GRATUIT
         db.commit()
     return sub
 
@@ -171,8 +174,11 @@ def enforce_parcelle_limit(user: User = Depends(current_user),
     if max_p is None:
         return user  # illimité
 
-    from app.models.champ import Parcelle
-    count = db.query(Parcelle).filter_by(org_id=user.org_id).count()
+    from app.models.champ import Parcelle, StatutParcelle
+    count = db.query(Parcelle).filter(
+        Parcelle.org_id == user.org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
+    ).count()
     if count >= max_p:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,

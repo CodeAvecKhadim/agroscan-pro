@@ -35,6 +35,7 @@ class ParcelleCreate(BaseModel):
     statut: StatutParcelle = StatutParcelle.ACTIVE
     description: Optional[str] = None
     date_semis: Optional[date] = None
+    date_recolte_prevue: Optional[date] = None
     variete: Optional[str] = Field(None, max_length=200)
     stade_culture: Optional[str] = Field(None, max_length=200)
     etape_wizard: Optional[int] = Field(1, ge=1, le=12)
@@ -52,6 +53,7 @@ class ParcelleUpdate(BaseModel):
     statut: Optional[StatutParcelle] = None
     description: Optional[str] = None
     date_semis: Optional[date] = None
+    date_recolte_prevue: Optional[date] = None
     variete: Optional[str] = Field(None, max_length=200)
     stade_culture: Optional[str] = Field(None, max_length=200)
     etape_wizard: Optional[int] = Field(None, ge=1, le=12)
@@ -68,9 +70,11 @@ class ParcelleSummary(BaseModel):
     superficie_ha: Optional[float] = None
     score_completude: int
     date_semis: Optional[date] = None
+    date_recolte_prevue: Optional[date] = None
     stade_culture: Optional[str] = None
     wizard_complet: bool = False
     etape_wizard: int = 1
+    deleted_at: Optional[datetime] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -98,11 +102,13 @@ class ParcelleOut(BaseModel):
     score_completude: int
     score_detail: Optional[Dict[str, Any]] = None
     date_semis: Optional[date] = None
+    date_recolte_prevue: Optional[date] = None
     variete: Optional[str] = None
     stade_culture: Optional[str] = None
     wizard_complet: bool = False
     etape_wizard: int = 1
     date_activation: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

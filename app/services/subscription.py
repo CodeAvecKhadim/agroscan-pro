@@ -16,14 +16,16 @@ from app.core.config import settings
 
 
 def create_default_subscription(db: Session, org: Organization) -> Subscription:
-    """À l'inscription, toute organisation démarre sur le plan GRATUIT actif."""
+    """À l'inscription : essai Premium gratuit de TRIAL_DAYS jours, puis bascule GRATUIT."""
+    trial_end = datetime.now(timezone.utc) + timedelta(days=settings.TRIAL_DAYS)
     sub = Subscription(
         org_id=org.id,
-        plan=PlanType.GRATUIT,
-        status=SubStatus.ACTIVE,
+        plan=PlanType.PREMIUM,
+        status=SubStatus.TRIAL,
+        current_period_end=trial_end,
         seats=1,
         auto_renew=False,
-        campaign_billing="monthly",
+        campaign_billing="campaign",
     )
     db.add(sub)
     db.commit()
@@ -109,12 +111,14 @@ def confirm_payment(db: Session, payment: Payment, provider_ref: str = "") -> Su
     if base < now:
         base = now
 
-    if sub.plan == PlanType.PREMIUM:
-        duration = settings.PRICE_PREMIUM_DURATION_DAYS  # 90 jours
+    if sub.plan == PlanType.PREMIUM and sub.campaign_billing == "annual":
+        duration = 365
+    elif sub.plan == PlanType.PREMIUM:
+        duration = settings.PRICE_PREMIUM_DURATION_DAYS  # 30 jours mensuel
     elif sub.plan == PlanType.COOPERATIVE and sub.campaign_billing == "annual":
         duration = 365
     else:
-        duration = 30  # coopérative mensuelle
+        duration = 30  # mensuel
 
     sub.current_period_end = base + timedelta(days=duration)
     db.commit()

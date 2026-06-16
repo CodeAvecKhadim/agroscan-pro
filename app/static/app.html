@@ -46,6 +46,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .badge.premium{background:var(--gold);color:#fff}
+.badge.trial{background:#f59e0b;color:#fff}
 .badge.cooperative{background:var(--accent);color:#fff}
 .lk{color:#fff;font-size:.82rem;opacity:.8;cursor:pointer;white-space:nowrap}
 .lk:hover{opacity:1}
@@ -309,6 +310,13 @@ async function boot() {
 
     // Plan
     const sub = await api('/api/billing/me');
+
+    // Essai expiré → bloquer et rediriger vers tarifs
+    if (sub.trial_expired || sub.status === 'expired') {
+      window.location.href = '/tarifs?essai_expire=1';
+      return;
+    }
+
     const badge = document.getElementById('planBadge');
     const planLabels = {
       gratuit: 'Gratuit',
@@ -343,7 +351,15 @@ async function boot() {
     }
 
     // CTA upgrade
-    if (sub.plan === 'gratuit') {
+    if (sub.is_trial) {
+      // Essai en cours — bannière compte à rebours
+      document.getElementById('planCard').style.display = 'flex';
+      const d = sub.trial_days_remaining;
+      document.getElementById('planCardTitle').textContent = `🎁 Essai Premium — ${d} jour${d !== 1 ? 's' : ''} restant${d !== 1 ? 's' : ''}`;
+      document.getElementById('planCardSub').textContent = 'Accès complet gratuit. Souscrivez avant la fin pour ne pas perdre vos données.';
+      badge.className = 'badge trial';
+      badge.textContent = 'Essai';
+    } else if (sub.plan === 'gratuit') {
       document.getElementById('planCard').style.display = 'flex';
     } else if (sub.plan === 'premium' && sub.remaining_days != null && sub.remaining_days <= 14) {
       // Alerte renouvellement proche

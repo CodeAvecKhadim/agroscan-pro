@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.database import get_db
 from app.core.deps import current_user
 from app.models import User
-from app.models.champ import Parcelle, AnalyseSol, Cartographie
+from app.models.champ import Parcelle, AnalyseSol, Cartographie, StatutParcelle
 from app.models.sante import (
     Consultation, Diagnostic, Traitement, Suivi, RapportSante,
     TypeConsultation, StatutTraitement,
@@ -927,7 +927,10 @@ def rapport_exploitation(
     org = db.query(Organization).filter_by(id=user.org_id).first()
     org_name = org.name if org else f"Organisation #{user.org_id}"
 
-    parcelles = db.query(Parcelle).filter_by(org_id=user.org_id).order_by(Parcelle.created_at).all()
+    parcelles = db.query(Parcelle).filter(
+        Parcelle.org_id == user.org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
+    ).order_by(Parcelle.created_at).all()
     exploitations = db.query(Exploitation).filter_by(org_id=user.org_id).order_by(Exploitation.saison).all()
     activites = db.query(Activite).filter_by(org_id=user.org_id).order_by(Activite.date_prevue).all()
 

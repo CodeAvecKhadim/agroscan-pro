@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     CURRENCY: str = "FCFA"
     VAT_RATE: float = 0.18  # TVA 18 %
 
+    # --- Essai gratuit ---
+    TRIAL_DAYS: int = 14                       # durée de l'essai Premium gratuit
+
     # --- Quotas plan gratuit ---
     FREE_DAILY_AI_ANALYSES: int = 3          # analyses IA par jour
     FREE_WEEKLY_SATELLITE: int = 1           # analyse satellite par semaine
@@ -37,9 +40,10 @@ class Settings(BaseSettings):
     FREE_HISTORY_DAYS: int = 30
 
     # --- Tarifs HT (en FCFA) ---
-    # Producteur Premium : prix par campagne agricole (90 jours)
-    PRICE_PREMIUM_HT: int = 14900
-    PRICE_PREMIUM_DURATION_DAYS: int = 90   # durée campagne = 3 mois
+    # Producteur Premium : mensuel ou annuel
+    PRICE_PREMIUM_HT: int = 5000            # 5 000 FCFA / mois
+    PRICE_PREMIUM_HT_ANNUAL: int = 50000    # 50 000 FCFA / an (2 mois offerts vs 60 000)
+    PRICE_PREMIUM_DURATION_DAYS: int = 30   # durée mensuelle = 30 jours
     # Coopérative : mensuel ou annuel
     PRICE_COOP_HT: int = 25000              # mensuel
     PRICE_COOP_HT_ANNUAL: int = 250000      # annuel (250 000 FCFA / an)

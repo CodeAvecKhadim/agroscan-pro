@@ -96,7 +96,25 @@ def _run_analyse(db: Session, parcelle: Parcelle, org_id: int, lang: str = "fr")
     source = indices.get("source", "sentinel-2")
     _lang = lang
 
-    message, couleur = ndvi_to_message(ndvi, ndwi, source, lang=_lang)
+    today = date.today()
+    from app.models.champ import StatutParcelle
+    culture_active = (
+        parcelle.statut == StatutParcelle.EN_CULTURE
+        and parcelle.date_semis is not None
+        and parcelle.date_recolte_prevue is not None
+        and parcelle.date_semis <= today <= parcelle.date_recolte_prevue
+    )
+
+    if culture_active:
+        message, couleur = ndvi_to_message(ndvi, ndwi, source, lang=_lang)
+    else:
+        ndvi_str = f"{ndvi:.3f}" if ndvi is not None else "N/D"
+        message = (
+            f"NDVI : {ndvi_str}. "
+            "Aucune culture active détectée sur cette période. "
+            "L'indice NDVI est fourni à titre informatif et n'est pas interprété."
+        )
+        couleur = "orange"
 
     analyse = AnalyseSatellite(
         org_id=org_id,
@@ -117,8 +135,9 @@ def _run_analyse(db: Session, parcelle: Parcelle, org_id: int, lang: str = "fr")
 
 
 def _get_parcelle(db: Session, parcelle_id: int, org_id: int) -> Parcelle:
+    from app.models.champ import StatutParcelle
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=org_id).first()
-    if not p:
+    if not p or p.statut == StatutParcelle.ARCHIVE:
         raise HTTPException(status_code=404, detail="Parcelle introuvable.")
     return p
 

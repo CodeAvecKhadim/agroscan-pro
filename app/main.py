@@ -273,6 +273,6 @@ async def scan_maladie(photo: UploadFile = File(...)):
     if len(contenu) > 8 * 1024 * 1024:   # garde-fou : 8 Mo max
         raise HTTPException(status_code=413, detail="Photo trop lourde (max 8 Mo).")
     try:
-        return identifier_maladie(contenu, langue="fr")
+        return identifier_maladie([contenu], langue="fr")
     except CropHealthError as e:
         raise HTTPException(status_code=502, detail=str(e))

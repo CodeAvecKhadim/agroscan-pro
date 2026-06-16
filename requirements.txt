@@ -12,3 +12,5 @@ requests
 slowapi
 # Production : décommenter pour PostgreSQL
 # psycopg[binary]
+sentry-sdk[fastapi]>=2.0.0
+Pillow>=10.0.0

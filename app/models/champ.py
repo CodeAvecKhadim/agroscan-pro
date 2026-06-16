@@ -24,6 +24,7 @@ def _now():
 
 class StatutParcelle(str, enum.Enum):
     ACTIVE = "active"
+    EN_CULTURE = "en_culture"
     EN_REPOS = "en_repos"
     EN_PREPARATION = "en_preparation"
     ARCHIVE = "archive"
@@ -125,6 +126,7 @@ class Parcelle(Base):
 
     # Agronomie
     date_semis = Column(Date, nullable=True)
+    date_recolte_prevue = Column(Date, nullable=True)
     variete = Column(String(200), nullable=True)
     stade_culture = Column(String(200), nullable=True)
 
@@ -140,6 +142,8 @@ class Parcelle(Base):
     etape_wizard = Column(SmallInteger, default=1)
     wizard_complet = Column(Boolean, default=False)
     date_activation = Column(DateTime(timezone=True), nullable=True)
+
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=_now)
     updated_at = Column(DateTime(timezone=True), default=_now, onupdate=_now)

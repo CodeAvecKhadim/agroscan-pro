@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.database import get_db
 from app.core.deps import (current_user, current_subscription, enforce_parcelle_limit,
-                            effective_plan)
+                            effective_plan, require_role)
+from app.models import UserRole
 from app.models import Subscription
 from app.models import User
 from app.models.champ import (
@@ -41,9 +42,11 @@ router = APIRouter(prefix="/api/champ", tags=["Mon Champ"])
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _get_parcelle(db: Session, parcelle_id: int, org_id: int) -> Parcelle:
+def _get_parcelle(db: Session, parcelle_id: int, org_id: int, include_archived: bool = False) -> Parcelle:
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=org_id).first()
     if not p:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+    if not include_archived and p.statut == StatutParcelle.ARCHIVE:
         raise HTTPException(status_code=404, detail="Parcelle introuvable.")
     return p
 
@@ -174,6 +177,22 @@ def lister_parcelles(
     return q.order_by(Parcelle.created_at.desc()).offset(skip).limit(limit).all()
 
 
+@router.get("/parcelles/archivees", response_model=List[ParcelleSummary])
+def lister_parcelles_archivees(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    """Liste les parcelles supprimées (archivées) de l'organisation."""
+    return (
+        db.query(Parcelle)
+        .filter(Parcelle.org_id == user.org_id, Parcelle.statut == StatutParcelle.ARCHIVE)
+        .order_by(Parcelle.deleted_at.desc())
+        .offset(skip).limit(limit).all()
+    )
+
+
 @router.get("/parcelles/{parcelle_id}", response_model=ParcelleDetail)
 def detail_parcelle(
     parcelle_id: int,
@@ -228,11 +247,31 @@ def archiver_parcelle(
     user: User = Depends(current_user),
     db: Session = Depends(get_db),
 ):
-    """Archiver une parcelle (soft delete)."""
+    """Suppression logique d'une parcelle (soft delete)."""
     p = _get_parcelle(db, parcelle_id, user.org_id)
+    now = datetime.now(timezone.utc)
     p.statut = StatutParcelle.ARCHIVE
+    p.deleted_at = now
+    p.updated_at = now
+    db.commit()
+
+
+@router.post("/parcelles/{parcelle_id}/restaurer", response_model=ParcelleOut)
+def restaurer_parcelle(
+    parcelle_id: int,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    """Restaure une parcelle archivée vers le statut ACTIVE."""
+    p = _get_parcelle(db, parcelle_id, user.org_id, include_archived=True)
+    if p.statut != StatutParcelle.ARCHIVE:
+        raise HTTPException(status_code=400, detail="Cette parcelle n'est pas archivée.")
+    p.statut = StatutParcelle.ACTIVE
+    p.deleted_at = None
     p.updated_at = datetime.now(timezone.utc)
     db.commit()
+    db.refresh(p)
+    return p
 
 
 # ── CARTOGRAPHIE ──────────────────────────────────────────────────────────────

@@ -155,15 +155,24 @@ footer a{color:rgba(255,255,255,.85)}
   <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(6,95,70,.15),transparent)"></div>
 </div>
 
+<div id="bannerEssaiExpire" style="display:none;background:#fef3c7;border-bottom:2px solid #f59e0b;padding:14px 20px;text-align:center;font-size:.92rem;font-weight:600;color:#92400e">
+  ⏰ Votre essai gratuit de 14 jours est terminé. Choisissez un plan ci-dessous pour continuer à utiliser AgroScan Pro.
+</div>
+<script>
+  if (new URLSearchParams(location.search).get('essai_expire') === '1') {
+    document.getElementById('bannerEssaiExpire').style.display = 'block';
+  }
+</script>
+
 <div class="hero">
   <span class="eyebrow">Tarifs &amp; abonnements</span>
   <h2>Simple, transparent, adapté au terrain</h2>
   <p>Commencez gratuitement 7 jours, sans carte bancaire. Souscrivez quand vous êtes prêt.</p>
 
-  <!-- Toggle mensuel/annuel — conservé pour plans futurs, masqué publiquement -->
-  <div class="toggle-band" id="toggleBand" style="display:none">
+  <!-- Toggle mensuel/annuel -->
+  <div class="toggle-band" id="toggleBand">
     <button class="on" data-billing="monthly" onclick="setBilling(this)">Mensuel</button>
-    <button data-billing="annual" onclick="setBilling(this)">Annuel<span class="save">Économisez ~17%</span></button>
+    <button data-billing="annual" onclick="setBilling(this)">Annuel<span class="save">2 mois offerts</span></button>
   </div>
   <div class="toggle-note" id="toggleNote"></div>
 </div>
@@ -202,9 +211,10 @@ footer a{color:rgba(255,255,255,.85)}
     <h3>AgroScan Pro Producteur</h3>
     <p class="who">Pour le producteur actif qui veut décider avec les données</p>
     <div class="price-box">
-      <div class="price">5 000 <small>FCFA</small></div>
-      <div class="price-sub">par mois · sans engagement</div>
-      <div class="price-daily">Soit moins de 167 FCFA par jour</div>
+      <div class="price" id="prodPrice">5 000 <small>FCFA</small></div>
+      <div class="price-sub" id="prodPeriod">par mois · sans engagement</div>
+      <div class="price-old" id="prodOldPrice" style="display:none"></div>
+      <div class="price-daily" id="prodDaily">Soit moins de 167 FCFA par jour</div>
     </div>
     <div class="specs">
       <div class="spec"><b>∞</b><span>parcelles</span></div>
@@ -223,7 +233,7 @@ footer a{color:rgba(255,255,255,.85)}
       <li>Historique complet</li>
       <li>Gestion des activités</li>
     </ul>
-    <button onclick="souscrire('producteur')" class="btn btn-gold">Commencer maintenant — 5 000 FCFA/mois</button>
+    <button onclick="souscrire('producteur')" class="btn btn-gold" id="prodBtn">Commencer maintenant — 5 000 FCFA/mois</button>
     <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Résiliable à tout moment · Paiement Wave ou Orange Money</p>
   </div>
 
@@ -383,26 +393,47 @@ let billing = 'monthly';   // 'monthly' | 'annual'
 let selectedPlan = null;
 
 const PRICES = {
-  // Plans publics actifs
-  producteur: {ht: 5000, billing: 'monthly', label: 'AgroScan Pro Producteur', duree: 'Par mois (sans engagement)'},
-  // Plans conservés pour usage futur (non affichés publiquement)
-  premium: {ht: 14900, billing: 'campaign', label: 'Producteur Premium', duree: 'Campagne 90 jours (3 mois)'},
+  producteur: {
+    monthly: {ht: 5000,  label: 'AgroScan Pro Producteur — Mensuel',  duree: '1 mois · sans engagement',  detail: '5 000 FCFA HT/mois. Résiliable à tout moment.'},
+    annual:  {ht: 50000, label: 'AgroScan Pro Producteur — Annuel',   duree: '12 mois · 2 mois offerts',  detail: '50 000 FCFA HT/an — économie de 10 000 FCFA vs. mensuel × 12.'},
+  },
   cooperative: {
-    monthly: {ht: 25000, label: 'Coopérative mensuelle', duree: 'Par mois'},
-    annual:  {ht: 250000, label: 'Coopérative annuelle', duree: 'Par an (12 mois)'},
+    monthly: {ht: 25000,  label: 'Coopérative mensuelle', duree: 'Par mois'},
+    annual:  {ht: 250000, label: 'Coopérative annuelle',  duree: 'Par an (12 mois)'},
   },
 };
 
 function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
 
+function updateProdDisplay() {
+  const p = PRICES.producteur[billing];
+  const ht = p.ht;
+  const daily = billing === 'annual' ? Math.round(ht / 365) : Math.round(ht / 30);
+  document.getElementById('prodPrice').innerHTML = fmt(ht) + ' <small>FCFA</small>';
+  document.getElementById('prodPeriod').textContent = billing === 'annual' ? 'par an · 2 mois offerts' : 'par mois · sans engagement';
+  document.getElementById('prodDaily').textContent = `Soit moins de ${fmt(daily)} FCFA par jour`;
+  document.getElementById('prodBtn').textContent = billing === 'annual'
+    ? `Commencer maintenant — ${fmt(ht)} FCFA/an`
+    : `Commencer maintenant — ${fmt(ht)} FCFA/mois`;
+  // Prix barré annuel
+  const oldEl = document.getElementById('prodOldPrice');
+  if (billing === 'annual') {
+    oldEl.style.display = 'block';
+    oldEl.textContent = fmt(5000 * 12) + ' FCFA si mensuel × 12';
+  } else {
+    oldEl.style.display = 'none';
+  }
+}
+
 function setBilling(btn) {
   document.querySelectorAll('#toggleBand button').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   billing = btn.dataset.billing;
+  updateProdDisplay();
   updateCoopDisplay();
-  if (selectedPlan === 'cooperative') updateRecap();
+  if (selectedPlan) updateRecap();
   const note = document.getElementById('toggleNote');
-  note.textContent = billing === 'annual' ? '🎉 Économisez ~17% par rapport au mensuel' : '';
+  note.textContent = billing === 'annual' ? '🎉 2 mois offerts — économisez 10 000 FCFA sur le plan Producteur' : '';
 }
 
 function updateCoopDisplay() {
@@ -437,15 +468,8 @@ function updateRecap() {
   let ht, label, duree, detail;
 
   if (selectedPlan === 'producteur') {
-    ht = PRICES.producteur.ht;
-    label = PRICES.producteur.label;
-    duree = PRICES.producteur.duree;
-    detail = '5 000 FCFA HT/mois. Résiliable à tout moment.';
-  } else if (selectedPlan === 'premium') {
-    ht = PRICES.premium.ht;
-    label = PRICES.premium.label;
-    duree = PRICES.premium.duree;
-    detail = '14 900 FCFA HT × 1 campagne. Soit moins de 170 FCFA/jour.';
+    const p = PRICES.producteur[billing];
+    ht = p.ht; label = p.label; duree = p.duree; detail = p.detail;
   } else {
     const p = billing === 'annual' ? PRICES.cooperative.annual : PRICES.cooperative.monthly;
     ht = p.ht; label = p.label; duree = p.duree;
@@ -460,7 +484,7 @@ function updateRecap() {
   document.getElementById('recapOffre').textContent = label;
   document.getElementById('recapDuree').textContent = duree;
   document.getElementById('recapHT').textContent = fmt(ht) + ' FCFA';
-  document.getElementById('recapTVA').textContent = fmt(vat) + ' FCFA';
+  document.getElementById('recapTVA').textContent = fmt(vat) + ' FCFA (18%)';
   document.getElementById('recapTotal').textContent = fmt(ttc) + ' FCFA';
   document.getElementById('recapDetail').textContent = detail;
 }
@@ -480,9 +504,9 @@ async function initierPaiement() {
 
   const provider = document.querySelector('input[name="provider"]:checked')?.value || 'wave';
   const phone = document.getElementById('phoneInput').value.replace(/\s/g,'') || null;
-  const planMap = { producteur: 'producteur', premium: 'producteur', cooperative: 'cooperative' };
+  const planMap = { producteur: 'premium', cooperative: 'cooperative' };
   const plan = planMap[selectedPlan] || selectedPlan;
-  const billingVal = selectedPlan === 'premium' ? 'campaign' : billing;
+  const billingVal = billing;
 
   const btn = document.getElementById('btnPayer');
   const msg = document.getElementById('payMsg');
@@ -526,6 +550,7 @@ async function initierPaiement() {
 }
 
 // Init
+updateProdDisplay();
 updateCoopDisplay();
 </script>
 </body>

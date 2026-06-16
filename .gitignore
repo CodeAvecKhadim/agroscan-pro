@@ -18,3 +18,10 @@ app.backup-*/
 
 # Fichiers de démo / exemples lourds
 exemple_rapport.pdf
+
+# Uploads terrain et sauvegardes (données production)
+uploads/
+backups/postgres/
+backups/uploads/
+*.tar.gz
+*.sql.gz
