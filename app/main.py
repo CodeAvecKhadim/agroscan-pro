@@ -32,6 +32,7 @@ from app.core.limiter import limiter
 from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin, conseiller, rapports_pdf
 from app.routers import beta_admin as beta_admin_router
 from app.routers import observations_terrain as obs_terrain_router
+from app.routers import account as account_router
 from app.routers import sante_cultures as sante_cultures_router
 from app.routers import satellite
 from app.routers import otp as otp_router
@@ -147,6 +148,7 @@ app.include_router(rapports_pdf.router)
 app.include_router(otp_router.router)
 app.include_router(beta_admin_router.router)
 app.include_router(obs_terrain_router.router)
+app.include_router(account_router.router)
 
 
 @app.get("/api/health", tags=["Système"])
