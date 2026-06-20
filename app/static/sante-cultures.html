@@ -5,6 +5,8 @@
 <link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A8B4F">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 <title>Santé des Cultures Pro — AgroScan</title>
 <meta property="og:title" content="Santé des cultures Pro — AgroScan">
 <meta property="og:description" content="Score composite, cartes de précision et prévision de rendement.">
@@ -1102,5 +1104,7 @@ async function chargerCarte(type, btn) {
 // ── Init ────────────────────────────────────────────────────────────────────
 chargerParcelles();
 </script>
+<script src="/static/network-status.js"></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(()=>{});</script>
 </body>
 </html>

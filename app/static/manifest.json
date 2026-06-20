@@ -11,19 +11,24 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/static/assets/favicon.png",
+      "src": "/static/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/static/assets/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
-  "screenshots": [],
   "categories": ["agriculture", "productivity"],
   "shortcuts": [
     {
@@ -31,14 +36,21 @@
       "short_name": "Champ",
       "description": "Gérer mes parcelles",
       "url": "/mon-champ",
-      "icons": [{ "src": "/static/assets/favicon.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Activités",
-      "short_name": "Activités",
-      "description": "Calendrier cultural",
-      "url": "/app/activites",
-      "icons": [{ "src": "/static/assets/favicon.png", "sizes": "192x192" }]
+      "name": "Santé des Cultures",
+      "short_name": "Santé",
+      "description": "Analyse satellite et scores",
+      "url": "/sante-cultures",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Météo",
+      "short_name": "Météo",
+      "description": "Conditions météo et alertes",
+      "url": "/meteo",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

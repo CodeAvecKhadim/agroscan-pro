@@ -268,5 +268,7 @@ async function boot() {
 
 boot();
 </script>
+<script src="/static/network-status.js"></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(()=>{});</script>
 </body>
 </html>

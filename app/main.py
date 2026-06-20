@@ -159,6 +159,19 @@ app.mount("/static",  StaticFiles(directory=STATIC_DIR),  name="static")
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    """Sert le Service Worker à la racine pour un scope '/' complet."""
+    return FileResponse(
+        os.path.join(STATIC_DIR, "sw.js"),
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"},
+    )
+
+@app.get("/offline", include_in_schema=False)
+def page_offline():
+    return _page("offline.html")
+
 @app.get("/", include_in_schema=False)
 def index():
     return FileResponse(os.path.join(STATIC_DIR, "vitrine.html"))

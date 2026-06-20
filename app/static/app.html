@@ -491,6 +491,7 @@ function renderAlertes(list) {
 
 boot();
 </script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/static/sw.js').catch(()=>{});</script>
+<script src="/static/network-status.js"></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(()=>{});</script>
 </body>
 </html>

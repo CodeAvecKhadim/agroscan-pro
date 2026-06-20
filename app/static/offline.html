@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A8B4F">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="icon" href="/static/assets/favicon.png">
+<title>Hors ligne — AgroScan Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#0D4D2B;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.logo{width:72px;height:72px;margin-bottom:24px;border-radius:16px;background:#1A8B4F;display:flex;align-items:center;justify-content:center;font-size:2rem}
+h1{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+p{font-size:.95rem;opacity:.8;line-height:1.6;max-width:320px;margin-bottom:32px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:10px 20px;font-size:.85rem;margin-bottom:16px}
+.dot{width:10px;height:10px;border-radius:50%;background:#ef4444;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.btn{display:inline-block;margin-top:8px;padding:14px 28px;background:#1A8B4F;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:#136B3C}
+.tip{margin-top:32px;font-size:.8rem;opacity:.5;max-width:280px}
+</style>
+</head>
+<body>
+<div class="logo">🌱</div>
+<div class="badge"><span class="dot"></span> Hors ligne</div>
+<h1>Pas de connexion internet</h1>
+<p>AgroScan Pro fonctionne partiellement hors ligne. Vos données mises en cache restent accessibles.</p>
+<a href="/app" class="btn">Retour au tableau de bord</a>
+<p class="tip">Les analyses satellite, la météo et l'IA nécessitent une connexion. Vos parcelles sont disponibles en cache.</p>
+<script>
+window.addEventListener('online', () => {
+  document.querySelector('.dot').style.background = '#22c55e';
+  document.querySelector('.badge').lastChild.textContent = ' En ligne — reconnexion…';
+  setTimeout(() => { location.href = document.referrer || '/app'; }, 1200);
+});
+</script>
+</body>
+</html>
