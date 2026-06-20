@@ -31,12 +31,14 @@ from app.core.database import Base, engine
 from app.core.limiter import limiter
 from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin, conseiller, rapports_pdf
 from app.routers import beta_admin as beta_admin_router
+from app.routers import observations_terrain as obs_terrain_router
 from app.routers import sante_cultures as sante_cultures_router
 from app.routers import satellite
 from app.routers import otp as otp_router
 from app.routers import app_activites, app_exploitation, app_photo, app_satellite, app_export_pdf, app_export_excel
 from app.services.crop_health import identifier_maladie, CropHealthError
 import app.models.beta  # noqa: F401 — enregistre la table beta_logs dans Base.metadata
+import app.models.observations_terrain  # noqa: F401 — enregistre la table observations_terrain
 import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* dans Base.metadata
 import app.models.otp  # noqa: F401 — enregistre la table otp_records dans Base.metadata
 import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
@@ -144,6 +146,7 @@ app.include_router(conseiller.router)
 app.include_router(rapports_pdf.router)
 app.include_router(otp_router.router)
 app.include_router(beta_admin_router.router)
+app.include_router(obs_terrain_router.router)
 
 
 @app.get("/api/health", tags=["Système"])

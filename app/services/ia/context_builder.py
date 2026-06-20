@@ -15,6 +15,7 @@ from app.models.sante import Consultation, Diagnostic, StatutConsultation
 from app.models.ferme import Activite, StatutActivite
 from app.models.meteo import Alerte, ConditionMeteo, NiveauAlerte
 from app.models.ia import ConfigIA
+from app.models.observations_terrain import ObservationTerrain
 from app.schemas.ia import ContexteAgro
 from app.services.ia.quota import limites
 
@@ -219,6 +220,81 @@ def build_contexte(
                 "sous_type":  a.sous_type,
             })
 
+    # ── Observations terrain (7 derniers jours) ───────────────────────────────
+    obs_ctx: list = []
+    depuis_obs = now - timedelta(days=7)
+    parc_ids_obs = [p.id for p in parcelles_db]
+    # Inclure obs avec parcelle_id dans la liste ET obs sans parcelle (org-wide)
+    q_obs = (db.query(ObservationTerrain)
+             .filter(ObservationTerrain.org_id == org_id,
+                     ObservationTerrain.date_observation >= depuis_obs.date())
+             .order_by(ObservationTerrain.date_observation.desc())
+             .limit(14))
+    if True:  # toujours exécuter
+        obs_list = q_obs.all()
+        for o in obs_list:
+            entry: dict = {"date": o.date_observation.isoformat()}
+            if o.irrigation_effectuee is not None:
+                entry["irrigation"] = o.irrigation_effectuee
+            if o.pluie_observee is not None:
+                entry["pluie"] = o.pluie_observee
+            if o.etat_feuilles:
+                entry["etat_feuilles"] = o.etat_feuilles
+            if o.ravageurs_observes is not None:
+                entry["ravageurs"] = o.ravageurs_observes
+            if o.maladie_observee is not None:
+                entry["maladie"] = o.maladie_observee
+            if o.confiance_observation:
+                entry["confiance"] = o.confiance_observation
+            if o.notes:
+                entry["notes"] = o.notes
+            # Trouver le nom de la parcelle
+            for p in parcelles_db:
+                if p.id == o.parcelle_id:
+                    entry["parcelle"] = p.nom
+                    break
+            obs_ctx.append(entry)
+
+    # ── Dernière analyse satellite réelle (NDVI / NDWI / LST) ────────────────
+    satellite_ctx: dict = {}
+    if parc_ids_obs:
+        try:
+            from app.models.analyses_satellite import AnalyseSatellite
+            sat = (db.query(AnalyseSatellite)
+                   .filter(AnalyseSatellite.org_id == org_id,
+                           AnalyseSatellite.parcelle_id.in_(parc_ids_obs))
+                   .order_by(AnalyseSatellite.date.desc())
+                   .first())
+            if sat:
+                satellite_ctx = {
+                    "date":    sat.date.isoformat() if sat.date else None,
+                    "ndvi":    float(sat.ndvi_moyen) if sat.ndvi_moyen is not None else None,
+                    "ndwi":    float(sat.ndwi)      if sat.ndwi      is not None else None,
+                    "source":  sat.source or "sentinel-2",
+                    "etat":    sat.couleur or "inconnu",
+                    "message": sat.message_simple,
+                }
+        except Exception:
+            pass
+        # Fallback sc_indices_satellitaires si analyses_satellite vide
+        if not satellite_ctx:
+            try:
+                from app.models.sante_cultures import ScIndicesSatellitaires
+                idx = (db.query(ScIndicesSatellitaires)
+                       .filter(ScIndicesSatellitaires.parcelle_id.in_(parc_ids_obs))
+                       .order_by(ScIndicesSatellitaires.date_image.desc())
+                       .first())
+                if idx:
+                    satellite_ctx = {
+                        "date":   idx.date_image.isoformat() if idx.date_image else None,
+                        "ndvi":   idx.ndvi,
+                        "ndwi":   idx.ndwi,
+                        "lst_c":  idx.temperature_canopee,
+                        "source": idx.satellite or "sentinel-2",
+                    }
+            except Exception:
+                pass
+
     # ── Rules Engine ──────────────────────────────────────────────────────────
     regles_ctx: dict = {"declenchees": []}
     if not config or config.inclure_regles:
@@ -258,6 +334,8 @@ def build_contexte(
         "ferme": ferme_ctx,
         "meteo": meteo_ctx,
         "regles": regles_ctx,
+        "observations_terrain": obs_ctx,
+        "satellite": satellite_ctx,
     }, ensure_ascii=False)
     tokens_estimes = len(contenu_estime) // 4  # ~4 chars/token
 
@@ -268,6 +346,8 @@ def build_contexte(
         ferme=ferme_ctx,
         meteo=meteo_ctx,
         regles=regles_ctx,
+        observations_terrain=obs_ctx,
+        satellite=satellite_ctx,
         date_contexte=now.date().isoformat(),
         tokens_estimes=tokens_estimes,
     )
@@ -336,6 +416,46 @@ def contexte_to_texte(ctx: ContexteAgro, max_chars: int = 8000) -> str:
             lignes.append(f"• PLANIFIÉ {a['date']} {a['type']} — {a['titre']}")
         if ctx.ferme.get("cout_mois_fcfa"):
             lignes.append(f"Coûts mois : {ctx.ferme['cout_mois_fcfa']:,} FCFA")
+
+    # Données satellite réelles
+    sat = ctx.satellite if ctx.satellite else {}
+    if sat:
+        lignes.append(f"\n--- DERNIÈRE ANALYSE SATELLITE ({sat.get('source','').upper()}) ---")
+        lignes.append(f"Date image : {sat.get('date','?')}")
+        if sat.get('ndvi') is not None:
+            lignes.append(f"NDVI (vigueur végétale) : {sat['ndvi']:.3f}")
+        if sat.get('ndwi') is not None:
+            lignes.append(f"NDWI (eau/stress hydrique) : {sat['ndwi']:.3f}")
+        if sat.get('lst_c') is not None:
+            lignes.append(f"LST (température canopée) : {sat['lst_c']:.1f}°C")
+        if sat.get('etat'):
+            lignes.append(f"État global : {sat['etat']}")
+        if sat.get('message'):
+            lignes.append(f"Diagnostic : {sat['message']}")
+
+    # Observations terrain (7 derniers jours)
+    obs = ctx.observations_terrain if ctx.observations_terrain else []
+    if obs:
+        lignes.append(f"\n--- OBSERVATIONS TERRAIN (7 derniers jours, {len(obs)} entrée(s)) ---")
+        for o in obs[:7]:
+            parts = [f"{o.get('date','?')}"]
+            if o.get('parcelle'):
+                parts.append(f"[{o['parcelle']}]")
+            if o.get('irrigation') is not None:
+                parts.append(f"irrigation={'OUI' if o['irrigation'] else 'NON'}")
+            if o.get('pluie') is not None:
+                parts.append(f"pluie={'OUI' if o['pluie'] else 'NON'}")
+            if o.get('etat_feuilles'):
+                parts.append(f"feuilles={o['etat_feuilles']}")
+            if o.get('ravageurs') is not None and o['ravageurs']:
+                parts.append("⚠️ RAVAGEURS OBSERVÉS")
+            if o.get('maladie') is not None and o['maladie']:
+                parts.append("⚠️ MALADIE OBSERVÉE")
+            if o.get('confiance'):
+                parts.append(f"confiance={o['confiance']}")
+            if o.get('notes'):
+                parts.append(f"notes: {o['notes']}")
+            lignes.append("• " + " | ".join(parts))
 
     # Rules déclenchées
     if ctx.regles.get("declenchees"):

@@ -184,14 +184,16 @@ class FeedbackOut(BaseModel):
 # ── Contexte (debug/preview) ──────────────────────────────────────────────────
 
 class ContexteAgro(BaseModel):
-    producteur:   dict
-    parcelles:    list[dict]
-    sante:        dict
-    ferme:        dict
-    meteo:        dict
-    regles:       dict
-    date_contexte: str
-    tokens_estimes: int
+    producteur:           dict
+    parcelles:            list[dict]
+    sante:                dict
+    ferme:                dict
+    meteo:                dict
+    regles:               dict
+    observations_terrain: list[dict] = []
+    satellite:            dict       = {}
+    date_contexte:        str
+    tokens_estimes:       int
 
 
 # ── Question rapide (sans conversation) ──────────────────────────────────────
