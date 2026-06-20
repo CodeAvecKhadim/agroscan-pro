@@ -134,6 +134,7 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
         "org": user.org_id,
         "role": user.role.value,
         "profil": user.profil,
+        "is_beta": bool(getattr(user, "is_beta", False)),
     })
     return TokenOut(access_token=token)
 
@@ -190,10 +191,15 @@ def forgot_password(request: Request, data: dict, db: Session = Depends(get_db))
     En production, brancher un service SMS/email ici.
     """
     email = data.get("email", "").strip().lower()
-    user = db.query(User).filter(User.email == email).first()
-    # Répondre OK même si email inconnu (sécurité : pas d'énumération)
+    phone = data.get("phone", "").strip()
+    user = None
+    if email:
+        user = db.query(User).filter(User.email == email).first()
+    if not user and phone:
+        user = _find_user_by_phone(phone, db)
+    # Répondre OK même si inconnu (sécurité : pas d'énumération)
     if not user:
-        return {"message": "Si cet email existe, un code de réinitialisation a été envoyé."}
+        return {"message": "Si ce compte existe, un code de réinitialisation a été envoyé."}
 
     token = _gen_token(32)
     user.reset_token = token

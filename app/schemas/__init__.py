@@ -42,6 +42,10 @@ class UserOut(BaseModel):
     email_verified: bool = False
     phone_verified: bool = False
     is_active: bool = True
+    is_beta: bool = False
+    beta_badge: Optional[str] = None
+    beta_permissions: Optional[List[str]] = None
+    beta_max_parcelles: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 

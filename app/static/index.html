@@ -178,7 +178,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
       <div class="card pad">
         <div class="tabs2"><button class="on" id="tabLogin" onclick="authTab('login')">Connexion</button><button id="tabReg" onclick="authTab('register')">Créer un compte</button></div>
         <div id="formLogin">
-          <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="vous@exemple.sn"></div>
+          <div class="field"><label>Email ou Téléphone</label><input type="text" id="lEmail" placeholder="vous@exemple.sn ou 77 XXX XX XX" autocomplete="username"></div>
           <div class="field"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
           <button class="btn btn-primary btn-block" onclick="doLogin()">Se connecter →</button>
           <div style="text-align:center;margin-top:12px"><a href="#" onclick="showReset();return false;" style="font-size:.82rem;color:var(--brand);text-decoration:none;font-weight:600">Mot de passe oublié ?</a></div>
@@ -192,7 +192,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
           <!-- Étape 1 : email -->
           <div id="resetStep1">
             <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:14px">Saisissez votre adresse email. Vous recevrez un code de réinitialisation.</p>
-            <div class="field"><label>Email</label><input type="email" id="rEmail2" placeholder="vous@exemple.sn"></div>
+            <div class="field"><label>Email <span style="opacity:.6;font-size:.82em;font-weight:400">(comptes avec email uniquement)</span></label><input type="email" id="rEmail2" placeholder="vous@exemple.sn"></div>
             <button class="btn btn-primary btn-block" onclick="sendResetCode()">Envoyer le code →</button>
           </div>
           <!-- Étape 2 : code + nouveau mdp -->
@@ -208,7 +208,7 @@ footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:.82rem;bor
         </div>
         <div id="formReg" style="display:none">
           <div class="field"><label>Nom complet</label><input type="text" id="rName" placeholder="Modou Diop"></div>
-          <div class="field"><label>Email</label><input type="email" id="rEmail" placeholder="vous@exemple.sn"></div>
+          <div class="field"><label>Email <span style="opacity:.6;font-size:.82em;font-weight:400">(optionnel)</span></label><input type="email" id="rEmail" placeholder="vous@exemple.sn"></div>
           <div class="field"><label>Téléphone / WhatsApp</label><input type="text" id="rPhone" placeholder="78 000 00 00"></div>
           <div class="field"><label>Mot de passe</label><input type="password" id="rPass" placeholder="6 caractères minimum"></div>
           <label class="check"><input type="checkbox" id="rCoop" onchange="document.getElementById('coopName').style.display=this.checked?'block':'none'"> Je représente une coopérative</label>
@@ -387,7 +387,7 @@ async function doRegister(){
     const body={full_name:rName.value,email:rEmail.value,phone:rPhone.value,password:rPass.value,is_cooperative:rCoop.checked,org_name:rCoop.checked?rOrg.value:null};
     await api("/api/auth/register",{method:"POST",body:JSON.stringify(body)});
     toast("Compte créé ! Connexion…","ok");
-    lEmail.value=rEmail.value; lPass.value=rPass.value; await doLogin();
+    lEmail.value=rEmail.value||rPhone.value; lPass.value=rPass.value; await doLogin();
   }catch(e){toast(e.detail||"Échec de l'inscription","err");}
 }
 function _decodeJWT(token){

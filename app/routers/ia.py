@@ -101,8 +101,9 @@ def creer_conversation(
         raise HTTPException(429, raison)
 
     if payload.parcelle_id:
+        from app.models.champ import StatutParcelle
         p = db.query(Parcelle).filter_by(id=payload.parcelle_id, org_id=user.org_id).first()
-        if not p:
+        if not p or p.statut == StatutParcelle.ARCHIVE:
             raise HTTPException(404, "Parcelle introuvable")
 
     conv = Conversation(
@@ -268,8 +269,9 @@ def analyser_parcelle(
     db: Session    = Depends(get_db),
 ):
     """Crée une conversation en mode analyse_parcelle et génère l'analyse complète."""
+    from app.models.champ import StatutParcelle
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
-    if not p:
+    if not p or p.statut == StatutParcelle.ARCHIVE:
         raise HTTPException(404, "Parcelle introuvable")
 
     plan = _get_plan(db, user.org_id)

@@ -93,6 +93,8 @@ def my_subscription(
 ):
     """Abonnement courant + jours de campagne restants."""
     remaining = remaining_campaign_days(sub)
+    is_trial = sub.status == SubStatus.TRIAL
+    trial_expired = sub.status == SubStatus.EXPIRED and sub.plan == PlanType.GRATUIT
     return {
         "plan": sub.plan.value,
         "status": sub.status.value,
@@ -102,6 +104,9 @@ def my_subscription(
         "campaign_billing": sub.campaign_billing or "monthly",
         "remaining_days": remaining,
         "is_active": sub.status in (SubStatus.ACTIVE, SubStatus.TRIAL),
+        "is_trial": is_trial,
+        "trial_days_remaining": remaining if is_trial else None,
+        "trial_expired": trial_expired,
     }
 
 
@@ -201,7 +206,7 @@ def initiate_checkout(
     sub.plan = data.plan
     sub.seats = seats
     sub.status = SubStatus.PAST_DUE
-    sub.campaign_billing = data.billing if data.plan == PlanType.COOPERATIVE else "campaign"
+    sub.campaign_billing = data.billing  # monthly | annual — conservé pour PREMIUM et COOPERATIVE
     db.add(payment)
     db.commit()
     db.refresh(payment)

@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 import os
+from datetime import datetime, timezone
 
 from app.core.config import settings
 
@@ -29,11 +30,13 @@ if settings.SENTRY_DSN:
 from app.core.database import Base, engine
 from app.core.limiter import limiter
 from app.routers import auth, analyses, billing, coop, fertilite, credits, parcelles, agronomie, rules_engine, champ, sante, ferme, meteo, ia, admin, conseiller, rapports_pdf
+from app.routers import beta_admin as beta_admin_router
 from app.routers import sante_cultures as sante_cultures_router
 from app.routers import satellite
 from app.routers import otp as otp_router
 from app.routers import app_activites, app_exploitation, app_photo, app_satellite, app_export_pdf, app_export_excel
 from app.services.crop_health import identifier_maladie, CropHealthError
+import app.models.beta  # noqa: F401 — enregistre la table beta_logs dans Base.metadata
 import app.models.sante_cultures  # noqa: F401 — enregistre les tables sc_* dans Base.metadata
 import app.models.otp  # noqa: F401 — enregistre la table otp_records dans Base.metadata
 import app.models.satellite  # noqa: F401 — enregistre les tables satellite dans Base.metadata
@@ -55,6 +58,39 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Bêta-testeurs — journalisation des actions terrain
+class BetaLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return response
+        from app.core.security import decode_token
+        payload = decode_token(auth_header[7:])
+        if not payload or not payload.get("is_beta"):
+            return response
+        try:
+            from app.core.database import SessionLocal
+            from app.models.beta import BetaLog
+            db = SessionLocal()
+            try:
+                log = BetaLog(
+                    user_id=int(payload["sub"]),
+                    method=request.method,
+                    path=request.url.path,
+                    status_code=response.status_code,
+                    details=None,
+                    created_at=datetime.now(timezone.utc),
+                )
+                db.add(log)
+                db.commit()
+            finally:
+                db.close()
+        except Exception:
+            pass  # ne jamais bloquer une requête pour cause de log raté
+        return response
+
+
 # Security headers middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -68,6 +104,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(BetaLoggingMiddleware)
 
 # CORS : origines explicites. Configurer ALLOWED_ORIGINS dans .env pour la production.
 _origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
@@ -106,6 +143,7 @@ app.include_router(admin.router)
 app.include_router(conseiller.router)
 app.include_router(rapports_pdf.router)
 app.include_router(otp_router.router)
+app.include_router(beta_admin_router.router)
 
 
 @app.get("/api/health", tags=["Système"])
@@ -273,6 +311,6 @@ async def scan_maladie(photo: UploadFile = File(...)):
     if len(contenu) > 8 * 1024 * 1024:   # garde-fou : 8 Mo max
         raise HTTPException(status_code=413, detail="Photo trop lourde (max 8 Mo).")
     try:
-        return identifier_maladie(contenu, langue="fr")
+        return identifier_maladie([contenu], langue="fr")
     except CropHealthError as e:
         raise HTTPException(status_code=502, detail=str(e))

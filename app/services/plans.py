@@ -54,9 +54,9 @@ PLAN_FEATURES = {
         "weekly_satellite": None,        # illimité
         "max_seats": 1,
         # Tarification
-        "price_ht": settings.PRICE_PREMIUM_HT,           # 14 900 FCFA / campagne
-        "duration_days": settings.PRICE_PREMIUM_DURATION_DAYS,  # 90 jours
-        "price_ht_annual": None,
+        "price_ht": settings.PRICE_PREMIUM_HT,               # 5 000 FCFA / mois
+        "duration_days": settings.PRICE_PREMIUM_DURATION_DAYS,  # 30 jours
+        "price_ht_annual": settings.PRICE_PREMIUM_HT_ANNUAL,  # 50 000 FCFA / an
         # Fonctionnalités
         "precision_agriculture": True,
         "ndvi_satellite": True,
@@ -134,20 +134,22 @@ def features_for(plan: PlanType) -> dict:
 def price_ttc(plan: PlanType, billing: str = "monthly") -> dict:
     """Calcule le prix TTC (TVA 18 %) en FCFA.
 
-    Pour PREMIUM : billing ignoré — prix par campagne.
-    Pour COOPERATIVE : billing = 'monthly' | 'annual'.
+    PREMIUM : billing = 'monthly' (30j) | 'annual' (365j).
+    COOPERATIVE : billing = 'monthly' | 'annual'.
     """
     feats = PLAN_FEATURES[plan]
     if billing == "annual" and feats.get("price_ht_annual"):
         ht = feats["price_ht_annual"]
+        duration = 365
     else:
         ht = feats["price_ht"]
+        duration = feats.get("duration_days") or 30
     vat = round(ht * settings.VAT_RATE)
     return {
         "ht": ht,
         "vat": vat,
         "ttc": ht + vat,
         "currency": settings.CURRENCY,
-        "billing": billing if plan == PlanType.COOPERATIVE else "campaign",
-        "duration_days": feats.get("duration_days"),
+        "billing": billing,
+        "duration_days": duration,
     }

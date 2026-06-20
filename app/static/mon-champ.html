@@ -303,8 +303,9 @@ input[type=file]{display:none}
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div id="viewList">
   <div class="wrap">
-    <div class="list-topbar">
+    <div class="list-topbar" style="display:flex;justify-content:space-between;align-items:center">
       <h2 id="listTitle">Mes parcelles</h2>
+      <button onclick="ouvrirArchives()" style="font-size:.8rem;color:#6b7280;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#f9fafb">🗑 Supprimées</button>
     </div>
     <div id="parcelleList">
       <div class="loading-state"><div class="spinner"></div><p>Chargement…</p></div>
@@ -691,8 +692,8 @@ input[type=file]{display:none}
       <div class="tab-pane active" id="dInfo">
         <div id="dInfoRows"></div>
         <div class="btn-row" style="margin-top:16px">
-          <button class="btn btn-sm btn-ghost" onclick="archiveDetail()">Archiver</button>
           <button class="btn btn-sm btn-ghost" onclick="dlPDFDetail()">⬇ PDF</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-weight:700" onclick="confirmerSuppression()">🗑 Supprimer</button>
         </div>
       </div>
 
@@ -713,6 +714,33 @@ input[type=file]{display:none}
         <button class="btn btn-ghost" id="btnSatRefresh" style="margin-top:8px;display:none" onclick="refreshSat()">Actualiser l'analyse</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODALE CONFIRMATION SUPPRESSION -->
+<div class="overlay" id="ovSupprimer" onclick="if(event.target===this)fermerModaleSuppression()">
+  <div class="overlay-card" style="padding:24px 20px;max-width:380px;margin:auto;border-radius:16px 16px 0 0">
+    <div style="font-size:1.8rem;text-align:center;margin-bottom:8px">🗑️</div>
+    <h3 style="text-align:center;font-size:1.05rem;margin-bottom:8px">Supprimer la parcelle ?</h3>
+    <p id="suppressionNom" style="text-align:center;font-weight:700;color:var(--gdeep);margin-bottom:12px"></p>
+    <p style="font-size:.84rem;color:#6b7280;text-align:center;margin-bottom:20px">
+      La parcelle sera archivée et masquée. Vous pourrez la restaurer depuis la vue <b>Parcelles supprimées</b>.
+    </p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="fermerModaleSuppression()">Annuler</button>
+      <button class="btn" style="flex:1;background:#dc2626;color:#fff;font-weight:700" onclick="confirmerSuppressionOK()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- VUE PARCELLES ARCHIVÉES -->
+<div class="overlay" id="ovArchives" onclick="if(event.target===this)fermerArchives()">
+  <div class="overlay-card" style="padding:20px;max-height:80vh;overflow-y:auto;border-radius:16px 16px 0 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700">Parcelles supprimées</h3>
+      <button onclick="fermerArchives()" style="font-size:1.3rem;color:var(--ink-soft);padding:2px 8px">✕</button>
+    </div>
+    <div id="listeArchives"><p style="color:#6b7280;font-size:.88rem">Chargement…</p></div>
   </div>
 </div>
 
@@ -1768,17 +1796,68 @@ function switchTab(btn, paneId) {
   }
 }
 
-async function archiveDetail() {
+function confirmerSuppression() {
   if (!state.detailParcelle) return;
-  if (!confirm(`Archiver "${state.detailParcelle.nom}" ?`)) return;
+  document.getElementById('suppressionNom').textContent = `"${state.detailParcelle.nom}"`;
+  document.getElementById('ovSupprimer').classList.add('open');
+}
+
+function fermerModaleSuppression() {
+  document.getElementById('ovSupprimer').classList.remove('open');
+}
+
+async function confirmerSuppressionOK() {
+  if (!state.detailParcelle) return;
+  fermerModaleSuppression();
   try {
-    await api(`/api/champ/parcelles/${state.detailParcelle.id}`, {
-      method:'PUT', body: JSON.stringify({statut:'archive'})
-    });
-    toast('Parcelle archivée','ok');
+    await api(`/api/champ/parcelles/${state.detailParcelle.id}`, {method:'DELETE'});
+    toast('Parcelle supprimée. Retrouvez-la dans "Supprimées".','ok');
     closeDetail();
     loadParcelles();
-  } catch(e) { toast(e.detail||'Erreur','err'); }
+  } catch(e) { toast(e.detail||'Erreur lors de la suppression','err'); }
+}
+
+async function ouvrirArchives() {
+  document.getElementById('ovArchives').classList.add('open');
+  const el = document.getElementById('listeArchives');
+  el.innerHTML = '<p style="color:#6b7280;font-size:.88rem">Chargement…</p>';
+  try {
+    const liste = await api('/api/champ/parcelles/archivees');
+    if (!liste.length) {
+      el.innerHTML = '<p style="color:#6b7280;font-size:.88rem;text-align:center;padding:20px 0">Aucune parcelle supprimée.</p>';
+      return;
+    }
+    el.innerHTML = liste.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">
+        <div>
+          <div style="font-weight:700;font-size:.92rem">${p.nom}</div>
+          <div style="font-size:.78rem;color:#6b7280">${p.type_culture||'—'} · ${p.superficie_ha ? p.superficie_ha.toFixed(2)+' ha' : 'N/A'}</div>
+          ${p.deleted_at ? `<div style="font-size:.74rem;color:#9ca3af">Supprimée le ${new Date(p.deleted_at).toLocaleDateString('fr-FR')}</div>` : ''}
+        </div>
+        <button onclick="restaurerParcelle(${p.id},'${p.nom.replace(/'/g,'\\\'')}')"
+          style="font-size:.8rem;padding:6px 12px;border:1px solid #10b981;border-radius:8px;color:#10b981;background:#f0fdf4;font-weight:700">
+          ↩ Restaurer
+        </button>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<p style="color:#dc2626;font-size:.88rem">Erreur de chargement.</p>'; }
+}
+
+function fermerArchives() {
+  document.getElementById('ovArchives').classList.remove('open');
+}
+
+async function restaurerParcelle(id, nom) {
+  try {
+    await api(`/api/champ/parcelles/${id}/restaurer`, {method:'POST'});
+    toast(`"${nom}" restaurée avec succès.`,'ok');
+    fermerArchives();
+    loadParcelles();
+  } catch(e) { toast(e.detail||'Erreur lors de la restauration','err'); }
+}
+
+// Conservé pour compatibilité (bouton "Archiver" supprimé mais appelé depuis d'autres contextes éventuels)
+async function archiveDetail() {
+  confirmerSuppression();
 }
 
 function dlPDFDetail() {

@@ -95,6 +95,11 @@ class User(Base):
     phone_verified = Column(Boolean, default=False)
     phone_otp = Column(String(8), nullable=True)
     phone_otp_expires = Column(DateTime(timezone=True), nullable=True)
+    # Bêta-testeurs terrain
+    is_beta = Column(Boolean, default=False)
+    beta_badge = Column(String(64), nullable=True)
+    beta_permissions = Column(JSON, nullable=True)
+    beta_max_parcelles = Column(Integer, nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     analyses = relationship("Analysis", back_populates="user")
@@ -224,3 +229,6 @@ from app.models.satellite import (  # noqa: F401, E402
 
 # OTP SMS — stockage sécurisé des codes OTP
 from app.models.otp import OTPRecord  # noqa: F401, E402
+
+# Bêta-testeurs — journalisation actions terrain
+from app.models.beta import BetaLog  # noqa: F401, E402

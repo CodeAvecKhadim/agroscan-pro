@@ -27,8 +27,11 @@ EVALSCRIPT_S2_INDICES = """
 //VERSION=3
 function setup() {
   return {
-    input: [{ bands: ["B02", "B03", "B04", "B08", "B8A", "B11", "CLM"] }],
-    output: { bands: 7, sampleType: "FLOAT32" }
+    input: [{ bands: ["B02", "B03", "B04", "B08", "B8A", "B11", "CLM", "dataMask"] }],
+    output: [
+      { id: "default", bands: 7, sampleType: "FLOAT32" },
+      { id: "dataMask", bands: 1 }
+    ]
   };
 }
 function evaluatePixel(s) {
@@ -40,7 +43,10 @@ function evaluatePixel(s) {
   let msavi = (2*s.B08 + 1 - Math.sqrt(Math.pow(2*s.B08 + 1, 2) - 8*(s.B08 - s.B04))) / 2;
   let ndwi  = (s.B03 - s.B11) / (s.B03 + s.B11 + 1e-10);
   let cloud = s.CLM;
-  return [ndvi, ndre, savi, evi, msavi, ndwi, cloud];
+  return {
+    default: [ndvi, ndre, savi, evi, msavi, ndwi, cloud],
+    dataMask: [s.dataMask]
+  };
 }
 """
 
@@ -117,13 +123,15 @@ def _fetch_via_sentinelhub(
             def mean(band_key):
                 return stats.get(band_key, {}).get("stats", {}).get("mean")
 
-            cloud_mean = mean("B7")
+            # Named output "default" → bandes indexées B0–B6 (0-based)
+            # Ordre evalscript : [ndvi, ndre, savi, evi, msavi, ndwi, cloud]
+            cloud_mean = mean("B6")
             if cloud_mean is not None and cloud_mean > 0.9:
                 continue  # image trop nuageuse
 
-            ndvi_val = mean("B1")
-            evi_val  = mean("B4")
-            ndwi_val = mean("B6")
+            ndvi_val = mean("B0")
+            evi_val  = mean("B3")
+            ndwi_val = mean("B5")
             # NDMI ≈ NDWI avec bandes B8A/B11 — approximé depuis NDWI avec facteur 1.15
             ndmi_val = round(ndwi_val * 1.15, 3) if ndwi_val is not None else None
             # Biomasse (t MS/ha) estimée depuis EVI (priorité) ou NDVI
@@ -136,10 +144,10 @@ def _fetch_via_sentinelhub(
 
             return {
                 "ndvi":               ndvi_val,
-                "ndre":               mean("B2"),
-                "savi":               mean("B3"),
+                "ndre":               mean("B1"),
+                "savi":               mean("B2"),
                 "evi":                evi_val,
-                "msavi":              mean("B5"),
+                "msavi":              mean("B4"),
                 "ndwi":               ndwi_val,
                 "ndmi":               ndmi_val,
                 "biomasse":           biomasse_val,

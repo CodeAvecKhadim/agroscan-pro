@@ -47,12 +47,15 @@ def current_subscription(user: User = Depends(current_user),
     sub = db.query(Subscription).filter(Subscription.org_id == user.org_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Aucun abonnement trouvé.")
-    # Rétrogradation automatique si période échue
+    # Rétrogradation automatique si période échue (TRIAL ou plan payant)
     end = sub.current_period_end
     if end is not None and end.tzinfo is None:
         end = end.replace(tzinfo=timezone.utc)
-    if (end and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc)):
+    was_trial = sub.status == SubStatus.TRIAL
+    if end and sub.status in (SubStatus.TRIAL, SubStatus.ACTIVE) and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc):
         sub.status = SubStatus.EXPIRED
+        if was_trial:
+            sub.plan = PlanType.GRATUIT
         db.commit()
     return sub
 
@@ -168,11 +171,18 @@ def enforce_parcelle_limit(user: User = Depends(current_user),
     feats = features_for(plan)
     max_p = feats["max_parcelles"]
 
-    if max_p is None:
-        return user  # illimité
+    if max_p is None and not getattr(user, "is_beta", False):
+        return user  # illimité (plan payant, non-bêta)
 
-    from app.models.champ import Parcelle
-    count = db.query(Parcelle).filter_by(org_id=user.org_id).count()
+    # Bêta-testeurs : limite stricte définie sur le compte
+    if getattr(user, "is_beta", False):
+        max_p = user.beta_max_parcelles or 1
+
+    from app.models.champ import Parcelle, StatutParcelle
+    count = db.query(Parcelle).filter(
+        Parcelle.org_id == user.org_id,
+        Parcelle.statut != StatutParcelle.ARCHIVE,
+    ).count()
     if count >= max_p:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
