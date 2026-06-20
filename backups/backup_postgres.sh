@@ -63,19 +63,17 @@ DELETED=$(find "$BACKUP_DIR" -name "agroscan_*.sql.gz" -mtime +${RETENTION_DAYS}
 [ "$DELETED" -gt 0 ] && log "Rotation: $DELETED anciens backups supprimés (>${RETENTION_DAYS}j)"
 
 # ── Sync Backblaze B2 ─────────────────────────────────────────────────────────
-# Pré-requis: rclone configuré avec profil "b2agroscan" (voir /etc/rclone_agroscan.conf)
-# Pour activer: décommenter les lignes ci-dessous après avoir fourni les credentials B2.
-# if command -v rclone &>/dev/null && [ -f /etc/rclone_agroscan.conf ]; then
-#     log "Sync B2 → rclone copy en cours..."
-#     if rclone copy "$BACKUP_FILE" b2agroscan:agroscan-backups-prod/postgres/ \
-#          --config /etc/rclone_agroscan.conf --quiet 2>>"$LOG_FILE"; then
-#         log "Sync B2: OK ($(basename "$BACKUP_FILE") uploadé)"
-#     else
-#         log "AVERTISSEMENT: Sync B2 échoué — backup local conservé"
-#     fi
-# else
-#     log "INFO: Sync B2 désactivé (rclone ou config manquante)"
-# fi
+if command -v rclone &>/dev/null && [ -f /etc/rclone_agroscan.conf ]; then
+    log "Sync B2 → upload en cours..."
+    if rclone copy "$BACKUP_FILE" b2agroscan:agroscan-backups-prod/postgres/ \
+         --config /etc/rclone_agroscan.conf --quiet 2>>"$LOG_FILE"; then
+        log "Sync B2: OK — $(basename "$BACKUP_FILE") sécurisé sur Backblaze"
+    else
+        log "AVERTISSEMENT: Sync B2 échoué — backup local conservé (vérifier /etc/rclone_agroscan.conf)"
+    fi
+else
+    log "INFO: Sync B2 désactivé (rclone ou /etc/rclone_agroscan.conf manquant)"
+fi
 
 # ── Résumé + statut ───────────────────────────────────────────────────────────
 NB_BACKUPS=$(find "$BACKUP_DIR" -name "agroscan_*.sql.gz" | wc -l)
