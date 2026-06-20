@@ -134,6 +134,7 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Ses
         "org": user.org_id,
         "role": user.role.value,
         "profil": user.profil,
+        "is_beta": bool(getattr(user, "is_beta", False)),
     })
     return TokenOut(access_token=token)
 

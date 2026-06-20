@@ -48,6 +48,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .badge.premium{background:var(--gold);color:#fff}
 .badge.trial{background:#f59e0b;color:#fff}
 .badge.cooperative{background:var(--accent);color:#fff}
+.badge.beta{background:linear-gradient(135deg,#166534,#15803d);color:#fff;letter-spacing:.06em}
 .lk{color:#fff;font-size:.82rem;opacity:.8;cursor:pointer;white-space:nowrap}
 .lk:hover{opacity:1}
 
@@ -323,20 +324,30 @@ async function boot() {
       premium: 'Premium',
       cooperative: 'Coopérative',
     };
-    badge.textContent = planLabels[sub.plan] || sub.plan;
-    badge.className = 'badge ' + sub.plan;
 
-    // Message sous greeting
-    if (sub.plan === 'gratuit') {
-      document.getElementById('greetSub').textContent = 'Plan Gratuit — 2 parcelles, 3 analyses IA/jour';
-    } else if (sub.plan === 'premium') {
-      const days = sub.remaining_days;
-      document.getElementById('greetSub').textContent =
-        days != null ? `Campagne Premium — ${days} jour${days !== 1 ? 's' : ''} restant${days !== 1 ? 's' : ''}` :
-        'Plan Premium actif';
+    // Bêta-testeurs terrain
+    const isBeta = me.is_beta || me.profil === 'BETA_TESTEUR';
+    if (isBeta) {
+      badge.textContent = me.beta_badge || 'BÊTA TERRAIN';
+      badge.className = 'badge beta';
+      const perms = (me.beta_permissions || []).join(', ');
+      document.getElementById('greetSub').textContent = `Testeur Bêta — 1 parcelle · ${perms || 'accès bêta'}`;
     } else {
-      const billing = sub.campaign_billing === 'annual' ? 'annuel' : 'mensuel';
-      document.getElementById('greetSub').textContent = `Coopérative (${billing}) — accès multi-exploitation`;
+      badge.textContent = planLabels[sub.plan] || sub.plan;
+      badge.className = 'badge ' + sub.plan;
+
+      // Message sous greeting
+      if (sub.plan === 'gratuit') {
+        document.getElementById('greetSub').textContent = 'Plan Gratuit — 2 parcelles, 3 analyses IA/jour';
+      } else if (sub.plan === 'premium') {
+        const days = sub.remaining_days;
+        document.getElementById('greetSub').textContent =
+          days != null ? `Campagne Premium — ${days} jour${days !== 1 ? 's' : ''} restant${days !== 1 ? 's' : ''}` :
+          'Plan Premium actif';
+      } else {
+        const billing = sub.campaign_billing === 'annual' ? 'annuel' : 'mensuel';
+        document.getElementById('greetSub').textContent = `Coopérative (${billing}) — accès multi-exploitation`;
+      }
     }
 
     // Tuile coopérative (plan cooperative uniquement)
@@ -350,22 +361,22 @@ async function boot() {
       mods.appendChild(coopEl);
     }
 
-    // CTA upgrade
-    if (sub.is_trial) {
-      // Essai en cours — bannière compte à rebours
-      document.getElementById('planCard').style.display = 'flex';
-      const d = sub.trial_days_remaining;
-      document.getElementById('planCardTitle').textContent = `🎁 Essai Premium — ${d} jour${d !== 1 ? 's' : ''} restant${d !== 1 ? 's' : ''}`;
-      document.getElementById('planCardSub').textContent = 'Accès complet gratuit. Souscrivez avant la fin pour ne pas perdre vos données.';
-      badge.className = 'badge trial';
-      badge.textContent = 'Essai';
-    } else if (sub.plan === 'gratuit') {
-      document.getElementById('planCard').style.display = 'flex';
-    } else if (sub.plan === 'premium' && sub.remaining_days != null && sub.remaining_days <= 14) {
-      // Alerte renouvellement proche
-      document.getElementById('planCard').style.display = 'flex';
-      document.getElementById('planCardTitle').textContent = `⏳ Campagne expire dans ${sub.remaining_days} jours`;
-      document.getElementById('planCardSub').textContent = 'Renouvelez pour continuer à utiliser toutes les fonctionnalités.';
+    // CTA upgrade — masqué pour les bêta-testeurs
+    if (!isBeta) {
+      if (sub.is_trial) {
+        document.getElementById('planCard').style.display = 'flex';
+        const d = sub.trial_days_remaining;
+        document.getElementById('planCardTitle').textContent = `🎁 Essai Premium — ${d} jour${d !== 1 ? 's' : ''} restant${d !== 1 ? 's' : ''}`;
+        document.getElementById('planCardSub').textContent = 'Accès complet gratuit. Souscrivez avant la fin pour ne pas perdre vos données.';
+        badge.className = 'badge trial';
+        badge.textContent = 'Essai';
+      } else if (sub.plan === 'gratuit') {
+        document.getElementById('planCard').style.display = 'flex';
+      } else if (sub.plan === 'premium' && sub.remaining_days != null && sub.remaining_days <= 14) {
+        document.getElementById('planCard').style.display = 'flex';
+        document.getElementById('planCardTitle').textContent = `⏳ Campagne expire dans ${sub.remaining_days} jours`;
+        document.getElementById('planCardSub').textContent = 'Renouvelez pour continuer à utiliser toutes les fonctionnalités.';
+      }
     }
 
     // Load data in parallel

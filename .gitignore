@@ -23,5 +23,7 @@ exemple_rapport.pdf
 uploads/
 backups/postgres/
 backups/uploads/
+backups/logs/
 *.tar.gz
 *.sql.gz
+*.log

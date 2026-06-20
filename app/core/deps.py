@@ -171,8 +171,12 @@ def enforce_parcelle_limit(user: User = Depends(current_user),
     feats = features_for(plan)
     max_p = feats["max_parcelles"]
 
-    if max_p is None:
-        return user  # illimité
+    if max_p is None and not getattr(user, "is_beta", False):
+        return user  # illimité (plan payant, non-bêta)
+
+    # Bêta-testeurs : limite stricte définie sur le compte
+    if getattr(user, "is_beta", False):
+        max_p = user.beta_max_parcelles or 1
 
     from app.models.champ import Parcelle, StatutParcelle
     count = db.query(Parcelle).filter(
