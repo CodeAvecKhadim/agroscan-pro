@@ -829,8 +829,21 @@ async function loadParcelles() {
     renderParcelles();
     document.getElementById('topSub').textContent =
       `${state.parcelles.length} parcelle${state.parcelles.length > 1 ? 's' : ''}`;
+    if (window.IDB) IDB.saveParcelles(state.parcelles).catch(() => {});
   } catch(e) {
     if (e.status === 401) { localStorage.removeItem('agro_token'); location.href = '/login'; }
+    if (!navigator.onLine && window.IDB) {
+      try {
+        const cached = await IDB.getParcelles();
+        if (cached.length) {
+          state.parcelles = cached;
+          renderParcelles();
+          document.getElementById('topSub').textContent =
+            `${cached.length} parcelle${cached.length > 1 ? 's' : ''} (hors-ligne)`;
+          return;
+        }
+      } catch (_) {}
+    }
     document.getElementById('parcelleList').innerHTML =
       '<div style="text-align:center;padding:24px;color:var(--soft)">Erreur de chargement</div>';
   }
@@ -946,6 +959,24 @@ async function submitStep1() {
   const culture = document.getElementById('s1Culture').value;
   if (!nom) { toast('Veuillez saisir le nom de la parcelle', 'err'); return; }
   if (!culture) { toast('Veuillez sélectionner une culture principale', 'err'); return; }
+
+  if (!navigator.onLine && window.IDB) {
+    const body = JSON.stringify({
+      nom,
+      type_culture: culture,
+      source_eau_principale: eau || null,
+      type_irrigation: irrig || null,
+      etape_wizard: 2,
+    });
+    try {
+      await IDB.addToQueue('/api/champ/parcelles', 'POST', body);
+      if (window.AgroSync) AgroSync.registerBackgroundSync().catch(() => {});
+      toast('💾 Parcelle sauvegardée hors-ligne. Synchronisation auto dès connexion.', 'ok');
+    } catch (_) {
+      toast('⚠️ Impossible de sauvegarder hors-ligne', 'err');
+    }
+    return;
+  }
 
   try {
     const p = await api('/api/champ/parcelles', {
@@ -1894,10 +1925,14 @@ function goToStep(n) {
   if (n === 12) finalizeActivation();
 
   // Save wizard progress
-  if (state.parcelleId && n > 1) {
-    api(`/api/champ/parcelles/${state.parcelleId}`, {
-      method:'PUT', body:JSON.stringify({etape_wizard:n})
-    }).catch(()=>{});
+  if (state.parcelleId && n > 1 && !String(state.parcelleId).startsWith('offline_')) {
+    const body = JSON.stringify({ etape_wizard: n });
+    if (!navigator.onLine && window.IDB) {
+      IDB.addToQueue(`/api/champ/parcelles/${state.parcelleId}`, 'PUT', body).catch(() => {});
+      if (window.AgroSync) AgroSync.registerBackgroundSync().catch(() => {});
+    } else {
+      api(`/api/champ/parcelles/${state.parcelleId}`, { method:'PUT', body }).catch(()=>{});
+    }
   }
 
   window.scrollTo({top:0, behavior:'smooth'});
@@ -1906,6 +1941,8 @@ function goToStep(n) {
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 showList();
 </script>
+<script src="/static/idb.js"></script>
+<script src="/static/sync-manager.js"></script>
 <script src="/static/network-status.js"></script>
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(()=>{});</script>
 </body>

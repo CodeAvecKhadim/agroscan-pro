@@ -447,6 +447,9 @@ select,input,textarea{font-family:inherit}
   <!-- ══ VUE RÉSULTATS ════════════════════════════════════════════════════ -->
   <div class="view" id="v-result">
 
+    <!-- Bannière données hors-ligne -->
+    <div id="offline-data-banner" style="display:none;background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#856404;font-weight:600"></div>
+
     <!-- Score principal -->
     <div class="score-hero" id="result-hero">
       <div class="score-etat" id="r-etat">—</div>
@@ -599,7 +602,19 @@ async function chargerParcelles() {
     document.getElementById('nb-parcelles').textContent = parcelles.length + ' parcelle' + (parcelles.length > 1 ? 's' : '');
     renderParcelles(parcelles);
     chargerCultures();
+    if (window.IDB) IDB.saveParcelles(parcelles).catch(() => {});
   } catch (e) {
+    if (window.IDB) {
+      try {
+        const cached = await IDB.getParcelles();
+        if (cached.length) {
+          renderParcelles(cached);
+          chargerCultures();
+          document.getElementById('nb-parcelles').textContent = cached.length + ' parcelle' + (cached.length > 1 ? 's' : '') + ' (hors-ligne)';
+          return;
+        }
+      } catch (_) {}
+    }
     document.getElementById('parc-list').innerHTML =
       '<div class="empty"><div class="empty-ico">⚠️</div><p>Erreur de chargement. Vérifiez votre connexion.</p></div>';
   }
@@ -746,6 +761,26 @@ async function lancerAnalyse() {
   if (!culture) { toast('⚠️ Sélectionnez une culture'); return; }
   if (!currentParcelle) { toast('⚠️ Aucune parcelle sélectionnée'); return; }
 
+  if (!navigator.onLine && window.IDB) {
+    try {
+      const cached = await IDB.getAnalyse(currentParcelle.id);
+      if (cached && cached.full_result) {
+        afficherResultats(cached.full_result);
+        const syncDate = new Date(cached.cached_at).toLocaleDateString('fr-FR', {
+          day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+        });
+        const banner = document.getElementById('offline-data-banner');
+        if (banner) {
+          banner.textContent = '📶 Données hors-ligne — dernière synchronisation : ' + syncDate;
+          banner.style.display = 'block';
+        }
+        return;
+      }
+    } catch (_) {}
+    toast('⚠️ Hors-ligne — aucune analyse cachée pour cette parcelle');
+    return;
+  }
+
   const body = {
     culture_nom:  culture,
     parcelle_id:  currentParcelle.id,
@@ -817,6 +852,18 @@ function demarrerPolling() {
         clearInterval(pollingTimer);
         document.getElementById('btn-analyser').disabled = false;
         afficherResultats(res);
+        if (window.IDB && currentParcelle) {
+          const idx = res.indices || {};
+          IDB.saveAnalyse({
+            parcelle_id: currentParcelle.id,
+            ndvi:        idx.ndvi_brut != null ? idx.ndvi_brut : null,
+            ndwi:        idx.ndwi_brut != null ? idx.ndwi_brut : null,
+            lst:         res.temperature_surface != null ? res.temperature_surface : null,
+            date_image:  idx.date_image || null,
+            source:      idx.source || 'sentinel-2',
+            full_result: res,
+          }).catch(() => {});
+        }
       } else if (res.statut === 'erreur') {
         clearInterval(pollingTimer);
         document.getElementById('btn-analyser').disabled = false;
@@ -847,6 +894,8 @@ function scoreFill(s) {
 }
 
 function afficherResultats(res) {
+  const banner = document.getElementById('offline-data-banner');
+  if (banner) banner.style.display = 'none';
   // Hero score
   const score = Math.round(res.score_sante || 0);
   const etat = (res.etat_general || 'moyen');
@@ -1104,6 +1153,8 @@ async function chargerCarte(type, btn) {
 // ── Init ────────────────────────────────────────────────────────────────────
 chargerParcelles();
 </script>
+<script src="/static/idb.js"></script>
+<script src="/static/sync-manager.js"></script>
 <script src="/static/network-status.js"></script>
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(()=>{});</script>
 </body>

@@ -1,16 +1,17 @@
 /**
- * AgroScan Pro — Service Worker v2
+ * AgroScan Pro — Service Worker v3
  * Scope : / (servi via /sw.js avec header Service-Worker-Allowed: /)
  * Stratégies :
  *   - Pages HTML terrain : network-first + fallback cache + offline.html
  *   - Assets statiques   : cache-first (stale-while-revalidate)
  *   - API GET cachables  : stale-while-revalidate 24h
  *   - API sensibles      : network-only (auth, billing, IA, satellite write)
+ *   - Background Sync    : agroscan-sync-queue
  *   - Push notifications : implémentées
  */
 
-const CACHE_NAME    = 'agroscan-v2';
-const CACHE_API     = 'agroscan-api-v2';
+const CACHE_NAME    = 'agroscan-v3';
+const CACHE_API     = 'agroscan-api-v3';
 const CACHE_24H_MS  = 24 * 60 * 60 * 1000;
 
 // ── Pages terrain à précacher ─────────────────────────────────────────────────
@@ -32,6 +33,8 @@ const PRECACHE_ASSETS = [
   '/static/i18n.js',
   '/static/i18n/fr.json',
   '/static/network-status.js',
+  '/static/idb.js',
+  '/static/sync-manager.js',
   '/static/css/agroscan.css',
   '/static/css/design-system.css',
   '/static/assets/favicon.png',
@@ -238,6 +241,18 @@ self.addEventListener('push', event => {
       actions:           data.actions || [],
     })
   );
+});
+
+// ── Background Sync ───────────────────────────────────────────────────────────
+
+self.addEventListener('sync', event => {
+  if (event.tag === 'agroscan-sync-queue') {
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => client.postMessage({ type: 'TRIGGER_SYNC' }));
+      })
+    );
+  }
 });
 
 self.addEventListener('notificationclick', event => {
