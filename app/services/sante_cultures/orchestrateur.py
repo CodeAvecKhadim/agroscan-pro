@@ -208,6 +208,7 @@ def _run_pipeline(
                 ndmi         = raw_indices.get("ndmi"),
                 biomasse     = labels.get("biomasse"),
                 couverture_nuages = raw_indices.get("couverture_nuages"),
+                temperature_canopee = raw_indices.get("temperature_surface"),
                 ndvi_label   = labels.get("ndvi_label"),
                 ndre_label   = labels.get("ndre_label"),
                 savi_label   = labels.get("savi_label"),

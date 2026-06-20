@@ -1,6 +1,7 @@
 """
-SatelliteService — Sentinel Hub Process API (Sentinel-2).
-Calcule NDVI, NDRE, SAVI, EVI, MSAVI, NDWI, NDMI, biomasse côté serveur Copernicus.
+SatelliteService — Sentinel Hub (Sentinel-2 + Landsat 8/9).
+Calcule NDVI, NDRE, SAVI, EVI, MSAVI, NDWI, NDMI, biomasse (Sentinel-2 L2A)
+et température de surface LST (Landsat 8/9 L2 B10, en °C).
 
 Credentials requis dans .env :
   SENTINELHUB_CLIENT_ID=
@@ -163,6 +164,85 @@ def _fetch_via_sentinelhub(
         return None
 
 
+EVALSCRIPT_LANDSAT_LST = """
+//VERSION=3
+function setup() {
+  return {
+    input: [{ bands: ["B10", "dataMask"] }],
+    output: [
+      { id: "default", bands: 1, sampleType: "FLOAT32" },
+      { id: "dataMask", bands: 1 }
+    ]
+  };
+}
+function evaluatePixel(s) {
+  // B10 Landsat L2 déjà en Kelvin — conversion directe en Celsius
+  let lst_celsius = s.B10 - 273.15;
+  return { default: [lst_celsius], dataMask: [s.dataMask] };
+}
+"""
+
+
+def _fetch_lst_landsat(bbox: tuple, date_debut: date, date_fin: date) -> Optional[float]:
+    """Température de surface (LST) via Landsat 8/9 L2 B10.
+
+    Retourne LST moyenne en °C ou None si indisponible.
+    Landsat 8/9 résolution thermique : 100m (rééchantillonné 30m).
+    """
+    try:
+        from sentinelhub import SHConfig, BBox, CRS, DataCollection, SentinelHubStatistical
+    except ImportError:
+        return None
+
+    client_id     = getattr(settings, "SENTINELHUB_CLIENT_ID",     "")
+    client_secret = getattr(settings, "SENTINELHUB_CLIENT_SECRET", "")
+    if not client_id or not client_secret:
+        return None
+
+    try:
+        config = SHConfig()
+        config.sh_client_id     = client_id
+        config.sh_client_secret = client_secret
+
+        sh_bbox = BBox(bbox=bbox, crs=CRS.WGS84)
+
+        req = SentinelHubStatistical(
+            aggregation=SentinelHubStatistical.aggregation(
+                evalscript=EVALSCRIPT_LANDSAT_LST,
+                time_interval=(date_debut.isoformat(), date_fin.isoformat()),
+                aggregation_interval="P5D",
+                resolution=(30, 30),
+            ),
+            input_data=[SentinelHubStatistical.input_data(DataCollection.LANDSAT_OT_L2)],
+            bbox=sh_bbox,
+            config=config,
+        )
+
+        data = req.get_data()[0]
+        valid = [
+            e for e in data.get("data", [])
+            if e.get("outputs", {}).get("default", {}).get("bands")
+        ]
+        if not valid:
+            return None
+
+        # Prendre la valeur la plus récente
+        entry = valid[-1]
+        lst_mean = (
+            entry["outputs"]["default"]["bands"]
+            .get("B0", {}).get("stats", {}).get("mean")
+        )
+        if lst_mean is None or lst_mean < -50 or lst_mean > 80:
+            return None
+
+        log.info("LST Landsat OK — %.1f°C (%s)", lst_mean, entry["interval"]["from"][:10])
+        return round(lst_mean, 1)
+
+    except Exception as e:
+        log.warning("LST Landsat error: %s", e)
+        return None
+
+
 def _indices_simules(mois: int, culture_nom: str) -> dict:
     """Valeurs simulées quand Sentinel Hub n'est pas configuré.
 
@@ -203,9 +283,10 @@ def _indices_simules(mois: int, culture_nom: str) -> dict:
         "ndwi":               round(ndwi, 3),
         "ndmi":               ndmi,
         "biomasse":           biomasse,
-        "couverture_nuages":  5.0,
-        "date_image":         date.today().isoformat(),
+        "couverture_nuages":    5.0,
+        "date_image":           date.today().isoformat(),
         "sentinelhub_request_id": None,
+        "temperature_surface":  None,
         "source": "simule",
     }
 
@@ -250,8 +331,14 @@ def fetch_indices(
 
         if result:
             result["source"] = "sentinel_hub"
-            log.info("Sentinel Hub OK — NDVI=%.3f, nuages=%.1f%%",
-                     result.get("ndvi", 0), result.get("couverture_nuages", 0))
+            # LST Landsat — fenêtre 45 jours (passages moins fréquents que S2)
+            lst = _fetch_lst_landsat(bbox, today - timedelta(days=45), today)
+            result["temperature_surface"] = lst
+            log.info(
+                "Sentinel Hub OK — NDVI=%.3f, nuages=%.1f%%, LST=%s°C",
+                result.get("ndvi", 0), result.get("couverture_nuages", 0),
+                lst if lst is not None else "N/A",
+            )
             return result
 
         log.warning("Sentinel Hub retourne pas de données valides → indices simulés")
