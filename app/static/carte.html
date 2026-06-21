@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -47,6 +47,13 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .spin{animation:spin .8s linear infinite}
 </style>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xaeuhh2o1y");
+</script>
 </head>
 
 <body class="bg-slate-100 select-none">
@@ -606,7 +613,14 @@ setTimeout(()=>map.invalidateSize(), 200);
       +'.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee;font-size:15px}.l{color:#64748b}.v{font-weight:600;text-align:right;margin-left:14px}'
       +'.ft{margin-top:22px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b;text-align:center}'
       +'.b{margin:18px 0}.b button{padding:13px 18px;border:0;border-radius:10px;font-size:15px;font-weight:700;background:#16a34a;color:#fff}@media print{.b{display:none}}';
-    var h='<html><head><meta charset="utf-8"><title>Rapport - '+d.nom+'</title><style>'+css+'</style></head><body>'
+    var h='<html><head><meta charset="utf-8"><title>Rapport - '+d.nom+'</title><style>'+css+'</style><script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xaeuhh2o1y");
+</script>
+</head><body>'
       +'<div class="hdr"><div><div class="brand">AgroScan Pro</div><div class="sub">Rapport de parcelle</div></div><div class="date">'+d.date+'</div></div>'
       +'<div class="st">1. Identification</div>'+row('Nom',d.nom)+row('Culture',d.culture)+row('Date',d.date)
       +'<div class="st">2. Localisation</div>'+row('Coordonnees (centre)',d.coord)+row('Region',enr.region)+row('Departement',enr.dep)+row('Commune / localite',enr.commune)+row('Altitude',enr.alt)
