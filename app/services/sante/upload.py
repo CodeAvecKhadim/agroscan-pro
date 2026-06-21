@@ -33,17 +33,17 @@ async def save_photo(file: UploadFile, type_upload: str) -> dict:
     Remplacer uniquement cette fonction pour migrer vers S3.
     """
     if type_upload not in _SOUS_DOSSIERS:
-        raise HTTPException(400, f"type_upload invalide : {type_upload}")
+        raise HTTPException(status_code=400, detail=f"type_upload invalide : {type_upload}")
 
     contenu = await file.read()
     if not contenu:
-        raise HTTPException(400, "Fichier vide.")
+        raise HTTPException(status_code=400, detail="Fichier vide.")
     if len(contenu) > _MAX_TAILLE:
-        raise HTTPException(413, "Photo trop lourde (max 8 Mo).")
+        raise HTTPException(status_code=413, detail="Photo trop lourde (max 8 Mo).")
 
     mime = file.content_type or ""
     if mime not in _MIME_AUTORISE:
-        raise HTTPException(415, f"Format non supporté : {mime}. Acceptés : JPEG, PNG, WebP.")
+        raise HTTPException(status_code=415, detail=f"Format non supporté : {mime}. Acceptés : JPEG, PNG, WebP.")
 
     ext      = _ext_from_mime(mime)
     filename = f"{uuid.uuid4().hex}{ext}"

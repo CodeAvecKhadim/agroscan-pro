@@ -250,7 +250,7 @@ def rapport_sante(
          .filter_by(id=consultation_id, org_id=user.org_id)
          .first())
     if not c:
-        raise HTTPException(404, "Consultation introuvable.")
+        raise HTTPException(status_code=404, detail="Consultation introuvable.")
 
     pdf_bytes = _build_sante_pdf(c, user.full_name)
     return _stream(pdf_bytes, f"sante_consultation_{consultation_id}.pdf")
@@ -362,7 +362,7 @@ def rapport_satellite(
     """Rapport PDF Précision Satellite — NDVI, indices et analyse sol."""
     parcelle = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not parcelle:
-        raise HTTPException(404, "Parcelle introuvable.")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
 
     analyses = (db.query(AnalyseSatellite)
                 .filter_by(parcelle_id=parcelle_id, org_id=user.org_id)
@@ -593,7 +593,7 @@ def rapport_fertilite(
     """Rapport PDF Fertilité — profil chimique du sol + recommandations."""
     parcelle = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not parcelle:
-        raise HTTPException(404, "Parcelle introuvable.")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
 
     sols = (db.query(AnalyseSol)
             .filter_by(parcelle_id=parcelle_id)
@@ -759,7 +759,7 @@ def rapport_rendement(
     """Rapport PDF Rendement — récolte, coûts, ROI et activités campagne."""
     parcelle = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not parcelle:
-        raise HTTPException(404, "Parcelle introuvable.")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
 
     activites = (db.query(Activite)
                  .filter_by(parcelle_id=parcelle_id, org_id=user.org_id)

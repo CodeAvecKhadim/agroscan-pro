@@ -138,7 +138,7 @@ def detail_testeur(
     from fastapi import HTTPException
     user = db.query(User).filter(User.id == user_id, User.is_beta == True).first()  # noqa: E712
     if not user:
-        raise HTTPException(404, "Bêta-testeur introuvable.")
+        raise HTTPException(status_code=404, detail="Bêta-testeur introuvable.")
     return _stats_for(user, db)
 
 

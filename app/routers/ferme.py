@@ -50,7 +50,7 @@ def _get_activite(db: Session, aid: int, org_id: int) -> Activite:
          .filter_by(id=aid, org_id=org_id)
          .first())
     if not a:
-        raise HTTPException(404, "Activité introuvable.")
+        raise HTTPException(status_code=404, detail="Activité introuvable.")
     return a
 
 
@@ -149,7 +149,7 @@ def modifier_activite(
 ):
     a = _get_activite(db, aid, user.org_id)
     if a.statut == StatutActivite.ANNULE:
-        raise HTTPException(400, "Activité annulée, non modifiable.")
+        raise HTTPException(status_code=400, detail="Activité annulée, non modifiable.")
     for field, val in data.model_dump(exclude_none=True).items():
         setattr(a, field, val)
     a.updated_at = datetime.now(timezone.utc)
@@ -167,7 +167,7 @@ def annuler_activite(
 ):
     a = _get_activite(db, aid, user.org_id)
     if a.statut == StatutActivite.TERMINE:
-        raise HTTPException(400, "Activité terminée, impossible d'annuler.")
+        raise HTTPException(status_code=400, detail="Activité terminée, impossible d'annuler.")
     a.statut     = StatutActivite.ANNULE
     a.updated_at = datetime.now(timezone.utc)
     db.commit()
@@ -264,7 +264,7 @@ def supprimer_preuve(
 ):
     p = db.query(Preuve).filter_by(id=pid, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Preuve introuvable.")
+        raise HTTPException(status_code=404, detail="Preuve introuvable.")
     delete_preuve(p.filename)
     db.delete(p)
     db.commit()
@@ -323,7 +323,7 @@ def modifier_cout(
 ):
     c = db.query(Cout).filter_by(id=cid, org_id=user.org_id).first()
     if not c:
-        raise HTTPException(404, "Coût introuvable.")
+        raise HTTPException(status_code=404, detail="Coût introuvable.")
     for field, val in data.model_dump(exclude_none=True).items():
         setattr(c, field, val)
     # Recalcul si quantite ou prix changé mais pas montant
@@ -343,7 +343,7 @@ def supprimer_cout(
 ):
     c = db.query(Cout).filter_by(id=cid, org_id=user.org_id).first()
     if not c:
-        raise HTTPException(404, "Coût introuvable.")
+        raise HTTPException(status_code=404, detail="Coût introuvable.")
     db.delete(c)
     db.commit()
 

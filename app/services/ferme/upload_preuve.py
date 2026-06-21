@@ -28,16 +28,16 @@ async def save_preuve(file: UploadFile) -> dict:
     is_video = mime in _MIME_VIDEO
 
     if not is_photo and not is_video:
-        raise HTTPException(415, f"Format non supporté : {mime}. Acceptés : JPEG/PNG/WebP/MP4/MOV/WebM.")
+        raise HTTPException(status_code=415, detail=f"Format non supporté : {mime}. Acceptés : JPEG/PNG/WebP/MP4/MOV/WebM.")
 
     contenu = await file.read()
     if not contenu:
-        raise HTTPException(400, "Fichier vide.")
+        raise HTTPException(status_code=400, detail="Fichier vide.")
 
     max_taille = _MAX_PHOTO if is_photo else _MAX_VIDEO
     if len(contenu) > max_taille:
         limit_mo = max_taille // (1024 * 1024)
-        raise HTTPException(413, f"Fichier trop lourd (max {limit_mo} Mo).")
+        raise HTTPException(status_code=413, detail=f"Fichier trop lourd (max {limit_mo} Mo).")
 
     ext      = _ext_from_mime(mime)
     filename = f"{uuid.uuid4().hex}{ext}"

@@ -20,7 +20,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import current_user, require_role
-from app.models import User, Parcelle, UserRole
+from app.models import User, UserRole
+from app.models.champ import Parcelle
 from app.models.champ import Cartographie
 from app.models.satellite import SatelliteProduct, SatelliteJob, SatelliteConfig, SensorType, JobStatus
 from app.schemas.satellite import (

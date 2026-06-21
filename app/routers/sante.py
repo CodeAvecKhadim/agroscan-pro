@@ -57,7 +57,7 @@ def _get_consultation(db: Session, cid: int, org_id: int) -> Consultation:
          .filter_by(id=cid, org_id=org_id)
          .first())
     if not c:
-        raise HTTPException(404, "Consultation introuvable.")
+        raise HTTPException(status_code=404, detail="Consultation introuvable.")
     return c
 
 
@@ -328,10 +328,10 @@ def confirmer_diagnostic(
 ):
     d = db.query(Diagnostic).filter_by(id=did).first()
     if not d:
-        raise HTTPException(404, "Diagnostic introuvable.")
+        raise HTTPException(status_code=404, detail="Diagnostic introuvable.")
     c = db.query(Consultation).filter_by(id=d.consultation_id, org_id=user.org_id).first()
     if not c:
-        raise HTTPException(403, "Accès refusé.")
+        raise HTTPException(status_code=403, detail="Accès refusé.")
     d.statut       = data.statut
     d.note_expert  = data.note_expert
     d.confirme_par = user.id
@@ -354,7 +354,7 @@ def exclure_diagnostic(
 ):
     d = db.query(Diagnostic).filter_by(id=did).first()
     if not d:
-        raise HTTPException(404, "Diagnostic introuvable.")
+        raise HTTPException(status_code=404, detail="Diagnostic introuvable.")
     db.query(Consultation).filter_by(id=d.consultation_id, org_id=user.org_id).first() or (
         (_ for _ in ()).throw(HTTPException(403, "Accès refusé."))
     )
@@ -422,10 +422,10 @@ def skip_traitement(
 def _get_traitement_auteur(db: Session, tid: int, org_id: int) -> Traitement:
     t = db.query(Traitement).filter_by(id=tid).first()
     if not t:
-        raise HTTPException(404, "Traitement introuvable.")
+        raise HTTPException(status_code=404, detail="Traitement introuvable.")
     c = db.query(Consultation).filter_by(id=t.consultation_id, org_id=org_id).first()
     if not c:
-        raise HTTPException(403, "Accès refusé.")
+        raise HTTPException(status_code=403, detail="Accès refusé.")
     return t
 
 
@@ -483,7 +483,7 @@ def fiche_maladie(
 ):
     m = db.query(Maladie).filter_by(id=mid).first()
     if not m:
-        raise HTTPException(404, "Maladie introuvable.")
+        raise HTTPException(status_code=404, detail="Maladie introuvable.")
     # Données culture-spécifiques si culture_id fourni
     cm: CultureMaladie | None = None
     if culture_id:
@@ -517,7 +517,7 @@ def fiche_ravageur(
 ):
     r = db.query(Ravageur).filter_by(id=rid).first()
     if not r:
-        raise HTTPException(404, "Ravageur introuvable.")
+        raise HTTPException(status_code=404, detail="Ravageur introuvable.")
     cr: CultureRavageur | None = None
     if culture_id:
         cr = (db.query(CultureRavageur)

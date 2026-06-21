@@ -57,9 +57,9 @@ def _get_config(db: Session, org_id: int) -> ConfigIA:
 def _get_conversation(db: Session, conv_id: int, org_id: int) -> Conversation:
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
     if conv.statut == StatutConversation.ARCHIVEE:
-        raise HTTPException(410, "Conversation archivée")
+        raise HTTPException(status_code=410, detail="Conversation archivée")
     return conv
 
 
@@ -98,13 +98,13 @@ def creer_conversation(
     plan = _get_plan(db, user.org_id)
     ok, raison = verifier_quota_conversation(db, user.org_id, plan)
     if not ok:
-        raise HTTPException(429, raison)
+        raise HTTPException(status_code=429, detail=raison)
 
     if payload.parcelle_id:
         from app.models.champ import StatutParcelle
         p = db.query(Parcelle).filter_by(id=payload.parcelle_id, org_id=user.org_id).first()
         if not p or p.statut == StatutParcelle.ARCHIVE:
-            raise HTTPException(404, "Parcelle introuvable")
+            raise HTTPException(status_code=404, detail="Parcelle introuvable")
 
     conv = Conversation(
         org_id      = user.org_id,
@@ -159,7 +159,7 @@ def detail_conversation(
 ):
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=user.org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
     messages = (db.query(MessageIA)
                 .filter_by(conversation_id=conv_id)
                 .order_by(MessageIA.created_at)
@@ -177,7 +177,7 @@ def archiver_conversation(
 ):
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=user.org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
     conv.statut = StatutConversation.ARCHIVEE
     db.commit()
 
@@ -199,7 +199,7 @@ def envoyer_message(
 
     ok, raison = verifier_quota_message(conv, plan)
     if not ok:
-        raise HTTPException(429, raison)
+        raise HTTPException(status_code=429, detail=raison)
 
     return repondre(
         db=db,
@@ -222,7 +222,7 @@ def historique_messages(
 ):
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=user.org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
     messages = (db.query(MessageIA)
                 .filter_by(conversation_id=conv_id)
                 .order_by(MessageIA.created_at)
@@ -272,12 +272,12 @@ def analyser_parcelle(
     from app.models.champ import StatutParcelle
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p or p.statut == StatutParcelle.ARCHIVE:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
 
     plan = _get_plan(db, user.org_id)
     ok, raison = verifier_quota_conversation(db, user.org_id, plan)
     if not ok:
-        raise HTTPException(429, raison)
+        raise HTTPException(status_code=429, detail=raison)
 
     config = _get_config(db, user.org_id)
 
@@ -349,7 +349,7 @@ def apercu_contexte_parcelle(
 ):
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
     plan   = _get_plan(db, user.org_id)
     config = _get_config(db, user.org_id)
     ctx = build_contexte(db, user.org_id, user.id, plan, config, parcelle_id=parcelle_id)
@@ -393,7 +393,7 @@ def detail_recommandation(
 ):
     r = db.query(RecommandationIA).filter_by(id=rec_id, org_id=user.org_id).first()
     if not r:
-        raise HTTPException(404, "Recommandation introuvable")
+        raise HTTPException(status_code=404, detail="Recommandation introuvable")
     if r.statut == StatutReco.NOUVELLE:
         r.statut = StatutReco.VUE
         db.commit()
@@ -409,7 +409,7 @@ def update_statut_reco(
 ):
     r = db.query(RecommandationIA).filter_by(id=rec_id, org_id=user.org_id).first()
     if not r:
-        raise HTTPException(404, "Recommandation introuvable")
+        raise HTTPException(status_code=404, detail="Recommandation introuvable")
     r.statut = payload.statut
     db.commit()
     return {"ok": True, "statut": r.statut}
@@ -428,16 +428,16 @@ def creer_feedback(
 ):
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=user.org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
 
     msg = db.query(MessageIA).filter_by(
         id=payload.message_id, conversation_id=conv_id
     ).first()
     if not msg:
-        raise HTTPException(404, "Message introuvable")
+        raise HTTPException(status_code=404, detail="Message introuvable")
 
     if not payload.valide():
-        raise HTTPException(422, "Fournir au moins note ou utile")
+        raise HTTPException(status_code=422, detail="Fournir au moins note ou utile")
 
     fb = FeedbackIA(
         org_id            = user.org_id,
@@ -463,7 +463,7 @@ def liste_feedback(
 ):
     conv = db.query(Conversation).filter_by(id=conv_id, org_id=user.org_id).first()
     if not conv:
-        raise HTTPException(404, "Conversation introuvable")
+        raise HTTPException(status_code=404, detail="Conversation introuvable")
     fbs = db.query(FeedbackIA).filter_by(conversation_id=conv_id).all()
     return {"feedbacks": [FeedbackOut.model_validate(f).model_dump() for f in fbs], "nb": len(fbs)}
 

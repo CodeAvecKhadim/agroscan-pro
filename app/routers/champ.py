@@ -677,7 +677,7 @@ def _parse_kml_bytes(kml_bytes: bytes) -> List[dict]:
             break
 
     if not coords_text:
-        raise HTTPException(422, "Aucune balise <coordinates> trouvée dans le fichier KML.")
+        raise HTTPException(status_code=422, detail="Aucune balise <coordinates> trouvée dans le fichier KML.")
 
     points = []
     for token in coords_text.split():
@@ -691,7 +691,7 @@ def _parse_kml_bytes(kml_bytes: bytes) -> List[dict]:
                 continue
 
     if len(points) < 3:
-        raise HTTPException(422, f"KML valide mais seulement {len(points)} points — minimum 3 requis pour un polygone.")
+        raise HTTPException(status_code=422, detail=f"KML valide mais seulement {len(points)} points — minimum 3 requis pour un polygone.")
 
     return points
 
@@ -701,7 +701,7 @@ def _parse_geojson_bytes(content: bytes) -> List[dict]:
     try:
         data = _json.loads(content)
     except Exception:
-        raise HTTPException(422, "Fichier GeoJSON invalide (JSON mal formé).")
+        raise HTTPException(status_code=422, detail="Fichier GeoJSON invalide (JSON mal formé).")
 
     coords_list = None
 
@@ -735,7 +735,7 @@ def _parse_geojson_bytes(content: bytes) -> List[dict]:
         coords_list = _extract_polygon(data)
 
     if not coords_list:
-        raise HTTPException(422, "Aucun Polygon trouvé dans le fichier GeoJSON.")
+        raise HTTPException(status_code=422, detail="Aucun Polygon trouvé dans le fichier GeoJSON.")
 
     points = []
     for c in coords_list:
@@ -748,7 +748,7 @@ def _parse_geojson_bytes(content: bytes) -> List[dict]:
                 continue
 
     if len(points) < 3:
-        raise HTTPException(422, f"GeoJSON valide mais seulement {len(points)} points — minimum 3 requis.")
+        raise HTTPException(status_code=422, detail=f"GeoJSON valide mais seulement {len(points)} points — minimum 3 requis.")
     return points
 
 
@@ -758,10 +758,10 @@ def _extract_kml_from_kmz(content: bytes) -> bytes:
         with zipfile.ZipFile(io.BytesIO(content)) as zf:
             kml_files = [n for n in zf.namelist() if n.lower().endswith(".kml")]
             if not kml_files:
-                raise HTTPException(422, "Aucun fichier .kml trouvé dans l'archive KMZ.")
+                raise HTTPException(status_code=422, detail="Aucun fichier .kml trouvé dans l'archive KMZ.")
             return zf.read(kml_files[0])
     except zipfile.BadZipFile:
-        raise HTTPException(422, "Le fichier n'est pas un KMZ valide (archive ZIP corrompue).")
+        raise HTTPException(status_code=422, detail="Le fichier n'est pas un KMZ valide (archive ZIP corrompue).")
 
 
 @router.post("/parcelles/{parcelle_id}/import-kml", response_model=CartographieOut, status_code=201)
@@ -779,7 +779,7 @@ async def importer_kml_kmz(
 
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(413, "Fichier trop volumineux (max 10 Mo).")
+        raise HTTPException(status_code=413, detail="Fichier trop volumineux (max 10 Mo).")
 
     filename = (file.filename or "").lower()
     if filename.endswith(".geojson") or filename.endswith(".json"):

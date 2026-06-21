@@ -18,10 +18,10 @@ def demarrer_activite(
     """Passe en EN_COURS, enregistre GPS + météo au démarrage."""
     if activite.statut == StatutActivite.ANNULE:
         from fastapi import HTTPException
-        raise HTTPException(400, "Activité annulée, impossible de démarrer.")
+        raise HTTPException(status_code=400, detail="Activité annulée, impossible de démarrer.")
     if activite.statut == StatutActivite.TERMINE:
         from fastapi import HTTPException
-        raise HTTPException(400, "Activité déjà terminée.")
+        raise HTTPException(status_code=400, detail="Activité déjà terminée.")
 
     activite.statut            = StatutActivite.EN_COURS
     activite.date_debut        = datetime.now(timezone.utc)

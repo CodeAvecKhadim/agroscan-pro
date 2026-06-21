@@ -24,7 +24,7 @@ router = APIRouter(prefix="/api/conseiller", tags=["Conseiller"])
 def _require_conseiller(user: User = Depends(current_user)) -> User:
     allowed = {UserRole.CONSEILLER, UserRole.ADMIN, UserRole.OWNER, UserRole.SUPER_ADMIN}
     if user.role not in allowed:
-        raise HTTPException(403, "Accès réservé aux conseillers agricoles.")
+        raise HTTPException(status_code=403, detail="Accès réservé aux conseillers agricoles.")
     return user
 
 
@@ -217,11 +217,11 @@ def valider_observation(
         Observation.org_id == user.org_id,
     ).first()
     if not obs:
-        raise HTTPException(404, "Observation introuvable.")
+        raise HTTPException(status_code=404, detail="Observation introuvable.")
 
     commentaire = data.get("commentaire", "").strip()
     if not commentaire:
-        raise HTTPException(422, "Le commentaire de validation est obligatoire.")
+        raise HTTPException(status_code=422, detail="Le commentaire de validation est obligatoire.")
 
     obs.validation_conseiller = f"[{user.full_name}] {commentaire}"
     db.commit()
@@ -268,7 +268,7 @@ def valider_diagnostic(
     """Valide ou infirme un diagnostic automatique."""
     diag = db.query(Diagnostic).filter(Diagnostic.id == diag_id).first()
     if not diag:
-        raise HTTPException(404, "Diagnostic introuvable.")
+        raise HTTPException(status_code=404, detail="Diagnostic introuvable.")
 
     action = data.get("action", "confirmer")
     if action == "confirmer":
@@ -278,7 +278,7 @@ def valider_diagnostic(
         diag.confirme = False
         diag.exclu = True
     else:
-        raise HTTPException(422, "action doit être 'confirmer' ou 'exclure'.")
+        raise HTTPException(status_code=422, detail="action doit être 'confirmer' ou 'exclure'.")
 
     commentaire = data.get("commentaire")
     if commentaire and hasattr(diag, 'commentaire_conseiller'):
@@ -305,7 +305,7 @@ def rapport_conseiller(
         Parcelle.org_id == user.org_id,
     ).first()
     if not parcelle:
-        raise HTTPException(404, "Parcelle introuvable.")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
 
     try:
         from reportlab.lib.pagesizes import A4
@@ -463,7 +463,7 @@ def rapport_conseiller(
         )
 
     except ImportError:
-        raise HTTPException(500, "reportlab non installé. Impossible de générer le PDF.")
+        raise HTTPException(status_code=500, detail="reportlab non installé. Impossible de générer le PDF.")
 
 
 # ── STATISTIQUES GLOBALES ORG ─────────────────────────────────────────────────

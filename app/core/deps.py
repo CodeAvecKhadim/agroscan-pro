@@ -123,3 +123,42 @@ def require_role(*roles: UserRole):
             raise HTTPException(status_code=403, detail="Droits insuffisants.")
         return user
     return checker
+
+
+def require_profil(*profils: str):
+    """Vérifie le rôle utilisateur par nom de chaîne (owner/admin/member/viewer)."""
+    role_map = {r.value: r for r in UserRole}
+    roles = tuple(role_map[p] for p in profils if p in role_map)
+    if not roles:
+        roles = (UserRole.ADMIN,)
+    return require_role(*roles)
+
+
+def enforce_parcelle_limit(user: User = Depends(current_user),
+                           sub: Subscription = Depends(current_subscription),
+                           db: Session = Depends(get_db)) -> User:
+    """Vérifie que l'utilisateur n'a pas dépassé sa limite de parcelles."""
+    from app.services.plans import features_for
+    feats = features_for(sub.plan)
+    limit = feats.get("max_parcelles")
+    if limit is None:
+        return user
+    from app.models.champ import Parcelle as ParcelleModel
+    count = db.query(ParcelleModel).filter(
+        ParcelleModel.user_id == user.id,
+        ParcelleModel.deleted_at.is_(None)
+    ).count()
+    if count >= limit:
+        raise HTTPException(
+            status_code=402,
+            detail=f"Limite de {limit} parcelle(s) atteinte sur votre plan. Passez au plan supérieur.",
+        )
+    return user
+
+
+def effective_plan(sub: "Subscription") -> "PlanType":
+    """Retourne le plan effectif d'un abonnement (gratuit si échu ou résilié)."""
+    from app.models import SubStatus, PlanType
+    if sub.status in (SubStatus.CANCELED, SubStatus.EXPIRED, SubStatus.PAST_DUE):
+        return PlanType.GRATUIT
+    return sub.plan

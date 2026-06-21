@@ -163,7 +163,7 @@ def conditions_parcelle(
 ):
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
     lat, lon = _coords_parcelle(p)
     cond = meteo_cache.get_conditions(db, user.org_id, lat, lon, p.id, p.zone_agro, force_refresh)
     return ConditionOut.model_validate(cond)
@@ -179,7 +179,7 @@ def injecter_conditions(
     """Override conditions depuis capteur terrain (source=capteur)."""
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
 
     now = datetime.now(timezone.utc)
     existing = db.query(ConditionMeteo).filter_by(
@@ -229,7 +229,7 @@ def previsions_parcelle(
 ):
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
     lat, lon = _coords_parcelle(p)
     prev = meteo_cache.get_previsions(
         db, user.org_id, lat, lon, jours, p.id, p.zone_agro, force_refresh
@@ -290,7 +290,7 @@ def detail_alerte(
 ):
     a = db.query(Alerte).filter_by(id=alerte_id, org_id=user.org_id).first()
     if not a:
-        raise HTTPException(404, "Alerte introuvable")
+        raise HTTPException(status_code=404, detail="Alerte introuvable")
     return _alerte_out_enrichie(a, db)
 
 
@@ -302,7 +302,7 @@ def marquer_lue(
 ):
     a = db.query(Alerte).filter_by(id=alerte_id, org_id=user.org_id).first()
     if not a:
-        raise HTTPException(404, "Alerte introuvable")
+        raise HTTPException(status_code=404, detail="Alerte introuvable")
     a.lu    = True
     a.lu_le = datetime.now(timezone.utc)
     db.commit()
@@ -317,7 +317,7 @@ def marquer_action(
 ):
     a = db.query(Alerte).filter_by(id=alerte_id, org_id=user.org_id).first()
     if not a:
-        raise HTTPException(404, "Alerte introuvable")
+        raise HTTPException(status_code=404, detail="Alerte introuvable")
     a.action_prise = True
     a.lu           = True
     a.lu_le        = datetime.now(timezone.utc)
@@ -333,7 +333,7 @@ def supprimer_alerte(
 ):
     a = db.query(Alerte).filter_by(id=alerte_id, org_id=user.org_id).first()
     if not a:
-        raise HTTPException(404, "Alerte introuvable")
+        raise HTTPException(status_code=404, detail="Alerte introuvable")
     db.delete(a)
     db.commit()
 
@@ -412,7 +412,7 @@ def analyser_parcelle(
     """Score risque 0-100 + liste risques + recommandations pour une parcelle."""
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
 
     config = _get_config(db, user.org_id)
     plan   = _get_plan(db, user.org_id)
@@ -552,7 +552,7 @@ def planificateur_parcelle(
 ):
     p = db.query(Parcelle).filter_by(id=parcelle_id, org_id=user.org_id).first()
     if not p:
-        raise HTTPException(404, "Parcelle introuvable")
+        raise HTTPException(status_code=404, detail="Parcelle introuvable")
     recs = (db.query(RecommandationPlan)
             .filter_by(org_id=user.org_id, parcelle_id=parcelle_id)
             .order_by(RecommandationPlan.priorite, RecommandationPlan.date_recommandee)
@@ -589,7 +589,7 @@ def update_statut_plan(
 ):
     r = db.query(RecommandationPlan).filter_by(id=rec_id, org_id=user.org_id).first()
     if not r:
-        raise HTTPException(404, "Recommandation introuvable")
+        raise HTTPException(status_code=404, detail="Recommandation introuvable")
     r.statut = payload.statut
     db.commit()
     return {"ok": True, "statut": r.statut}
