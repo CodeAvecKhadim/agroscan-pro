@@ -167,6 +167,12 @@ select,input,textarea{font-family:inherit}
 .section-title{font-family:var(--title);font-weight:700;font-size:.98rem;color:var(--gdeep);margin-bottom:10px}
 .badge-count{background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.75rem;font-weight:700;margin-left:6px}
 
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--ink);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--g)}
+.search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.88rem;pointer-events:none}
+
 /* BOTTOM NAV */
 .bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
 .bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
@@ -203,6 +209,11 @@ select,input,textarea{font-family:inherit}
     <div class="stat"><div class="n">—</div><div class="l">confirmés</div></div>
   </div>
 
+  <!-- Recherche -->
+  <div class="search-wrap">
+    <input type="search" id="consSearch" placeholder="Rechercher une consultation…" oninput="onConsSearch(this.value)" aria-label="Rechercher une consultation">
+  </div>
+
   <!-- Filtres -->
   <div class="filter-bar">
     <button class="fchip active" data-s="">Toutes</button>
@@ -219,7 +230,7 @@ select,input,textarea{font-family:inherit}
 </div>
 
 <!-- FAB -->
-<button style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewConsultation()">＋</button>
+<button style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewConsultation()" aria-label="Nouvelle consultation">＋</button>
 
 <!-- MODAL: NOUVELLE CONSULTATION -->
 <div class="overlay" id="ovNew" onclick="if(event.target===this)closeSheet('ovNew')">
@@ -227,7 +238,7 @@ select,input,textarea{font-family:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <h2>Nouvelle consultation</h2>
-      <button class="sheet-close" onclick="closeSheet('ovNew')">✕</button>
+      <button class="sheet-close" onclick="closeSheet('ovNew')" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-body">
       <p style="font-size:.85rem;color:var(--soft);margin-bottom:16px">Quel problème observez-vous ?</p>
@@ -298,7 +309,7 @@ select,input,textarea{font-family:inherit}
         <h2 id="detailTitle">Consultation</h2>
         <div id="detailMeta" style="font-size:.74rem;color:var(--soft);margin-top:2px"></div>
       </div>
-      <button class="sheet-close" onclick="closeSheet('ovDetail')">✕</button>
+      <button class="sheet-close" onclick="closeSheet('ovDetail')" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-body">
       <div class="tabs">
@@ -344,7 +355,7 @@ select,input,textarea{font-family:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <h2>Ajouter une observation</h2>
-      <button class="sheet-close" onclick="closeSheet('ovObs')">✕</button>
+      <button class="sheet-close" onclick="closeSheet('ovObs')" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-body">
       <form id="formObs" onsubmit="submitObs(event)">
@@ -524,8 +535,25 @@ async function loadParcelles() {
   } catch(e) {}
 }
 
+let consSearchQuery = '';
+function onConsSearch(val) {
+  consSearchQuery = val.trim().toLowerCase();
+  renderList();
+}
+
 function renderList() {
   const el = document.getElementById('consList');
+  const list = consSearchQuery
+    ? consultations.filter(c =>
+        (c.type || '').toLowerCase().includes(consSearchQuery) ||
+        ((c.contexte && c.contexte.parcelle_nom) || '').toLowerCase().includes(consSearchQuery) ||
+        (c.resume || '').toLowerCase().includes(consSearchQuery)
+      )
+    : consultations;
+  if (list.length === 0 && consSearchQuery) {
+    el.innerHTML = `<div class="empty"><div class="eico">🔍</div><p>Aucun résultat pour « ${escapeHtml(consSearchQuery)} »</p></div>`;
+    return;
+  }
   if (consultations.length === 0) {
     el.innerHTML = `<div class="empty">
       <div class="eico">🩺</div>
@@ -535,7 +563,7 @@ function renderList() {
     return;
   }
   const ICONS = {maladie:'🦠', ravageur:'🐛', fertilisation:'🌿'};
-  el.innerHTML = `<div class="cons-list">${consultations.map(c => {
+  el.innerHTML = `<div class="cons-list">${list.map(c => {
     const dt = new Date(c.created_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'short'});
     const ctx = c.contexte || {};
     const parc = ctx.parcelle_nom || ctx.parcelle_id && `Parcelle #${ctx.parcelle_id}` || 'Toute la ferme';
@@ -648,12 +676,12 @@ async function openDetail(id) {
     document.getElementById('resumeContent').innerHTML = `
       <div class="info-row"><span class="irl">Type</span><span class="irv">${labelType(det.type)}</span></div>
       <div class="info-row"><span class="irl">Statut</span><span class="irv">${labelStatut(det.statut)}</span></div>
-      ${ctx.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${ctx.parcelle_nom}</span></div>` : ''}
-      ${ctx.culture_nom || ctx.type_culture ? `<div class="info-row"><span class="irl">Culture</span><span class="irv">${ctx.culture_nom||ctx.type_culture}</span></div>` : ''}
-      ${ctx.stade_actuel ? `<div class="info-row"><span class="irl">Stade</span><span class="irv">${ctx.stade_actuel}</span></div>` : ''}
+      ${ctx.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${escapeHtml(ctx.parcelle_nom)}</span></div>` : ''}
+      ${ctx.culture_nom || ctx.type_culture ? `<div class="info-row"><span class="irl">Culture</span><span class="irv">${escapeHtml(ctx.culture_nom||ctx.type_culture)}</span></div>` : ''}
+      ${ctx.stade_actuel ? `<div class="info-row"><span class="irl">Stade</span><span class="irv">${escapeHtml(ctx.stade_actuel)}</span></div>` : ''}
       <div class="info-row"><span class="irl">Observations</span><span class="irv">${(det.observations||[]).length}</span></div>
       <div class="info-row"><span class="irl">Photos</span><span class="irv">${det.nb_photos||0}</span></div>
-      ${det.resume ? `<div style="margin-top:10px;padding:12px;background:var(--paper);border-radius:10px;font-size:.84rem;line-height:1.5">${det.resume}</div>` : ''}
+      ${det.resume ? `<div style="margin-top:10px;padding:12px;background:var(--paper);border-radius:10px;font-size:.84rem;line-height:1.5">${escapeHtml(det.resume)}</div>` : ''}
     `;
 
     // Actions
@@ -673,6 +701,16 @@ async function openDetail(id) {
       btnAna.onclick = () => analyser(id, btnAna);
       acts.appendChild(btnAna);
     }
+
+    // PDF download button
+    const btnPdf = document.createElement('a');
+    btnPdf.className = 'btn-outline';
+    btnPdf.style.cssText = 'display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:9px 14px';
+    btnPdf.href = `/api/rapports/sante/${id}`;
+    btnPdf.target = '_blank';
+    btnPdf.textContent = '📄 PDF';
+    btnPdf.setAttribute('aria-label', 'Télécharger rapport PDF de consultation');
+    acts.appendChild(btnPdf);
 
     // Diagnostics
     renderDiagnostics(det.diagnostics || []);

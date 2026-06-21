@@ -54,6 +54,10 @@
 .empty p{font-size:.88rem}
 .loading-state{text-align:center;padding:40px;color:var(--soft)}
 .spinner{display:inline-block;width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--ink);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--g)}
+.search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.88rem;pointer-events:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:.88rem;z-index:200;box-shadow:0 8px 30px -8px rgba(0,0,0,.4);animation:pop .3s;max-width:90%;text-align:center}
@@ -103,6 +107,9 @@
     <button class="chip" data-filtre="realise" onclick="filtrer(this)">✅ Réalisées</button>
   </div>
 
+  <div class="search-wrap">
+    <input type="search" id="actSearch" placeholder="Rechercher une activité…" oninput="onSearch(this.value)" aria-label="Rechercher une activité">
+  </div>
   <p class="section-title" id="sectionTitle">Toutes les activités</p>
   <div id="actsList" class="acts-list">
     <div class="loading-state"><div class="spinner"></div></div>
@@ -124,6 +131,12 @@ if (!TOKEN) location.href = '/login';
 
 let _allActs = [];
 let _filtre = 'tous';
+let _searchText = '';
+
+function onSearch(val) {
+  _searchText = val.trim().toLowerCase();
+  renderList();
+}
 
 function toast(msg, type) {
   const t = document.createElement('div');
@@ -178,11 +191,19 @@ function formatDate(d) {
 }
 
 function renderList() {
-  const list = _filtre === 'tous' ? _allActs : _allActs.filter(a => a.statut_simple === _filtre);
+  let list = _filtre === 'tous' ? _allActs : _allActs.filter(a => a.statut_simple === _filtre);
+  if (_searchText) {
+    list = list.filter(a =>
+      (a.titre || '').toLowerCase().includes(_searchText) ||
+      (a.culture || '').toLowerCase().includes(_searchText) ||
+      (a.parcelle_nom || '').toLowerCase().includes(_searchText)
+    );
+  }
   const el = document.getElementById('actsList');
 
   if (!list.length) {
-    el.innerHTML = '<div class="empty"><div class="eico">🎉</div><p>Aucune activité dans cette catégorie.</p></div>';
+    const msg = _searchText ? `Aucun résultat pour « ${escapeHtml(_searchText)} »` : 'Aucune activité dans cette catégorie.';
+    el.innerHTML = `<div class="empty"><div class="eico">${_searchText ? '🔍' : '🎉'}</div><p>${msg}</p></div>`;
     return;
   }
 

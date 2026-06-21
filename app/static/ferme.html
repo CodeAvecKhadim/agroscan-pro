@@ -137,6 +137,12 @@ select,input,textarea{font-family:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-state{text-align:center;padding:30px;color:var(--soft)}
 
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:.88rem;background:#fff;color:var(--ink);outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--g)}
+.search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.88rem;pointer-events:none}
+
 /* BOTTOM NAV */
 .bottom-menu{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40}
 .bm-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;color:var(--soft);font-size:.65rem;font-weight:600;text-decoration:none;transition:color .15s;border:none;background:none;font-family:inherit;cursor:pointer}
@@ -161,6 +167,7 @@ select,input,textarea{font-family:inherit}
       <div class="tb-title">📋 Ma Ferme</div>
       <div class="tb-sub" id="tbSub">Activités & journal</div>
     </div>
+    <a class="tb-btn" href="/api/rapports/exploitation" target="_blank" style="margin-right:6px;background:rgba(255,255,255,.15);text-decoration:none" title="Rapport exploitation PDF" aria-label="Télécharger rapport PDF exploitation">📄 Rapport</a>
     <button class="tb-btn" id="btnTopAdd" onclick="openNewAct()">+ Activité</button>
   </div>
 </header>
@@ -173,6 +180,10 @@ select,input,textarea{font-family:inherit}
 
   <!-- ACTIVITÉS -->
   <div class="sec-pane active" id="sActivites">
+    <!-- Recherche -->
+    <div class="search-wrap">
+      <input type="search" id="actSearch" placeholder="Rechercher une activité…" oninput="onActSearch(this.value)" aria-label="Rechercher une activité">
+    </div>
     <!-- Filtre statut -->
     <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
       <button class="stag planifie" style="cursor:pointer;border:none;padding:7px 14px;border-radius:20px" onclick="filterAct('')" id="fAll">Toutes</button>
@@ -193,7 +204,7 @@ select,input,textarea{font-family:inherit}
 </div>
 
 <!-- FAB -->
-<button id="fabBtn" style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewAct()">＋</button>
+<button id="fabBtn" style="position:fixed;bottom:76px;right:20px;width:56px;height:56px;border-radius:28px;background:var(--g);color:#fff;font-size:1.6rem;box-shadow:0 6px 24px -6px rgba(5,150,105,.7);display:grid;place-items:center;z-index:30" onclick="openNewAct()" aria-label="Nouvelle activité">＋</button>
 
 <!-- MODAL: NOUVELLE ACTIVITÉ -->
 <div class="overlay" id="ovAct" onclick="if(event.target===this)closeSheet('ovAct')">
@@ -201,7 +212,7 @@ select,input,textarea{font-family:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <h2 id="actModalTitle">Nouvelle activité</h2>
-      <button class="sheet-close" onclick="closeSheet('ovAct')">✕</button>
+      <button class="sheet-close" onclick="closeSheet('ovAct')" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-body">
       <form id="formAct" onsubmit="submitAct(event)">
@@ -263,7 +274,7 @@ select,input,textarea{font-family:inherit}
         <h2 id="dTitle">Activité</h2>
         <div id="dMeta" style="font-size:.74rem;color:var(--soft);margin-top:2px"></div>
       </div>
-      <button class="sheet-close" onclick="closeSheet('ovDetail')">✕</button>
+      <button class="sheet-close" onclick="closeSheet('ovDetail')" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-body">
       <div class="d-tabs">
@@ -504,12 +515,28 @@ function renderActivites() {
     return;
   }
 
+  // Apply search filter
+  const sq = (document.getElementById('actSearch') || {}).value || '';
+  const actSearchQuery = sq.trim().toLowerCase();
+  const filtered = actSearchQuery
+    ? activites.filter(a =>
+        (a.titre || '').toLowerCase().includes(actSearchQuery) ||
+        (a.type || '').toLowerCase().includes(actSearchQuery) ||
+        ((a.contexte && a.contexte.parcelle_nom) || '').toLowerCase().includes(actSearchQuery)
+      )
+    : activites;
+
+  if (actSearchQuery && filtered.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="eico">🔍</div><p>Aucun résultat pour « ${escapeHtml(actSearchQuery)} »</p></div>`;
+    return;
+  }
+
   // Group by statut
   const groups = {
-    en_cours: activites.filter(a => a.statut === 'en_cours'),
-    planifie: activites.filter(a => a.statut === 'planifie'),
-    termine: activites.filter(a => a.statut === 'termine'),
-    annule: activites.filter(a => a.statut === 'annule'),
+    en_cours: filtered.filter(a => a.statut === 'en_cours'),
+    planifie: filtered.filter(a => a.statut === 'planifie'),
+    termine: filtered.filter(a => a.statut === 'termine'),
+    annule: filtered.filter(a => a.statut === 'annule'),
   };
   const labels = {en_cours:'🟡 En cours', planifie:'🔵 Planifiées', termine:'✅ Terminées', annule:'⛔ Annulées'};
 
@@ -550,6 +577,10 @@ function labelStatut(s) {
 function filterAct(statut) {
   actFilter = statut;
   loadActivites(statut);
+}
+
+function onActSearch(val) {
+  renderActivites();
 }
 
 // ── NEW ACTIVITÉ ──
