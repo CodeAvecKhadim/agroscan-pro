@@ -180,6 +180,7 @@ select,input,textarea{font-family:inherit}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -730,7 +731,7 @@ function renderTraitements(traits) {
       <div class="trait-body">
         <div class="trait-name">${t.produit || t.intitule || t.type_traitement.replace(/_/g,' ')}</div>
         <div class="trait-sub">${t.dose ? `Dose: ${t.dose}` : ''}${t.frequence ? ` · ${t.frequence}` : ''}</div>
-        ${t.description ? `<div class="trait-sub" style="margin-top:2px">${t.description}</div>` : ''}
+        ${t.description ? `<div class="trait-sub" style="margin-top:2px">${escapeHtml(t.description)}</div>` : ''}
         ${!done ? `<div class="trait-actions">
           <button class="btn-sm btn-primary btn" style="width:auto;margin:0;padding:6px 12px;font-size:.78rem" onclick="appliquerTrait(${t.id})">Appliqué ✓</button>
           <button class="btn-sm btn" style="width:auto;margin:0;padding:6px 12px;font-size:.78rem;background:var(--paper);color:var(--soft)" onclick="skipTrait(${t.id})">Passer</button>

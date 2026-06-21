@@ -6,11 +6,12 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import current_user
+from app.core.limiter import limiter
 from app.models import Subscription, User
 from app.models.agronomie import Culture
 from app.models.champ import Parcelle
@@ -187,7 +188,9 @@ def archiver_conversation(
 # ════════════════════════════════════════════════════════════════════════════
 
 @router.post("/conversations/{conv_id}/messages", summary="Envoyer un message → réponse IA")
+@limiter.limit("20/minute")
 def envoyer_message(
+    request: Request,
     conv_id: int,
     payload: MessageCreate,
     user: User     = Depends(current_user),
@@ -237,7 +240,9 @@ def historique_messages(
 # ════════════════════════════════════════════════════════════════════════════
 
 @router.post("/question", summary="Question rapide sans conversation")
+@limiter.limit("20/minute")
 def question_rapide(
+    request: Request,
     payload: QuestionRapide,
     user: User     = Depends(current_user),
     db: Session    = Depends(get_db),

@@ -69,6 +69,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -198,7 +199,7 @@ function renderList() {
     return `<div class="act-item ${a.statut_simple}" id="act-${a.id}">
       <div class="act-ico">${a.icone}</div>
       <div class="act-body">
-        <div class="act-titre">${a.titre}</div>
+        <div class="act-titre">${escapeHtml(a.titre)}</div>
         <div class="act-meta">${tagHtml}${parcHtml}${dateHtml}</div>
         ${btnHtml}
       </div>

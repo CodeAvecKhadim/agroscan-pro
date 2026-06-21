@@ -5,6 +5,8 @@ Routeur des abonnements et de la facturation.
 - POST /api/billing/change  : changer de plan (renvoie l'instruction de paiement).
 - POST /api/billing/webhook : confirmation de paiement par le PSP (Wave/OM/PayDunya).
 """
+import hmac
+
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 
@@ -83,7 +85,7 @@ def payment_webhook(
     Sécurisé par un secret partagé. Corps attendu :
       {"payment_id": 12, "provider_ref": "WAVE-XYZ", "status": "paid"}
     """
-    if settings.PAYMENT_WEBHOOK_SECRET and x_webhook_secret != settings.PAYMENT_WEBHOOK_SECRET:
+    if settings.PAYMENT_WEBHOOK_SECRET and not hmac.compare_digest(x_webhook_secret, settings.PAYMENT_WEBHOOK_SECRET):
         raise HTTPException(status_code=401, detail="Signature webhook invalide.")
 
     payment = db.query(Payment).filter(Payment.id == payload.get("payment_id")).first()

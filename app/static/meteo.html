@@ -162,6 +162,7 @@ select,input,textarea{font-family:inherit}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -423,12 +424,12 @@ function renderAlertes() {
       <div class="ac-top">
         <div class="ac-icon">${icon}</div>
         <div class="ac-body">
-          <div class="ac-title">${a.titre || 'Alerte'}</div>
+          <div class="ac-title">${escapeHtml(a.titre || 'Alerte')}</div>
           <div class="ac-sub">${dt}${lu}</div>
           <div class="ac-tags">
             <span class="ac-tag ${niv}">${niv.toUpperCase()}</span>
-            <span class="ac-tag info">${(a.type_alerte||'').replace('_',' ')}</span>
-            ${a.parcelle_nom ? `<span class="ac-tag info">${a.parcelle_nom}</span>` : ''}
+            <span class="ac-tag info">${escapeHtml((a.type_alerte||'').replace('_',' '))}</span>
+            ${a.parcelle_nom ? `<span class="ac-tag info">${escapeHtml(a.parcelle_nom)}</span>` : ''}
           </div>
         </div>
       </div>
@@ -445,15 +446,15 @@ async function openAlerte(id) {
     (ALERTE_ICONS[a.type_alerte]||'📢') + ' ' + (a.titre || 'Alerte');
 
   document.getElementById('alerteDetailBody').innerHTML = `
-    <div class="info-row"><span class="irl">Niveau</span><span class="irv">${a.niveau?.toUpperCase()}</span></div>
-    <div class="info-row"><span class="irl">Type</span><span class="irv">${(a.type_alerte||'').replace('_',' ')}</span></div>
-    ${a.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${a.parcelle_nom}</span></div>` : ''}
+    <div class="info-row"><span class="irl">Niveau</span><span class="irv">${escapeHtml(a.niveau?.toUpperCase())}</span></div>
+    <div class="info-row"><span class="irl">Type</span><span class="irv">${escapeHtml((a.type_alerte||'').replace('_',' '))}</span></div>
+    ${a.parcelle_nom ? `<div class="info-row"><span class="irl">Parcelle</span><span class="irv">${escapeHtml(a.parcelle_nom)}</span></div>` : ''}
     <div class="info-row"><span class="irl">Date</span><span class="irv">${fmtDate(a.created_at)}</span></div>
-    ${a.description ? `<div style="margin-top:12px;padding:12px;background:var(--paper);border-radius:10px;font-size:.86rem;line-height:1.6">${a.description}</div>` : ''}
+    ${a.description ? `<div style="margin-top:12px;padding:12px;background:var(--paper);border-radius:10px;font-size:.86rem;line-height:1.6">${escapeHtml(a.description)}</div>` : ''}
     ${(a.recommandations || []).length > 0 ? `
       <div style="margin-top:14px">
         <div style="font-weight:700;font-size:.85rem;margin-bottom:8px;color:var(--gdeep)">Recommandations</div>
-        ${a.recommandations.map(r => `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:.84rem;line-height:1.4"><span style="color:var(--g)">→</span><span>${r}</span></div>`).join('')}
+        ${a.recommandations.map(r => `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:.84rem;line-height:1.4"><span style="color:var(--g)">→</span><span>${escapeHtml(r)}</span></div>`).join('')}
       </div>` : ''}
     <div style="display:flex;gap:8px;margin-top:16px">
       ${!a.lu ? `<button class="btn-sm lire" onclick="marquerLu(${a.id})">✓ Marquer lu</button>` : ''}
@@ -600,8 +601,8 @@ function renderPlanif(list) {
       <div class="pc-top">
         <div class="pc-prio ${prio}">${icon}</div>
         <div class="pc-body">
-          <div class="pc-title">${r.titre || r.type_activite || 'Recommandation'}</div>
-          <div class="pc-sub">${r.description || ''}${r.parcelle_nom ? ' · ' + r.parcelle_nom : ''}</div>
+          <div class="pc-title">${escapeHtml(r.titre || r.type_activite || 'Recommandation')}</div>
+          <div class="pc-sub">${escapeHtml(r.description || '')}${r.parcelle_nom ? ' · ' + escapeHtml(r.parcelle_nom) : ''}</div>
           ${r.date_recommandee ? `<div class="pc-sub">📅 ${fmtDate(r.date_recommandee)}</div>` : ''}
         </div>
       </div>

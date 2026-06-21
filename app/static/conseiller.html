@@ -85,6 +85,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -216,8 +217,8 @@ function renderKpis() {
       <div class="act-retard">
         <div class="ar-ico">🔴</div>
         <div class="ar-body">
-          <div class="ar-titre">${a.titre}</div>
-          <div class="ar-meta">${a.parcelle_nom || ''} · prévu le ${formatDate(a.date_prevue)}</div>
+          <div class="ar-titre">${escapeHtml(a.titre)}</div>
+          <div class="ar-meta">${escapeHtml(a.parcelle_nom || '')} · prévu le ${formatDate(a.date_prevue)}</div>
         </div>
       </div>`).join('');
   }
@@ -238,26 +239,26 @@ function renderParcelles() {
   el.innerHTML = liste.map(p => {
     const cls = p.anomalies.length > 0 ? 'has-anomalie' : (p.retards.length > 0 ? 'has-retard' : '');
     const tags = [];
-    if (p.stade_culture) tags.push(`<span class="ptag stade">📍 ${p.stade_culture}</span>`);
+    if (p.stade_culture) tags.push(`<span class="ptag stade">📍 ${escapeHtml(p.stade_culture)}</span>`);
     if (p.retards.length) tags.push(`<span class="ptag retard">⏰ ${p.retards.length} en retard</span>`);
     if (p.anomalies.length) tags.push(`<span class="ptag anomalie">🔴 ${p.anomalies.length} anomalie${p.anomalies.length>1?'s':''}</span>`);
     if (!p.anomalies.length && !p.retards.length) tags.push(`<span class="ptag ok">✅ OK</span>`);
     const sat = _satData[p.id];
     if (sat) {
       const dots = {vert:'🟢', orange:'🟠', rouge:'🔴'};
-      tags.push(`<span class="ptag stade">${dots[sat.couleur]||'⚪'} Satellite ${sat.couleur}</span>`);
+      tags.push(`<span class="ptag stade">${dots[sat.couleur]||'⚪'} Satellite ${escapeHtml(sat.couleur)}</span>`);
     }
     return `<div class="parc-card ${cls}" onclick="voirParcelle(${p.id},'${p.nom.replace(/'/g,"\\'")}')">
       <div class="parc-head">
         <div>
-          <div class="parc-nom">🌾 ${p.nom}</div>
-          <div class="parc-culture">${p.type_culture||'Culture non renseignée'}${p.variete?' · '+p.variete:''}</div>
+          <div class="parc-nom">🌾 ${escapeHtml(p.nom)}</div>
+          <div class="parc-culture">${escapeHtml(p.type_culture||'Culture non renseignée')}${p.variete?' · '+escapeHtml(p.variete):''}</div>
         </div>
       </div>
       <div class="parc-tags">${tags.join('')}</div>
       <div class="parc-data">
         <div class="data-item"><strong>${p.superficie_ha?p.superficie_ha+' ha':'—'}</strong>Surface</div>
-        <div class="data-item"><strong>${p.region||'—'}</strong>Région</div>
+        <div class="data-item"><strong>${escapeHtml(p.region||'—')}</strong>Région</div>
         <div class="data-item"><strong>${p.date_semis?formatDate(p.date_semis):'—'}</strong>Date semis</div>
         <div class="data-item"><strong>${p.obs.length}</strong>Photo${p.obs.length>1?'s':''}</div>
       </div>
@@ -268,21 +269,21 @@ function renderParcelles() {
 async function voirParcelle(parcelleId, nom) {
   const obs = _observations.filter(o => o.parcelle_id === parcelleId);
   const el = document.getElementById('modalContent');
-  document.getElementById('modalTitle').innerHTML = `<span class="modal-close" onclick="fermerModal()">✕</span>🌾 ${nom}`;
+  document.getElementById('modalTitle').innerHTML = `<span class="modal-close" onclick="fermerModal()">✕</span>🌾 ${escapeHtml(nom)}`;
   if (!obs.length) {
     el.innerHTML = '<div class="empty">Aucune observation photo pour cette parcelle.</div>';
   } else {
     el.innerHTML = obs.map(o => {
       const cls = o.anomalie ? 'anomalie' : 'ok';
       const valHtml = o.validation_conseiller
-        ? `<div style="font-size:.78rem;color:var(--g);padding:6px 8px;background:#f0fdf4;border-radius:6px;margin-top:6px">✔ Validé : ${o.validation_conseiller}</div>`
+        ? `<div style="font-size:.78rem;color:var(--g);padding:6px 8px;background:#f0fdf4;border-radius:6px;margin-top:6px">✔ Validé : ${escapeHtml(o.validation_conseiller)}</div>`
         : `<div style="margin-top:8px">
             <input class="val-input" type="text" id="val-${o.id}" placeholder="Votre commentaire de validation…">
             <button class="btn-valider" onclick="validerObs(${o.id},${parcelleId},'${nom.replace(/'/g,"\\'")}')">Valider</button>
           </div>`;
       const imgHtml = o.chemin ? `<img src="${o.chemin}" alt="Photo" onerror="this.style.display='none'">` : '';
       return `<div class="obs-card">${imgHtml}
-        <div class="obs-etat ${cls}">${o.anomalie?'🔴':'✅'} ${o.etat_simple||'—'}</div>
+        <div class="obs-etat ${cls}">${o.anomalie?'🔴':'✅'} ${escapeHtml(o.etat_simple||'—')}</div>
         <div class="obs-date">📅 ${formatDate(o.created_at)}</div>
         ${valHtml}
       </div>`;

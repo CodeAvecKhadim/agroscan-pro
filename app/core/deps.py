@@ -11,7 +11,7 @@ dépend d'une de ces fonctions ; impossible de contourner un quota côté front.
 """
 from datetime import datetime, timezone
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -20,16 +20,31 @@ from app.core.security import decode_token
 from app.models import User, Subscription, UsageCounter, SubStatus, UserRole, PlanType
 from app.services.plans import features_for
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+COOKIE_NAME = "agro_session"
 
 
-def current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Récupère l'utilisateur connecté à partir du jeton JWT, ou refuse l'accès."""
+def _extract_token(request: Request, bearer_token: str | None) -> str | None:
+    """Accepte le token depuis le cookie httpOnly OU le header Authorization (compat)."""
+    cookie_token = request.cookies.get(COOKIE_NAME)
+    return cookie_token or bearer_token
+
+
+def current_user(
+    request: Request,
+    bearer_token: str | None = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """Récupère l'utilisateur connecté depuis cookie httpOnly ou header Bearer."""
     cred_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Identifiants invalides ou session expirée.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    token = _extract_token(request, bearer_token)
+    if not token:
+        raise cred_error
     payload = decode_token(token)
     if not payload or "sub" not in payload:
         raise cred_error

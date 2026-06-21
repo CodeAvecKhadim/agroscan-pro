@@ -6,14 +6,20 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import current_user
+from app.core.security import verify_password
 from app.models import User
 
 router = APIRouter(prefix="/api/account", tags=["Mon Compte"])
+
+
+class DeleteAccountIn(BaseModel):
+    password: str
 
 
 # ── Export données (RGPD / CDP droit d'accès) ────────────────────────────────
@@ -101,6 +107,7 @@ def export_account_data(
 
 @router.delete("", status_code=200, summary="Supprimer mon compte et toutes mes données")
 def delete_account(
+    body: DeleteAccountIn,
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
@@ -108,8 +115,11 @@ def delete_account(
     Supprime définitivement le compte et toutes les données associées.
     - Compte solo : suppression complète (org + toutes les données)
     - Membre d'une coopérative : anonymisation + suppression du compte utilisateur
-    Irréversible.
+    Irréversible. Exige confirmation du mot de passe.
     """
+    if not verify_password(body.password, user.hashed_password):
+        raise HTTPException(status_code=403, detail="Mot de passe incorrect.")
+
     org_id  = user.org_id
     user_id = user.id
 

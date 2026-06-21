@@ -116,6 +116,7 @@ body{padding-bottom:80px}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -282,7 +283,11 @@ function showTab(name) {
 }
 
 function mdToHtml(text) {
-  return (text || '')
+  var safe = (text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return safe
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^#+\s+(.+)$/gm, '<strong>$1</strong>')
@@ -404,9 +409,9 @@ async function chargerConversations() {
       var icon = c.mode === 'analyse_parcelle' ? '📡' : c.mode === 'conseil_sol' ? '🧪' : '💬';
       var parc = c.parcelle_nom ? ' · ' + c.parcelle_nom : '';
       var titre = (c.titre || 'Sans titre').replace(/</g,'&lt;');
-      return '<div class="conv-item' + (c.nb_messages > 0 ? ' has-new' : '') + '" onclick="ouvrirConversation(' + c.id + ',\'' + titre.replace(/'/g,"\\'") + '\')">'
+      return '<div class="conv-item' + (c.nb_messages > 0 ? ' has-new' : '') + '" onclick="ouvrirConversation(' + c.id + ',\'' + escapeHtml(titre).replace(/'/g,"\\'") + '\')">'
         + '<span class="conv-ico">' + icon + '</span>'
-        + '<div class="conv-body"><div class="conv-titre">' + titre + '</div>'
+        + '<div class="conv-body"><div class="conv-titre">' + escapeHtml(titre) + '</div>'
         + '<div class="conv-meta">' + fmtDate(c.updated_at) + parc + ' · ' + (c.nb_messages || 0) + ' msg</div></div>'
         + '<span class="conv-badge">' + (c.nb_messages || 0) + '</span></div>';
     }).join('');

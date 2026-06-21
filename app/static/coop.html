@@ -114,6 +114,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -257,10 +258,10 @@ async function boot() {
           return `<div class="membre">
             <div class="m-avatar">${initials}</div>
             <div class="m-info">
-              <div class="m-name">${m.full_name || '—'}</div>
-              <div class="m-sub">${m.email || ''}</div>
+              <div class="m-name">${escapeHtml(m.full_name || '—')}</div>
+              <div class="m-sub">${escapeHtml(m.email || '')}</div>
             </div>
-            <span class="m-badge ${badgeCls}">${ROLE_ICONS[role] || ''} ${ROLE_LABELS[role] || role}</span>
+            <span class="m-badge ${badgeCls}">${ROLE_ICONS[role] || ''} ${escapeHtml(ROLE_LABELS[role] || role)}</span>
           </div>`;
         }).join('');
       }
@@ -279,7 +280,7 @@ async function boot() {
         perfEl.innerHTML = list.map(p => {
           const pct = Math.round(((p.nb_activites || 0) / maxActs) * 100);
           return `<div class="perf-row">
-            <div class="perf-label"><span>${p.nom || p.email || '—'}</span><span>${p.nb_activites || 0} activité${(p.nb_activites || 0) !== 1 ? 's' : ''}</span></div>
+            <div class="perf-label"><span>${escapeHtml(p.nom || p.email || '—')}</span><span>${p.nb_activites || 0} activité${(p.nb_activites || 0) !== 1 ? 's' : ''}</span></div>
             <div class="perf-track"><div class="perf-fill" style="width:${pct}%"></div></div>
           </div>`;
         }).join('');

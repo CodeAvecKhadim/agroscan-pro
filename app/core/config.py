@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # --- Sécurité / JWT ---
     SECRET_KEY: str = "CHANGER-EN-PRODUCTION-cle-tres-longue-et-aleatoire"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 h
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 h
 
     # --- Devise / fiscalité (Sénégal) ---
     CURRENCY: str = "FCFA"

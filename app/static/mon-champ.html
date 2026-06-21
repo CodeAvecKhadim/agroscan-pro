@@ -289,6 +289,7 @@ input[type=file]{display:none}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -879,7 +880,7 @@ function renderParcelles() {
     return `<div class="parcelle-card" onclick="${isConfig ? `continuerWizard(${p.id},${p.etape_wizard})` : `openDetail(${p.id})`}">
       <div class="pc-icon">🌾</div>
       <div class="pc-body">
-        <div class="pc-name">${p.nom}</div>
+        <div class="pc-name">${escapeHtml(p.nom)}</div>
         <div class="pc-meta">${p.type_culture || 'Culture non définie'} · ${ha}${p.region ? ' · ' + p.region : ''}</div>
         <div class="pc-tags">
           ${isConfig
@@ -1759,7 +1760,7 @@ async function loadDetailEau(id) {
     const el = document.getElementById('dEauContent');
     if (!list || !list.length) { el.innerHTML = '<p style="color:var(--soft);padding:12px 0">Aucune source d\'eau.</p>'; return; }
     const ICONS = {forage:'🔩',puits_traditionnel:'⛏️',cours_eau:'🌊',mare_permanente:'🏞️',mare_temporaire:'💦',reservoir:'🪣',eau_de_pluie:'🌧️',canal_irrigation:'🏞️',riviere:'🌊',fleuve:'🏞️',chateau_eau:'🏗️'};
-    el.innerHTML = `<div class="mini-list">${list.map(s=>`<div class="mini-card"><div class="mini-icon">${ICONS[s.type]||'💧'}</div><div class="mini-body"><div class="mini-name">${s.type.replace(/_/g,' ')}</div><div class="mini-sub">${s.qualite||''} ${s.disponibilite||''}</div></div></div>`).join('')}</div>`;
+    el.innerHTML = `<div class="mini-list">${list.map(s=>`<div class="mini-card"><div class="mini-icon">${ICONS[s.type]||'💧'}</div><div class="mini-body"><div class="mini-name">${escapeHtml(s.type).replace(/_/g,' ')}</div><div class="mini-sub">${s.qualite||''} ${s.disponibilite||''}</div></div></div>`).join('')}</div>`;
   } catch(e) {
     document.getElementById('dEauContent').innerHTML = '<p style="color:var(--soft)">Erreur</p>';
   }
@@ -1868,11 +1869,11 @@ async function ouvrirArchives() {
     el.innerHTML = liste.map(p => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">
         <div>
-          <div style="font-weight:700;font-size:.92rem">${p.nom}</div>
+          <div style="font-weight:700;font-size:.92rem">${escapeHtml(p.nom)}</div>
           <div style="font-size:.78rem;color:#6b7280">${p.type_culture||'—'} · ${p.superficie_ha ? p.superficie_ha.toFixed(2)+' ha' : 'N/A'}</div>
           ${p.deleted_at ? `<div style="font-size:.74rem;color:#9ca3af">Supprimée le ${new Date(p.deleted_at).toLocaleDateString('fr-FR')}</div>` : ''}
         </div>
-        <button onclick="restaurerParcelle(${p.id},'${p.nom.replace(/'/g,'\\\'')}')"
+        <button onclick="restaurerParcelle(${p.id},'${escapeHtml(p.nom).replace(/'/g,'\\\'')}')"
           style="font-size:.8rem;padding:6px 12px;border:1px solid #10b981;border-radius:8px;color:#10b981;background:#f0fdf4;font-weight:700">
           ↩ Restaurer
         </button>

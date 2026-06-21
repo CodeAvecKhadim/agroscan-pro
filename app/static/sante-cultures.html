@@ -264,6 +264,7 @@ select,input,textarea{font-family:inherit}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -648,7 +649,7 @@ function renderParcelles(parcelles) {
     return `<div class="parc-card" onclick="selectParcelle(${JSON.stringify(p).replace(/"/g,'&quot;')})">
       <div class="pc-ico">🌾</div>
       <div class="pc-body">
-        <div class="pc-name">${p.nom}</div>
+        <div class="pc-name">${escapeHtml(p.nom)}</div>
         <div class="pc-meta">${p.superficie_ha ? p.superficie_ha.toFixed(2) + ' ha' : ''} ${p.zone_agro ? '· ' + p.zone_agro : ''} ${p.type_culture ? '· ' + p.type_culture : ''}</div>
       </div>
       ${ringHtml}
@@ -975,8 +976,8 @@ function afficherResultats(res) {
       return `<div class="alerte-card ${a.niveau||''}">
         <span class="alerte-ico">${ico}</span>
         <div class="alerte-body">
-          <div class="alerte-titre">${a.titre || a.niveau || 'Alerte'}</div>
-          <div class="alerte-msg">${a.message || ''}</div>
+          <div class="alerte-titre">${escapeHtml(a.titre || a.niveau || 'Alerte')}</div>
+          <div class="alerte-msg">${escapeHtml(a.message || '')}</div>
         </div>
       </div>`;
     }).join('') + '</div>';
@@ -992,8 +993,8 @@ function afficherResultats(res) {
       `<div class="reco-card">
         <div class="reco-num">${i+1}</div>
         <div class="reco-body">
-          <div class="reco-titre">${r.titre || r.type || 'Recommandation'}</div>
-          ${r.detail ? `<div class="reco-detail">${r.detail}</div>` : ''}
+          <div class="reco-titre">${escapeHtml(r.titre || r.type || 'Recommandation')}</div>
+          ${r.detail ? `<div class="reco-detail">${escapeHtml(r.detail)}</div>` : ''}
           ${r.produit ? `<span class="reco-produit">💊 ${r.produit}</span>` : ''}
         </div>
       </div>`).join('');

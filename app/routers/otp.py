@@ -22,12 +22,15 @@ import string
 from datetime import datetime, timedelta, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 
+from fastapi.responses import JSONResponse
+
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.deps import COOKIE_NAME
 from app.core.limiter import limiter
 from app.core.security import create_access_token
 from app.models import User
@@ -241,6 +244,7 @@ def otp_verify(
     request: Request,
     data: OTPVerifyIn,
     db: Session = Depends(get_db),
+    response: Response = None,
 ) -> OTPVerifyOut:
     """
     Vérifie un OTP.
@@ -321,6 +325,11 @@ def otp_verify(
             "profil": user.profil,
         })
         logger.info("OTP login réussi → user_id=%s phone=%s", user.id, phone)
+        if response is not None:
+            response.set_cookie(
+                key=COOKIE_NAME, value=token, httponly=True,
+                secure=True, samesite="lax", max_age=8 * 3600, path="/",
+            )
         return OTPVerifyOut(message="Connexion réussie.", access_token=token)
 
     if purpose == "reset_password":

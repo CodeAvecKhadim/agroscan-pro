@@ -150,6 +150,7 @@ select,input,textarea{font-family:inherit}
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -526,9 +527,9 @@ function renderActivites() {
           <div class="act-top">
             <div class="act-icon" style="background:${bg}">${icon}</div>
             <div class="act-body">
-              <div class="act-title">${a.titre}</div>
+              <div class="act-title">${escapeHtml(a.titre)}</div>
               <div class="act-meta">${dt}${parcNom ? ' · ' + parcNom : ''}</div>
-              <div class="act-tags"><span class="stag ${a.statut}">${labelStatut(a.statut)}</span></div>
+              <div class="act-tags"><span class="stag ${escapeHtml(a.statut)}">${labelStatut(a.statut)}</span></div>
             </div>
             ${a.cout_total_fcfa ? `<div class="act-cost">
               <div class="cv">${Number(a.cout_total_fcfa/1000).toFixed(0)}k</div>

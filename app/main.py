@@ -22,7 +22,6 @@ from app.routers import (
     ia,
     meteo,
     observations_terrain, otp,
-    parcelles,
     rapports_pdf, rules_engine,
     sante, sante_cultures, satellite,
 )
@@ -62,7 +61,6 @@ app.include_router(coop.router)
 app.include_router(fertilite.router)
 app.include_router(agronomie.router)
 app.include_router(champ.router)
-app.include_router(parcelles.router)
 app.include_router(ferme.router)
 app.include_router(meteo.router)
 app.include_router(ia.router)

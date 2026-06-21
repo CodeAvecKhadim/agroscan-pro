@@ -69,6 +69,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xaeuhh2o1y");
 </script>
+<script src="/static/xss.js"></script>
 </head>
 <body>
 
@@ -266,7 +267,7 @@ async function boot() {
     (parcs || []).forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = p.nom + (p.type_culture ? ` · ${p.type_culture}` : '');
+      opt.textContent = p.nom + (p.type_culture ? ` · ${escapeHtml(p.type_culture)}` : '');
       sel.appendChild(opt);
     });
   } catch(e) {}
