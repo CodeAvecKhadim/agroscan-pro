@@ -101,6 +101,85 @@ def page_tarifs():
     return _page("tarifs.html")
 
 
+
+
+# --- Pages modules avancés (ajoutées automatiquement) ---
+@app.get("/activites", include_in_schema=False)
+def page_activites():
+    """Suivi des activités agricoles sur la parcelle."""
+    return _page("activites.html")
+
+@app.get("/admin", include_in_schema=False)
+def page_admin():
+    """Interface d'administration (accès restreint en production)."""
+    return _page("admin.html")
+
+@app.get("/app", include_in_schema=False)
+def page_app():
+    """Application principale."""
+    return _page("app.html")
+
+@app.get("/calendrier", include_in_schema=False)
+def page_calendrier():
+    """Calendrier cultural : dates semis, récolte, activités."""
+    return _page("calendrier.html")
+
+@app.get("/conseiller", include_in_schema=False)
+def page_conseiller():
+    """Interface conseiller agricole (vue technique complète)."""
+    return _page("conseiller.html")
+
+@app.get("/coop", include_in_schema=False)
+def page_coop():
+    """Espace coopérative."""
+    return _page("coop.html")
+
+@app.get("/exploitation", include_in_schema=False)
+def page_exploitation():
+    """Mon exploitation : surface, production, coûts, revenus."""
+    return _page("exploitation.html")
+
+@app.get("/ferme", include_in_schema=False)
+def page_ferme():
+    """Gestion de la ferme et des parcelles."""
+    return _page("ferme.html")
+
+@app.get("/ia", include_in_schema=False)
+def page_ia():
+    """Assistant IA Polélé — conseils agronomiques intelligents."""
+    return _page("ia.html")
+
+@app.get("/meteo", include_in_schema=False)
+def page_meteo():
+    """Météo temps réel et alertes agronomiques (Open-Meteo)."""
+    return _page("meteo.html")
+
+@app.get("/mon-champ", include_in_schema=False)
+def page_mon_champ():
+    """Vue détaillée du champ sélectionné."""
+    return _page("mon-champ.html")
+
+@app.get("/offline", include_in_schema=False)
+def page_offline():
+    """Page hors ligne (PWA fallback)."""
+    return _page("offline.html")
+
+@app.get("/photo", include_in_schema=False)
+def page_photo():
+    """Diagnostic photo de cultures / maladies."""
+    return _page("photo.html")
+
+@app.get("/sante", include_in_schema=False)
+def page_sante():
+    """Santé des cultures : maladies, ravageurs, traitements."""
+    return _page("sante.html")
+
+@app.get("/sante-cultures", include_in_schema=False)
+def page_sante_cultures():
+    """Tableau de bord santé cultures avec indices satellite."""
+    return _page("sante-cultures.html")
+
+
 @app.post("/api/scan-maladie", tags=["Diagnostic"])
 async def scan_maladie(photo: UploadFile = File(...)):
     """
