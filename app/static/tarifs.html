@@ -1,384 +1,278 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1A8B4F">
-<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#7a2e1e">
 <title>AgroScan Pro — Tarifs &amp; Abonnements</title>
-<meta property="og:title" content="Tarifs — AgroScan Pro">
-<meta property="og:description" content="Plans Découverte, Producteur, Coopérative et Agronome. À partir de 0 FCFA.">
-<meta property="og:image" content="/static/assets/photos/hero-composed.webp">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --g:#1A8B4F;--gdk:#136B3C;--gdeep:#0D4D2B;
-  --gold:#F5A623;--millet:#CBE9D8;
-  --paper:#F4FAF7;--paper2:#fbf6ec;--card:#fff;
-  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
-  --shadow:0 1px 2px rgba(0,0,0,.06),0 8px 24px -12px rgba(0,60,30,.18);
-  --shadow-lg:0 30px 60px -25px rgba(0,60,30,.28);
-  --r:18px;--r-sm:12px;
-  --sans:'Plus Jakarta Sans',sans-serif;--serif:'Sora',sans-serif;--title:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;--brand:#1A8B4F;--brand-dk:#136B3C;--brand-deep:#0D4D2B;--accent:#1B8FCC;
-}
+:root{--laterite:#9e3b21;--laterite-dk:#7a2e1e;--laterite-deep:#5a2114;--gold:#d99125;--millet:#e8b84b;--baobab:#3f6b3a;--baobab-dk:#2c4e29;--paper:#f7f0e3;--paper-2:#fbf6ec;--card:#fffdf8;--ink:#2a2018;--ink-soft:#5b4d3e;--line:#e4d7c0;--shadow:0 1px 2px rgba(60,40,20,.06),0 8px 24px -12px rgba(90,50,20,.25);--shadow-lg:0 30px 60px -25px rgba(90,50,20,.45);--r:18px;--r-sm:12px;--sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;background-image:radial-gradient(circle at 12% 8%,rgba(5,150,105,.06),transparent 40%)}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 12% 8%,rgba(217,145,37,.06),transparent 40%),radial-gradient(circle at 88% 92%,rgba(63,107,58,.06),transparent 42%);min-height:100vh}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 
-/* NAV */
-.nav{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--gdeep),var(--g) 60%,var(--gdk));color:#fff;box-shadow:0 6px 22px -10px rgba(5,100,60,.5)}
+.nav{position:sticky;top:0;z-index:50;background:linear-gradient(110deg,var(--laterite-deep),var(--laterite) 60%,var(--laterite-dk));color:#fff;box-shadow:0 6px 22px -10px rgba(90,33,20,.7)}
 .nav-in{max-width:1100px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
 .brand{display:flex;align-items:center;gap:12px}
-.mark{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);display:grid;place-items:center;font-size:23px;}
-.brand h1{font-family:var(--title);font-weight:900;font-size:1.18rem;line-height:1}
-.brand p{font-size:.7rem;opacity:.85}.brand p b{color:rgba(255,255,255,.85)}
+.brand .mark{width:42px;height:42px;border-radius:11px;background:linear-gradient(150deg,var(--gold),var(--millet));display:grid;place-items:center;font-size:23px;box-shadow:inset 0 -2px 6px rgba(0,0,0,.18)}
+.brand h1{font-family:var(--serif);font-weight:900;font-size:1.18rem;line-height:1}
+.brand p{font-size:.7rem;opacity:.85}.brand p b{color:var(--millet)}
 .nav-links{margin-left:auto;display:flex;align-items:center;gap:22px}
 .nav-links a{font-size:.9rem;opacity:.9}.nav-links a:hover{opacity:1}
-.nav-cta{background:var(--gold);color:#fff;padding:9px 18px;border-radius:10px;font-weight:700;font-size:.88rem}
+.nav-cta{background:var(--gold);color:var(--laterite-deep);padding:9px 18px;border-radius:10px;font-weight:700;font-size:.88rem}
 @media(max-width:680px){.nav-links a:not(.nav-cta){display:none}}
 
-/* HERO */
-.hero{max-width:1100px;margin:0 auto;padding:52px 18px 24px;text-align:center}
-.eyebrow{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g);background:#fff;border:1px solid var(--line);padding:5px 14px;border-radius:20px;margin-bottom:14px}
-.hero h2{font-family:var(--title);font-weight:900;font-size:2.2rem;color:var(--gdk);line-height:1.1;margin-bottom:10px}
-.hero p{color:var(--soft);font-size:1.05rem;max-width:640px;margin:0 auto}
+.head{max-width:1100px;margin:0 auto;padding:48px 18px 10px;text-align:center}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--laterite);background:#fff;border:1px solid var(--line);padding:5px 14px;border-radius:20px;margin-bottom:14px}
+.head h2{font-family:var(--serif);font-weight:900;font-size:2.2rem;color:var(--laterite-dk);line-height:1.1;margin-bottom:10px}
+.head p{color:var(--ink-soft);font-size:1.05rem;max-width:600px;margin:0 auto}
 
-/* TOGGLE COOP */
-.toggle-band{display:flex;justify-content:center;gap:6px;margin:28px auto 6px;background:#fff;border:1px solid var(--line);border-radius:50px;padding:5px;width:fit-content;box-shadow:var(--shadow)}
-.toggle-band button{padding:9px 22px;border-radius:50px;font-weight:600;font-size:.9rem;color:var(--soft);transition:all .18s;white-space:nowrap}
-.toggle-band button.on{background:var(--g);color:#fff;box-shadow:0 4px 12px -4px rgba(5,150,105,.4)}
-.toggle-band button .save{font-size:.68rem;color:var(--gold);font-weight:700;display:block;line-height:1}
-.toggle-note{text-align:center;min-height:20px;font-size:.85rem;color:var(--gdeep);font-weight:600;margin-bottom:4px}
+/* Sélecteur de durée */
+.duree{display:flex;justify-content:center;gap:6px;margin:28px auto 6px;background:#fff;border:1px solid var(--line);border-radius:50px;padding:5px;width:fit-content;box-shadow:var(--shadow)}
+.duree button{padding:9px 20px;border-radius:50px;font-weight:600;font-size:.9rem;color:var(--ink-soft);transition:all .18s;position:relative;white-space:nowrap}
+.duree button.on{background:var(--laterite);color:#fff;box-shadow:0 4px 12px -4px rgba(158,59,33,.5)}
+.duree button .save{font-size:.68rem;color:var(--baobab);font-weight:700;display:block;line-height:1}
+.duree button.on .save{color:var(--millet)}
+.note-eco{text-align:center;color:var(--baobab-dk);font-size:.85rem;font-weight:600;margin-bottom:6px;min-height:20px}
 
-/* GRILLE PLANS */
-.plans{max-width:1140px;margin:0 auto;padding:24px 18px 60px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:760px){.plans{grid-template-columns:1fr}}
-.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative}
+/* Grille des offres */
+.plans{max-width:1140px;margin:0 auto;padding:24px 18px 60px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:980px){.plans{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative}
 .plan.pop{border:2px solid var(--gold);box-shadow:var(--shadow-lg)}
-.plan.pop::before{content:"⭐ Le plus populaire";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:.74rem;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap}
-.plan h3{font-family:var(--title);font-weight:900;font-size:1.4rem;color:var(--gdk)}
-.plan .who{font-size:.84rem;color:var(--soft);margin:4px 0 18px;min-height:36px}
-
-/* Prix */
-.price-box{margin-bottom:16px;min-height:72px}
-.price{font-family:var(--mono);font-weight:600;font-size:2.2rem;color:var(--gdk);line-height:1}
-.price small{font-size:.82rem;font-weight:600;color:var(--soft);font-family:var(--sans)}
-.price-sub{font-size:.8rem;color:var(--g);font-weight:700;margin-top:2px}
-.price-daily{font-size:.75rem;color:var(--soft);opacity:.85;font-style:italic}
-.price-free{font-family:var(--mono);font-weight:600;font-size:2.2rem;color:var(--g)}
-.price-old{font-size:.85rem;color:var(--soft);text-decoration:line-through;opacity:.7}
-
-/* Specs */
-.specs{display:flex;gap:8px;margin:14px 0;padding:12px;background:var(--paper2);border-radius:12px;border:1px solid var(--line);flex-wrap:wrap}
-.spec{flex:1;text-align:center;min-width:60px}
-.spec b{display:block;font-family:var(--mono);font-weight:600;color:var(--gdk);font-size:1.05rem}
-.spec span{font-size:.7rem;color:var(--soft)}
-
-/* Features */
+.plan.pop::before{content:"⭐ Plus populaire";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--laterite-deep);font-size:.74rem;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap}
+.plan h3{font-family:var(--serif);font-weight:900;font-size:1.35rem;color:var(--laterite-dk)}
+.plan .who{font-size:.84rem;color:var(--ink-soft);margin:4px 0 16px;min-height:38px}
+.price-box{margin-bottom:8px;min-height:62px}
+.price{font-family:var(--serif);font-weight:900;font-size:2rem;color:var(--laterite-dk);line-height:1}
+.price small{font-size:.85rem;font-weight:600;color:var(--ink-soft);font-family:var(--sans)}
+.price-old{font-size:.9rem;color:var(--ink-soft);text-decoration:line-through;opacity:.7}
+.price-period{font-size:.8rem;color:var(--ink-soft)}
+.price-free{font-family:var(--serif);font-weight:900;font-size:2rem;color:var(--baobab)}
+.specs{display:flex;gap:10px;margin:14px 0;padding:12px;background:var(--paper-2);border-radius:12px;border:1px solid var(--line)}
+.spec{flex:1;text-align:center}
+.spec b{display:block;font-family:var(--serif);font-weight:900;color:var(--laterite-dk);font-size:1.1rem}
+.spec span{font-size:.72rem;color:var(--ink-soft)}
 .plan ul{list-style:none;margin:6px 0 20px;padding:0;flex:1}
-.plan li{font-size:.86rem;color:var(--ink);padding:5px 0 5px 22px;position:relative;border-bottom:1px dotted var(--line)}
-.plan li:last-child{border-bottom:none}
-.plan li::before{content:"✓";position:absolute;left:0;color:var(--g);font-weight:700}
-.plan li.no::before{content:"–";color:#94a3b8}
-.plan li.no{color:#94a3b8}
-
-/* CTA */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:12px;font-weight:700;font-size:.95rem;transition:transform .14s;width:100%}
+.plan li{font-size:.86rem;color:var(--ink);padding:5px 0 5px 22px;position:relative}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--baobab);font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:12px;font-weight:600;font-size:.92rem;transition:transform .14s;width:100%}
 .btn:hover{transform:translateY(-2px)}
-.btn-primary{background:var(--g);color:#fff;box-shadow:0 6px 16px -6px rgba(5,150,105,.5)}
-.btn-gold{background:var(--gold);color:#fff}
-.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--soft)}
+.btn-primary{background:var(--laterite);color:#fff;box-shadow:0 6px 16px -6px rgba(158,59,33,.6)}
+.btn-gold{background:var(--gold);color:var(--laterite-deep)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft)}
+.btn-sec{background:none;color:var(--laterite);font-size:.82rem;padding:8px;text-decoration:underline}
+.ent-note{font-size:.78rem;color:var(--ink-soft);font-style:italic;margin-bottom:12px}
 
-/* HA EXTENSIONS */
-.ext-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:12px 0}
-.ext-table th{background:var(--gdeep);color:#fff;padding:7px 10px;text-align:left;font-size:.75rem}
-.ext-table td{padding:7px 10px;border-bottom:1px solid var(--line)}
-.ext-table tr:last-child td{border-bottom:none}
-.ext-table tr.active-ha td{background:#ecfdf5;font-weight:700}
-
-/* CONFIGURATEUR */
-.config{max-width:760px;margin:0 auto 50px;padding:0 18px}
-.config-card{background:var(--card);border:2px solid var(--gold);border-radius:var(--r);box-shadow:var(--shadow-lg);overflow:hidden}
-.config-head{background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;padding:18px 22px}
-.config-head h3{font-family:var(--title);font-weight:900;font-size:1.3rem}
-.config-head p{font-size:.85rem;opacity:.9;margin-top:4px}
-.config-body{padding:22px;display:none}
-.recap-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-.recap-row span{color:var(--soft);font-size:.9rem}
-.recap-row strong{color:var(--gdk);font-size:.95rem}
-.recap-total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 6px;border-top:2px solid var(--g)}
-.recap-total-label{font-family:var(--title);font-weight:700;font-size:1.1rem;color:var(--gdk)}
-.recap-total-val{font-family:var(--title);font-weight:900;font-size:1.8rem;color:var(--gdk)}
-.recap-detail{font-size:.76rem;color:var(--soft);margin-bottom:16px}
-
-/* PAYMENTS */
 .pay-band{max-width:1100px;margin:0 auto 50px;padding:0 18px;text-align:center}
-.pay-logos{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.pay-logos span{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;color:var(--soft)}
+.pay-band p{font-size:.85rem;color:var(--ink-soft);margin-bottom:10px}
+.pay-logos{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.pay-logos span{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:600;color:var(--ink-soft)}
 
-footer{background:var(--gdeep);color:#fff;padding:30px 18px;text-align:center}
+footer{background:var(--laterite-deep);color:#fff;padding:30px 18px;text-align:center}
 footer p{font-size:.85rem;opacity:.85}
-footer a{color:rgba(255,255,255,.85)}
+footer a{color:var(--millet)}
 </style>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xaeuhh2o1y");
+</script>
 </head>
 <body>
 
 <nav class="nav">
   <div class="nav-in">
-    <a href="/vitrine" class="brand">
-      <div class="mark"><img src="/static/assets/logo-emblem.webp" alt="AgroScan" style="width:24px;height:24px;object-fit:contain;display:block"></div>
-      <div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div>
-    </a>
+    <a href="/vitrine" class="brand"><div class="mark">🌾</div>
+      <div><h1>AgroScan Pro</h1><p>par <b>Social Technologie</b></p></div></a>
     <div class="nav-links">
       <a href="/vitrine#fonctionnalites">Fonctionnalités</a>
       <a href="/vitrine#apropos">À propos</a>
       <a href="/vitrine#contact">Contact</a>
-      <a href="/login" class="nav-cta">Se connecter</a>
+      <a href="/" class="nav-cta">Se connecter</a>
     </div>
   </div>
 </nav>
 
-<!-- Bandeau image hero -->
-<div style="position:relative;width:100%;height:220px;overflow:hidden;margin-top:0">
-  <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=75"
-       alt="Récolte de légumes frais — agriculture africaine"
-       loading="eager"
-       fetchpriority="high"
-       style="width:100%;height:100%;object-fit:cover;object-position:center 40%">
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,95,70,.45) 0%,transparent 45%,var(--paper) 100%)"></div>
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(6,95,70,.15),transparent)"></div>
-</div>
-
-<div id="bannerEssaiExpire" style="display:none;background:#fef3c7;border-bottom:2px solid #f59e0b;padding:14px 20px;text-align:center;font-size:.92rem;font-weight:600;color:#92400e">
-  ⏰ Votre essai gratuit de 14 jours est terminé. Choisissez un plan ci-dessous pour continuer à utiliser AgroScan Pro.
-</div>
-<script>
-  if (new URLSearchParams(location.search).get('essai_expire') === '1') {
-    document.getElementById('bannerEssaiExpire').style.display = 'block';
-  }
-</script>
-
-<div class="hero">
+<div class="head">
   <span class="eyebrow">Tarifs &amp; abonnements</span>
-  <h2>Simple, transparent, adapté au terrain</h2>
-  <p>Commencez gratuitement 7 jours, sans carte bancaire. Souscrivez quand vous êtes prêt.</p>
+  <h2>Choisissez l'offre adaptée à votre exploitation</h2>
+  <p>Commencez gratuitement, passez à une offre payante quand vous êtes prêt. Réductions jusqu'à 20 % sur l'engagement annuel.</p>
 
-  <!-- Toggle mensuel/annuel -->
-  <div class="toggle-band" id="toggleBand">
-    <button class="on" data-billing="monthly" onclick="setBilling(this)">Mensuel</button>
-    <button data-billing="annual" onclick="setBilling(this)">Annuel<span class="save">2 mois offerts</span></button>
+  <!-- Sélecteur de durée -->
+  <div class="duree" id="duree">
+    <button data-mois="1" class="on" onclick="choisirDuree(this)">Mensuel</button>
+    <button data-mois="12" onclick="choisirDuree(this)">Annuel<span class="save">-20%</span></button>
   </div>
-  <div class="toggle-note" id="toggleNote"></div>
+  <div class="note-eco" id="noteEco"></div>
 </div>
 
-<!-- ===== PLANS PUBLICS ===== -->
+<!-- ===== LES 4 OFFRES ===== -->
 <div class="plans">
 
-  <!-- DÉCOUVERTE -->
+  <!-- Découverte -->
   <div class="plan">
     <h3>Découverte</h3>
-    <p class="who">Testez AgroScan Pro gratuitement pendant 7 jours</p>
-    <div class="price-box">
-      <div class="price-free">Gratuit</div>
-      <div class="price-daily" style="margin-top:4px">7 jours · Accès complet · Sans carte bancaire</div>
-    </div>
+    <p class="who">Pour essayer AgroScan gratuitement</p>
+    <div class="price-box"><div class="price-free">Gratuit</div><div class="price-period">sans engagement</div></div>
     <div class="specs">
-      <div class="spec"><b>7j</b><span>d'essai</span></div>
-      <div class="spec"><b>∞</b><span>parcelles</span></div>
-      <div class="spec"><b>∞</b><span>analyses</span></div>
-      <div class="spec"><b>∞</b><span>satellite</span></div>
-    </div>
-    <ul>
-      <li>Toutes les fonctionnalités incluses</li>
-      <li>Cartographie GPS de parcelles</li>
-      <li>Santé des cultures</li>
-      <li>Météo agricole</li>
-      <li>Diagnostic photo IA</li>
-      <li>Calendrier cultural</li>
-      <li>Aucun engagement</li>
-    </ul>
-    <a href="/login" class="btn btn-ghost">Essayer gratuitement →</a>
-  </div>
-
-  <!-- AGROSCAN PRO PRODUCTEUR — VEDETTE -->
-  <div class="plan pop">
-    <h3>AgroScan Pro Producteur</h3>
-    <p class="who">Pour le producteur actif qui veut décider avec les données</p>
-    <div class="price-box">
-      <div class="price" id="prodPrice">5 000 <small>FCFA</small></div>
-      <div class="price-sub" id="prodPeriod">par mois · sans engagement</div>
-      <div class="price-old" id="prodOldPrice" style="display:none"></div>
-      <div class="price-daily" id="prodDaily">Soit moins de 167 FCFA par jour</div>
-    </div>
-    <div class="specs">
-      <div class="spec"><b>∞</b><span>parcelles</span></div>
-      <div class="spec"><b>20 ha</b><span>max/parcelle</span></div>
-      <div class="spec"><b>∞</b><span>analyses IA</span></div>
-      <div class="spec"><b>∞</b><span>satellite</span></div>
-    </div>
-    <ul>
-      <li>Toutes les fonctionnalités AgroScan</li>
-      <li>Agriculture de précision</li>
-      <li>Analyse satellite illimitée</li>
-      <li>Assistant IA Polélé</li>
-      <li>Analyse de sol avancée</li>
-      <li>Santé des cultures avancée</li>
-      <li>Rapports PDF</li>
-      <li>Historique complet</li>
-      <li>Gestion des activités</li>
-    </ul>
-    <button onclick="souscrire('producteur')" class="btn btn-gold" id="prodBtn">Commencer maintenant — 5 000 FCFA/mois</button>
-    <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Résiliable à tout moment · Paiement Wave ou Orange Money</p>
-  </div>
-
-  <!-- ANALYSE AGRICOLE -->
-  <div class="plan">
-    <h3>Analyse Agricole</h3>
-    <p class="who">Un diagnostic ponctuel, sans abonnement</p>
-    <div class="price-box">
-      <div class="price">1 500 <small>FCFA</small></div>
-      <div class="price-sub">à partir de · par analyse</div>
-      <div class="price-daily">Sol, culture, satellite ou diagnostic photo</div>
-    </div>
-    <div class="specs">
+      <div class="spec"><b>1</b><span>parcelle</span></div>
       <div class="spec"><b>1</b><span>analyse</span></div>
-      <div class="spec"><b>PDF</b><span>rapport</span></div>
-      <div class="spec"><b>24h</b><span>résultat</span></div>
-      <div class="spec"><b>0</b><span>abonnement</span></div>
     </div>
     <ul>
-      <li>Analyse de sol complète</li>
-      <li>Diagnostic maladie photo</li>
-      <li>Rapport PDF personnalisé</li>
-      <li>Recommandations agronomiques</li>
-      <li>Sans compte obligatoire</li>
+      <li>Toutes les fonctionnalités</li>
+      <li>1 analyse de sol complète</li>
+      <li>Rapport PDF inclus</li>
+      <li>Idéal pour découvrir</li>
     </ul>
-    <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+commander+une+analyse+agricole+AgroScan+Pro."
-       target="_blank" rel="noopener" class="btn btn-primary">Commander une analyse →</a>
-    <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:8px">Via WhatsApp · Réponse sous 24h</p>
+    <a href="/" class="btn btn-ghost">Commencer gratuitement</a>
   </div>
 
-</div>
-
-<!-- ===== PLANS RÉSERVÉS — usage futur, masqués publiquement ===== -->
-<div style="display:none" id="plansReserves">
-  <!-- Coopérative -->
-  <div class="plan" id="planCoop">
-    <h3>Coopérative</h3>
-    <p class="who">Coopératives, ONG, entreprises agricoles</p>
-    <div class="price-box" id="coopPriceBox">
-      <div class="price"><span id="coopPrice">25 000</span> <small>FCFA</small></div>
-      <div class="price-sub" id="coopPeriod">par mois</div>
-      <div class="price-old" id="coopOldPrice" style="display:none"></div>
+  <!-- Starter -->
+  <div class="plan">
+    <h3>Starter</h3>
+    <p class="who">Pour le producteur individuel actif</p>
+    <div class="price-box">
+      <span class="price-old" id="old-starter"></span>
+      <div class="price"><span id="prix-starter">—</span> <small>FCFA</small></div>
+      <div class="price-period" id="per-starter"></div>
     </div>
     <div class="specs">
-      <div class="spec"><b>25 ha</b><span>inclus</span></div>
-      <div class="spec"><b>50</b><span>membres max</span></div>
-      <div class="spec"><b>∞</b><span>analyses</span></div>
-      <div class="spec"><b>∞</b><span>satellite</span></div>
+      <div class="spec"><b>5</b><span>hectares</span></div>
+      <div class="spec"><b>20</b><span>analyses/mois</span></div>
     </div>
     <ul>
-      <li>Toutes les fonctionnalités AgroScan</li>
-      <li>Tableau de bord conseiller</li>
-      <li>Gestion multi-agriculteurs</li>
-      <li>Suivi satellite multi-parcelles</li>
-      <li>Rapports consolidés</li>
-      <li>Alertes automatiques</li>
-      <li>Recommandations agronomiques</li>
-      <li>Extensions hectares disponibles</li>
+      <li>Gestion des parcelles</li>
+      <li>Cartographie GPS</li>
+      <li>Historique des analyses</li>
+      <li>Rapports PDF</li>
+      <li>Support standard</li>
     </ul>
-    <div style="margin:8px 0 16px">
-      <table class="ext-table" id="extTable">
-        <thead><tr><th>Superficie</th><th>Mensuel</th><th>Annuel</th></tr></thead>
-        <tbody>
-          <tr class="active-ha"><td>25 ha (inclus)</td><td>25 000 FCFA</td><td>250 000 FCFA</td></tr>
-          <tr><td>50 ha</td><td>40 000 FCFA</td><td>400 000 FCFA</td></tr>
-          <tr><td>100 ha</td><td>60 000 FCFA</td><td>600 000 FCFA</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <button onclick="souscrire('cooperative')" class="btn btn-primary">Souscrire — <span id="coopBtnPrice">25 000 FCFA/mois</span></button>
+    <button onclick="choisirOffre('starter')" class="btn btn-primary">Choisir Starter</button>
   </div>
-  <!-- Plans futurs : Conseiller Agricole, ONG, Entreprise, Services Drone -->
-  <!-- À activer dans une prochaine version -->
+
+  <!-- Pro (populaire) -->
+  <div class="plan pop">
+    <h3>Pro</h3>
+    <p class="who">Pour les exploitations en croissance</p>
+    <div class="price-box">
+      <span class="price-old" id="old-pro"></span>
+      <div class="price"><span id="prix-pro">—</span> <small>FCFA</small></div>
+      <div class="price-period" id="per-pro"></div>
+    </div>
+    <div class="specs">
+      <div class="spec"><b>50</b><span>hectares</span></div>
+      <div class="spec"><b>100</b><span>analyses/mois</span></div>
+    </div>
+    <ul>
+      <li>Tout le plan Starter</li>
+      <li>Alertes automatiques</li>
+      <li>Statistiques avancées</li>
+      <li>Tableau de bord complet</li>
+      <li>Support prioritaire</li>
+    </ul>
+    <button onclick="choisirOffre('pro')" class="btn btn-gold">Choisir Pro</button>
+  </div>
+
+  <!-- Enterprise (devis) -->
+  <div class="plan">
+    <h3>Enterprise</h3>
+    <p class="who">ONG, fédérations, grands projets agricoles</p>
+    <div class="price-box"><div class="price" style="font-size:1.4rem">Sur devis</div></div>
+    <div class="specs">
+      <div class="spec"><b>50+</b><span>hectares</span></div>
+      <div class="spec"><b>∞</b><span>utilisateurs</span></div>
+    </div>
+    <ul>
+      <li>Analyses personnalisées</li>
+      <li>Gestion multi-projets</li>
+      <li>Gestion des bénéficiaires</li>
+      <li>API et intégrations</li>
+      <li>Personnalisation</li>
+      <li>Accompagnement dédié</li>
+    </ul>
+    <p class="ent-note">Tarification sur mesure selon la taille de votre projet et vos besoins spécifiques.</p>
+    <a href="https://wa.me/221784919011?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20l'offre%20Enterprise%20d'AgroScan%20Pro."
+       target="_blank" rel="noopener" class="btn btn-primary">Demander un devis</a>
+    <a href="/vitrine#contact" class="btn-sec">Contacter notre équipe</a>
+  </div>
+
 </div>
 
-<!-- ===== BESOINS SPÉCIFIQUES ===== -->
-<div style="max-width:760px;margin:0 auto 50px;padding:0 18px">
-  <div style="background:linear-gradient(110deg,var(--gdeep),var(--g));color:#fff;border-radius:var(--r);padding:32px 28px;text-align:center;box-shadow:var(--shadow-lg)">
-    <div style="font-size:2rem;margin-bottom:10px">🤝</div>
-    <h3 style="font-family:var(--title);font-weight:900;font-size:1.5rem;margin-bottom:8px">Besoins spécifiques ?</h3>
-    <p style="opacity:.92;font-size:.95rem;max-width:480px;margin:0 auto 20px">Coopérative, ONG, entreprise agricole, services drone — nous construisons une offre sur mesure pour votre structure.</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="https://wa.me/221784919011?text=Bonjour%2C+je+souhaite+un+devis+AgroScan+Pro+pour+mon+organisation."
-         target="_blank" rel="noopener"
-         style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#fff;padding:13px 22px;border-radius:12px;font-weight:700;font-size:.95rem;text-decoration:none">
-        💬 Demander un devis
-      </a>
-      <a href="tel:+221784919011"
-         style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);color:#fff;padding:13px 22px;border-radius:12px;font-weight:600;font-size:.95rem;border:1.5px solid rgba(255,255,255,.35);text-decoration:none">
-        📞 +221 78 491 90 11
-      </a>
+<!-- ===== CONFIGURATEUR DE COMMANDE + FACTURE ===== -->
+<div id="config" style="max-width:760px;margin:0 auto 50px;padding:0 18px">
+  <div style="background:var(--card);border:2px solid var(--gold);border-radius:var(--r);box-shadow:var(--shadow-lg);overflow:hidden">
+    <div style="background:linear-gradient(110deg,var(--laterite-deep),var(--laterite));color:#fff;padding:18px 22px">
+      <h3 style="font-family:var(--serif);font-weight:900;font-size:1.3rem">🧾 Votre commande</h3>
+      <p style="font-size:.85rem;opacity:.9" id="config-sous">Choisissez une offre ci-dessus pour configurer votre abonnement.</p>
     </div>
-  </div>
-</div>
+    <div style="padding:22px;display:none" id="config-body">
 
-<!-- ===== CONFIGURATEUR ===== -->
-<div class="config" id="configSection">
-  <div class="config-card">
-    <div class="config-head">
-      <h3>🧾 Votre commande</h3>
-      <p id="configSous">Choisissez une offre ci-dessus pour configurer votre abonnement.</p>
-    </div>
-    <div class="config-body" id="configBody">
-      <div class="recap-row"><span>Offre</span><strong id="recapOffre">—</strong></div>
-      <div class="recap-row"><span>Durée / facturation</span><strong id="recapDuree">—</strong></div>
-      <div class="recap-row"><span>Montant HT</span><strong id="recapHT">—</strong></div>
-      <div class="recap-row"><span>TVA 18 %</span><strong id="recapTVA">—</strong></div>
-      <div class="recap-total-row">
-        <span class="recap-total-label">Total TTC</span>
-        <span class="recap-total-val" id="recapTotal">—</span>
+      <!-- Offre choisie -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <span style="color:var(--ink-soft);font-size:.9rem">Offre</span>
+        <strong id="recap-offre" style="color:var(--laterite-dk)">—</strong>
       </div>
-      <p class="recap-detail" id="recapDetail"></p>
-      <div style="margin-bottom:10px">
-        <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:6px">Moyen de paiement</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
-            <input type="radio" name="provider" value="wave" checked> 📱 Wave
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
-            <input type="radio" name="provider" value="orange_money"> 📱 Orange Money
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem">
-            <input type="radio" name="provider" value="paydunya"> 💳 PayDunya
-          </label>
+      <!-- Durée -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <span style="color:var(--ink-soft);font-size:.9rem">Durée</span>
+        <strong id="recap-duree" style="color:var(--laterite-dk)">—</strong>
+      </div>
+      <!-- Abonnement -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <span style="color:var(--ink-soft);font-size:.9rem">Abonnement</span>
+        <strong id="recap-abo" style="color:var(--laterite-dk)">—</strong>
+      </div>
+
+      <!-- Capteur (obligatoire) -->
+      <div style="background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.5rem">📡</span>
+          <div style="flex:1">
+            <strong style="color:var(--laterite-dk);font-size:.95rem">Capteur de sol 7-en-1</strong>
+            <p style="font-size:.8rem;color:var(--ink-soft)">Indispensable pour utiliser AgroScan. 195 000 FCFA l'unité (achat unique).</p>
+          </div>
         </div>
-        <input type="tel" id="phoneInput" placeholder="Téléphone (ex: 77 123 45 67)"
-          style="width:100%;margin-top:10px;padding:10px 12px;border:1.5px solid #dde;border-radius:8px;font-size:.9rem;display:none">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:10px">
+          <input type="checkbox" id="chk-capteur" checked onchange="majRecap()" style="width:auto">
+          J'ai besoin d'acquérir le capteur
+        </label>
+        <div id="capteur-qte" style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:.85rem;color:var(--ink-soft)">Quantité :</span>
+          <button onclick="changerQte(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:1.2rem;font-weight:700;color:var(--laterite)">−</button>
+          <strong id="qte-capteur" style="font-size:1.1rem;min-width:24px;text-align:center">1</strong>
+          <button onclick="changerQte(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:1.2rem;font-weight:700;color:var(--laterite)">+</button>
+          <span id="capteur-sous-total" style="margin-left:auto;font-weight:700;color:var(--laterite-dk)"></span>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="initierPaiement()" id="btnPayer">Payer maintenant →</button>
-      <div id="payMsg" style="margin-top:10px;font-size:.84rem;text-align:center;color:#1A8B4F"></div>
-      <p style="text-align:center;font-size:.76rem;color:var(--soft);margin-top:10px">
-        💳 Wave · Orange Money · PayDunya · Carte (bientôt)
+
+      <!-- Total -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0 6px;border-top:2px solid var(--laterite)">
+        <span style="font-family:var(--serif);font-weight:700;font-size:1.1rem;color:var(--laterite-dk)">Total à payer</span>
+        <strong id="recap-total" style="font-family:var(--serif);font-weight:900;font-size:1.7rem;color:var(--laterite-dk)">—</strong>
+      </div>
+      <p style="font-size:.76rem;color:var(--ink-soft);margin-bottom:16px" id="recap-detail"></p>
+
+      <a href="/" class="btn btn-primary" style="width:100%">Souscrire maintenant →</a>
+      <p style="text-align:center;font-size:.76rem;color:var(--ink-soft);margin-top:10px">
+        💳 Paiement par Wave, Orange Money, Free Money ou carte (bientôt disponible).
       </p>
     </div>
   </div>
 </div>
 
-<!-- PAIEMENTS -->
+<!-- Moyens de paiement (à venir) -->
 <div class="pay-band">
-  <p style="font-size:.85rem;color:var(--soft)">💳 Paiement accepté par :</p>
+  <p>💳 Paiement bientôt disponible par :</p>
   <div class="pay-logos">
-    <span>📱 Wave</span>
-    <span>📱 Orange Money</span>
-    <span>📱 Free Money</span>
-    <span>💳 Carte (bientôt)</span>
+    <span>📱 Wave</span><span>📱 Orange Money</span><span>📱 Free Money</span><span>💳 Carte bancaire</span>
   </div>
 </div>
 
@@ -388,170 +282,122 @@ footer a{color:rgba(255,255,255,.85)}
 </footer>
 
 <script>
-const VAT = 0.18;
-let billing = 'monthly';   // 'monthly' | 'annual'
-let selectedPlan = null;
-
-const PRICES = {
-  producteur: {
-    monthly: {ht: 5000,  label: 'AgroScan Pro Producteur — Mensuel',  duree: '1 mois · sans engagement',  detail: '5 000 FCFA HT/mois. Résiliable à tout moment.'},
-    annual:  {ht: 50000, label: 'AgroScan Pro Producteur — Annuel',   duree: '12 mois · 2 mois offerts',  detail: '50 000 FCFA HT/an — économie de 10 000 FCFA vs. mensuel × 12.'},
-  },
-  cooperative: {
-    monthly: {ht: 25000,  label: 'Coopérative mensuelle', duree: 'Par mois'},
-    annual:  {ht: 250000, label: 'Coopérative annuelle',  duree: 'Par an (12 mois)'},
-  },
+/* =====================================================================
+   Tarification dynamique — recalcul selon la durée d'abonnement.
+   Prix de base = tarif MENSUEL. Réductions : 0% / 10% / 20%.
+   ⚠️ PRIX D'EXEMPLE — à confirmer (modifiez les valeurs ci-dessous).
+   ===================================================================== */
+const PRIX_BASE = {
+  starter: 5900,    // FCFA / mois
+  pro:     29800,   // FCFA / mois
 };
+const REDUCTIONS = { 1: 0, 12: 0.20 };   // mensuel 0%, annuel -20%
+const PRIX_CAPTEUR = 195000;             // FCFA par capteur (achat unique)
 
-function fmt(n) { return Math.round(n).toLocaleString('fr-FR'); }
+let dureeMois = 1;
 
-function updateProdDisplay() {
-  const p = PRICES.producteur[billing];
-  const ht = p.ht;
-  const daily = billing === 'annual' ? Math.round(ht / 365) : Math.round(ht / 30);
-  document.getElementById('prodPrice').innerHTML = fmt(ht) + ' <small>FCFA</small>';
-  document.getElementById('prodPeriod').textContent = billing === 'annual' ? 'par an · 2 mois offerts' : 'par mois · sans engagement';
-  document.getElementById('prodDaily').textContent = `Soit moins de ${fmt(daily)} FCFA par jour`;
-  document.getElementById('prodBtn').textContent = billing === 'annual'
-    ? `Commencer maintenant — ${fmt(ht)} FCFA/an`
-    : `Commencer maintenant — ${fmt(ht)} FCFA/mois`;
-  // Prix barré annuel
-  const oldEl = document.getElementById('prodOldPrice');
-  if (billing === 'annual') {
-    oldEl.style.display = 'block';
-    oldEl.textContent = fmt(5000 * 12) + ' FCFA si mensuel × 12';
-  } else {
-    oldEl.style.display = 'none';
-  }
+function fmt(n){
+  return Math.round(n).toLocaleString('fr-FR');
 }
 
-function setBilling(btn) {
-  document.querySelectorAll('#toggleBand button').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  billing = btn.dataset.billing;
-  updateProdDisplay();
-  updateCoopDisplay();
-  if (selectedPlan) updateRecap();
-  const note = document.getElementById('toggleNote');
-  note.textContent = billing === 'annual' ? '🎉 2 mois offerts — économisez 10 000 FCFA sur le plan Producteur' : '';
-}
+function majPrix(){
+  const reduc = REDUCTIONS[dureeMois];
+  ["starter","pro"].forEach(plan => {
+    const base = PRIX_BASE[plan];
+    const mensuelReduit = base * (1 - reduc);        // prix mensuel après réduction
+    const total = mensuelReduit * dureeMois;          // total pour la période
 
-function updateCoopDisplay() {
-  const p = billing === 'annual' ? PRICES.cooperative.annual : PRICES.cooperative.monthly;
-  const ht = p.ht;
-  const ttc = Math.round(ht * (1 + VAT));
-  document.getElementById('coopPrice').textContent = fmt(ht);
-  document.getElementById('coopPeriod').textContent = billing === 'annual' ? 'par an' : 'par mois';
-  document.getElementById('coopBtnPrice').textContent =
-    fmt(ht) + ' FCFA/' + (billing === 'annual' ? 'an' : 'mois');
+    const elPrix = document.getElementById("prix-"+plan);
+    const elPer  = document.getElementById("per-"+plan);
+    const elOld  = document.getElementById("old-"+plan);
 
-  // Prix barré pour annuel
-  const oldEl = document.getElementById('coopOldPrice');
-  if (billing === 'annual') {
-    oldEl.style.display = 'block';
-    oldEl.textContent = fmt(25000 * 12) + ' FCFA si mensuel × 12';
-  } else {
-    oldEl.style.display = 'none';
-  }
-}
-
-function souscrire(plan) {
-  selectedPlan = plan;
-  document.getElementById('configBody').style.display = 'block';
-  document.getElementById('configSous').textContent = 'Vérifiez votre commande puis souscrivez.';
-  document.getElementById('configSection').scrollIntoView({behavior: 'smooth', block: 'center'});
-  updateRecap();
-}
-
-function updateRecap() {
-  if (!selectedPlan) return;
-  let ht, label, duree, detail;
-
-  if (selectedPlan === 'producteur') {
-    const p = PRICES.producteur[billing];
-    ht = p.ht; label = p.label; duree = p.duree; detail = p.detail;
-  } else {
-    const p = billing === 'annual' ? PRICES.cooperative.annual : PRICES.cooperative.monthly;
-    ht = p.ht; label = p.label; duree = p.duree;
-    detail = billing === 'annual'
-      ? `250 000 FCFA HT/an — économie de ${fmt(25000*12 - 250000)} FCFA vs. mensuel × 12.`
-      : '25 000 FCFA HT/mois — sans engagement.';
-  }
-
-  const vat = Math.round(ht * VAT);
-  const ttc = ht + vat;
-
-  document.getElementById('recapOffre').textContent = label;
-  document.getElementById('recapDuree').textContent = duree;
-  document.getElementById('recapHT').textContent = fmt(ht) + ' FCFA';
-  document.getElementById('recapTVA').textContent = fmt(vat) + ' FCFA (18%)';
-  document.getElementById('recapTotal').textContent = fmt(ttc) + ' FCFA';
-  document.getElementById('recapDetail').textContent = detail;
-}
-
-// Afficher champ téléphone si Orange Money sélectionné
-document.querySelectorAll('input[name="provider"]').forEach(r => {
-  r.addEventListener('change', () => {
-    const phone = document.getElementById('phoneInput');
-    phone.style.display = r.value === 'orange_money' ? 'block' : 'none';
-  });
-});
-
-async function initierPaiement() {
-  if (!selectedPlan) { alert('Choisissez un plan.'); return; }
-  const token = localStorage.getItem('agro_token');
-  if (!token) { window.location.href = '/login'; return; }
-
-  const provider = document.querySelector('input[name="provider"]:checked')?.value || 'wave';
-  const phone = document.getElementById('phoneInput').value.replace(/\s/g,'') || null;
-  const planMap = { producteur: 'premium', cooperative: 'cooperative' };
-  const plan = planMap[selectedPlan] || selectedPlan;
-  const billingVal = billing;
-
-  const btn = document.getElementById('btnPayer');
-  const msg = document.getElementById('payMsg');
-  btn.disabled = true;
-  btn.textContent = 'Chargement…';
-  msg.textContent = '';
-
-  try {
-    const r = await fetch('/api/billing/checkout', {
-      method: 'POST',
-      headers: {'Authorization':'Bearer '+token,'Content-Type':'application/json'},
-      body: JSON.stringify({plan, billing: billingVal, provider, phone})
-    });
-    const d = await r.json();
-    if (!r.ok) { msg.style.color='#dc2626'; msg.textContent = d.detail || 'Erreur de paiement.'; return; }
-
-    // Rediriger si URL checkout dispo
-    const url = d.wave_checkout || d.orange_checkout || d.paydunya_checkout;
-    if (url) {
-      msg.style.color='#1A8B4F'; msg.textContent = 'Redirection vers la page de paiement…';
-      setTimeout(() => { window.location.href = url; }, 800);
+    if(dureeMois === 1){
+      elPrix.textContent = fmt(base);
+      elPer.textContent = "par mois";
+      elOld.textContent = "";
     } else {
-      // Instructions manuelles
-      const instruct = d.wave_manual || d.orange_manual || d.paydunya_error;
-      if (instruct && instruct.instructions) {
-        msg.style.color='#1b6ca8';
-        msg.innerHTML = '📋 <b>Paiement manuel :</b><br>' +
-          (instruct.steps||[]).map(s=>`• ${s}`).join('<br>') +
-          (instruct.ussd ? `<br>🔢 ${instruct.ussd}` : '') +
-          (instruct.reference ? `<br>Référence : <b>${instruct.reference}</b>` : '');
-      } else {
-        msg.style.color='#1A8B4F'; msg.textContent = 'Commande enregistrée. Notre équipe vous contacte sous 24h.';
-      }
+      // annuel : total de l'année + équivalent mensuel
+      elPrix.textContent = fmt(total);
+      elPer.textContent = "par an · soit " + fmt(mensuelReduit) + " FCFA/mois";
+      elOld.textContent = fmt(base * dureeMois) + " FCFA";   // prix barré sans réduction
     }
-  } catch(e) {
-    msg.style.color='#dc2626'; msg.textContent = 'Erreur réseau. Veuillez réessayer.';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Payer maintenant →';
+  });
+
+  majRecap();   // met à jour le récapitulatif/facture
+
+  // message d'économie
+  const note = document.getElementById("noteEco");
+  if(reduc > 0){
+    note.textContent = "🎉 Vous économisez " + (reduc*100) + "% avec cet engagement";
+  } else {
+    note.textContent = "";
   }
 }
 
-// Init
-updateProdDisplay();
-updateCoopDisplay();
+function choisirDuree(btn){
+  document.querySelectorAll("#duree button").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  dureeMois = parseInt(btn.dataset.mois);
+  majPrix();
+}
+
+/* ===== Configurateur de commande (offre + capteur + facture) ===== */
+let offreChoisie = null;          // 'starter' | 'pro'
+let qteCapteur = 1;
+
+const NOMS = { starter:"Starter", pro:"Pro" };
+
+function choisirOffre(plan){
+  offreChoisie = plan;
+  document.getElementById("config-body").style.display = "block";
+  document.getElementById("config-sous").textContent = "Vérifiez votre commande puis souscrivez.";
+  document.getElementById("config").scrollIntoView({behavior:"smooth", block:"center"});
+  majRecap();
+}
+
+function changerQte(d){
+  qteCapteur = Math.max(1, qteCapteur + d);
+  document.getElementById("qte-capteur").textContent = qteCapteur;
+  majRecap();
+}
+
+function majRecap(){
+  if(!offreChoisie) return;   // rien tant qu'aucune offre choisie
+
+  const base = PRIX_BASE[offreChoisie];
+  const reduc = REDUCTIONS[dureeMois];
+  const mensuelReduit = base * (1 - reduc);
+  const abo = mensuelReduit * dureeMois;          // montant de l'abonnement sur la période
+
+  // capteur
+  const veutCapteur = document.getElementById("chk-capteur").checked;
+  document.getElementById("capteur-qte").style.display = veutCapteur ? "flex" : "none";
+  const coutCapteur = veutCapteur ? qteCapteur * PRIX_CAPTEUR : 0;
+
+  const total = abo + coutCapteur;
+
+  // affichage
+  document.getElementById("recap-offre").textContent = NOMS[offreChoisie];
+  document.getElementById("recap-duree").textContent = (dureeMois === 1 ? "Mensuel" : "Annuel (-20%)");
+  document.getElementById("recap-abo").textContent = fmt(abo) + " FCFA" + (dureeMois===1 ? " /mois" : " /an");
+  document.getElementById("capteur-sous-total").textContent =
+    veutCapteur ? fmt(coutCapteur) + " FCFA" : "";
+  document.getElementById("recap-total").textContent = fmt(total) + " FCFA";
+
+  // détail (facture résumée)
+  let detail = NOMS[offreChoisie] + " " + (dureeMois===1?"mensuel":"annuel") + " : " + fmt(abo) + " FCFA";
+  if(veutCapteur){
+    detail += "  +  " + qteCapteur + " capteur" + (qteCapteur>1?"s":"") + " × 195 000 = " + fmt(coutCapteur) + " FCFA";
+  }
+  detail += ".";
+  if(dureeMois === 1 && veutCapteur){
+    detail += " (Le capteur est un achat unique ; les mois suivants, vous ne payez que l'abonnement.)";
+  }
+  document.getElementById("recap-detail").textContent = detail;
+}
+
+// affichage initial
+majPrix();
 </script>
 </body>
 </html>

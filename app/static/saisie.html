@@ -1,35 +1,23 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="/static/assets/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#1A8B4F">
+<meta name="theme-color" content="#059669">
 <title>AgroScan Pro — Saisie des données du sol</title>
-<meta property="og:title" content="Saisie de sol — AgroScan Pro">
-<meta property="og:description" content="Saisissez les mesures de votre capteur de sol et obtenez un diagnostic agronomique.">
-<meta property="og:image" content="/static/assets/photos/soil-sensor.webp">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = { theme:{ extend:{
-    colors:{ brand:{50:'#ecfdf5',100:'#CBE9D8',200:'#a7f3d0',300:'#CBE9D8',400:'#F5A623',500:'#10b981',600:'#1A8B4F',700:'#136B3C',800:'#0D4D2B',900:'#064e3b'} },
+    colors:{ brand:{50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b'} },
     boxShadow:{ 'card':'0 1px 2px rgba(15,23,42,.04), 0 4px 16px -8px rgba(15,23,42,.12)', 'brand':'0 10px 24px -10px rgba(16,185,129,.55)' },
-    fontFamily:{ sans:['Plus Jakarta Sans','system-ui','sans-serif'] }
+    fontFamily:{ sans:['Inter','system-ui','sans-serif'] }
   }}}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --brand:#1A8B4F;--brand-dk:#136B3C;--brand-deep:#0D4D2B;--brand-light:#E8F5EE;
-  --accent:#1B8FCC;--gold:#F5A623;--paper:#F4FAF7;--card:#fff;
-  --ink:#0f2a1e;--soft:#4b5d52;--line:#CBE9D8;
-  --sans:'Plus Jakarta Sans',sans-serif;--title:'Sora',sans-serif;--mono:'IBM Plex Mono',monospace;
-}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
   /* Animation au clic sur une carte */
   @keyframes tap{0%{transform:scale(1)}50%{transform:scale(.97)}100%{transform:scale(1)}}
   .tap{animation:tap .18s ease}
@@ -37,13 +25,20 @@
   @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .rise{animation:rise .4s ease both}
   /* Carte active (remplie) : liseré vert */
-  .card-active{box-shadow:0 0 0 2px #1A8B4F, 0 8px 20px -10px rgba(21,128,61,.5)!important}
+  .card-active{box-shadow:0 0 0 2px #059669, 0 8px 20px -10px rgba(21,128,61,.5)!important}
   input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]{-moz-appearance:textfield}
   /* pulse météo */
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
   .pulse{animation:pulse 1.5s ease-in-out infinite}
 </style>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xaeuhh2o1y");
+</script>
 </head>
 
 <body class="bg-slate-50 text-slate-800 pb-28">
@@ -57,7 +52,7 @@
       Étape 2 sur 3 · Saisie des mesures
     </div>
     <h1 class="text-2xl font-extrabold text-brand-800 leading-tight">Données du sol</h1>
-    <p class="text-sm text-slate-500">Reportez les valeurs lues sur votre capteur 8-en-1.</p>
+    <p class="text-sm text-slate-500">Reportez les valeurs lues sur votre capteur 7-en-1.</p>
   </header>
 
   <!-- ===== WIDGET MÉTÉO SIMULÉE ===== -->
@@ -345,17 +340,14 @@ document.getElementById('btnDiag').addEventListener('click', () => {
   }
 
   console.log('Données du sol :', data);
+  alert("✅ Données enregistrées pour : " + data.culture + "\n\n"
+      + "Mesures saisies : " + saisis + " / 7\n\n"
+      + "Étape suivante : diagnostic intelligent de votre sol.");
 
-  // Transmet les mesures à la page de diagnostic /oad via l'URL,
-  // puis redirige. Les champs vides sont simplement omis.
-  const params = new URLSearchParams();
-  if(data.culture) params.set('culture', data.culture);
-  const corresp = { moisture:'humidite', temp:'temperature', ec:'ec', ph:'ph',
-                    n:'azote', p:'phosphore', k:'potassium' };
-  Object.keys(corresp).forEach(cle => {
-    if(data[cle] !== null && data[cle] !== undefined) params.set(corresp[cle], data[cle]);
-  });
-  window.location.href = "/oad?" + params.toString();
+  // Branchement futur vers le module de diagnostic (étape 3) :
+  // const params = new URLSearchParams({ culture:data.culture, ph:data.ph, ec:data.ec,
+  //   azote:data.n, phosphore:data.p, potassium:data.k, humidite:data.moisture, temperature:data.temp });
+  // window.location.href = "/oad?" + params.toString();
 });
 </script>
 </body>

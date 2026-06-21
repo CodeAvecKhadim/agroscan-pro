@@ -6,10 +6,8 @@ Trois niveaux :
   2) Droits / quotas     : son plan autorise-t-il cette action ? (matrice PLAN_FEATURES)
   3) Rôles               : a-t-il le rôle requis ? (owner/admin/member/viewer)
 
-Modèle de quotas (juin 2026) :
-  - Plan GRATUIT : 3 analyses IA/JOUR, 1 satellite/SEMAINE, 2 parcelles max, 3 ha/parcelle
-  - Plan PREMIUM : illimité (campagne 90 jours)
-  - Plan COOPERATIVE : illimité
+Bonne pratique : on ne fait JAMAIS confiance au client. Chaque endpoint sensible
+dépend d'une de ces fonctions ; impossible de contourner un quota côté front.
 """
 from datetime import datetime, timezone
 
@@ -26,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Récupère l'utilisateur connecté à partir du jeton JWT."""
+    """Récupère l'utilisateur connecté à partir du jeton JWT, ou refuse l'accès."""
     cred_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Identifiants invalides ou session expirée.",
@@ -47,40 +45,19 @@ def current_subscription(user: User = Depends(current_user),
     sub = db.query(Subscription).filter(Subscription.org_id == user.org_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="Aucun abonnement trouvé.")
-    # Rétrogradation automatique si période échue (TRIAL ou plan payant)
+    # Si la période payée est échue, on rétrograde proprement vers le plan gratuit.
     end = sub.current_period_end
     if end is not None and end.tzinfo is None:
-        end = end.replace(tzinfo=timezone.utc)
-    was_trial = sub.status == SubStatus.TRIAL
-    if end and sub.status in (SubStatus.TRIAL, SubStatus.ACTIVE) and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc):
+        end = end.replace(tzinfo=timezone.utc)   # SQLite stocke sans fuseau
+    if (end and sub.plan != PlanType.GRATUIT and end < datetime.now(timezone.utc)):
         sub.status = SubStatus.EXPIRED
-        if was_trial:
-            sub.plan = PlanType.GRATUIT
         db.commit()
     return sub
-
-
-def effective_plan(sub: Subscription) -> PlanType:
-    """Plan réellement actif : EXPIRED/PAST_DUE → GRATUIT pour les feature checks."""
-    if sub.status in (SubStatus.ACTIVE, SubStatus.TRIAL):
-        return sub.plan
-    return PlanType.GRATUIT
 
 
 def _current_period() -> str:
     """Clé du mois courant, ex : '2026-05'."""
     return datetime.now(timezone.utc).strftime("%Y-%m")
-
-
-def _today_str() -> str:
-    """Date du jour, ex : '2026-06-12'."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
-
-def _current_week_str() -> str:
-    """Semaine ISO courante, ex : '2026-W24'."""
-    d = datetime.now(timezone.utc)
-    return f"{d.year}-W{d.isocalendar()[1]:02d}"
 
 
 def get_usage(db: Session, org_id: int) -> UsageCounter:
@@ -90,8 +67,7 @@ def get_usage(db: Session, org_id: int) -> UsageCounter:
             .filter(UsageCounter.org_id == org_id, UsageCounter.period == period)
             .first())
     if not uc:
-        uc = UsageCounter(org_id=org_id, period=period, analyses_count=0,
-                          daily_ai_count=0, weekly_satellite_count=0)
+        uc = UsageCounter(org_id=org_id, period=period, analyses_count=0)
         db.add(uc)
         db.commit()
         db.refresh(uc)
@@ -102,124 +78,35 @@ def enforce_analysis_quota(user: User = Depends(current_user),
                            sub: Subscription = Depends(current_subscription),
                            db: Session = Depends(get_db)) -> User:
     """
-    Garde-fou quota IA : plan GRATUIT limité à 3 analyses/JOUR.
-    Plans payants actifs : illimité.
+    Garde-fou de quota : bloque une nouvelle analyse si le plan gratuit a atteint
+    sa limite mensuelle. Les plans payants actifs sont illimités.
     """
-    plan = effective_plan(sub)
-    feats = features_for(plan)
-    limit = feats["daily_ai_analyses"]
+    feats = features_for(sub.plan)
+    limit = feats["monthly_analyses"]
 
-    if limit is None:
-        return user  # illimité (plan payant actif)
-
-    uc = get_usage(db, user.org_id)
-    today = _today_str()
-
-    # Reset si nouveau jour
-    if uc.daily_ai_date != today:
-        uc.daily_ai_count = 0
-        uc.daily_ai_date = today
-        db.commit()
-
-    if uc.daily_ai_count >= limit:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail=(f"Limite atteinte : {limit} analyses IA/jour sur le plan gratuit. "
-                    f"Passez au plan Premium pour des analyses illimitées."),
-        )
-    return user
-
-
-def enforce_satellite_quota(user: User = Depends(current_user),
-                             sub: Subscription = Depends(current_subscription),
-                             db: Session = Depends(get_db)) -> User:
-    """
-    Garde-fou satellite : plan GRATUIT limité à 1 analyse satellite/SEMAINE.
-    Plans payants actifs : illimité.
-    """
-    plan = effective_plan(sub)
-    feats = features_for(plan)
-    limit = feats["weekly_satellite"]
-
-    if limit is None:
+    # Un plan payant échu/résilié est traité comme gratuit (sécurité).
+    plan_actif = sub.status in (SubStatus.ACTIVE, SubStatus.TRIAL)
+    if limit is None and plan_actif:
         return user  # illimité
 
+    effective_limit = limit if (limit is not None) else features_for(PlanType.GRATUIT)["monthly_analyses"]
     uc = get_usage(db, user.org_id)
-    week = _current_week_str()
-
-    if uc.weekly_period != week:
-        uc.weekly_satellite_count = 0
-        uc.weekly_period = week
-        db.commit()
-
-    if uc.weekly_satellite_count >= limit:
+    if uc.analyses_count >= effective_limit:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail=(f"Limite atteinte : {limit} analyse satellite/semaine sur le plan gratuit. "
+            detail=(f"Limite atteinte : {effective_limit} analyses/mois sur le plan gratuit. "
                     f"Passez au plan Premium pour des analyses illimitées."),
         )
     return user
-
-
-def enforce_parcelle_limit(user: User = Depends(current_user),
-                            sub: Subscription = Depends(current_subscription),
-                            db: Session = Depends(get_db)) -> User:
-    """
-    Vérifie que la limite de parcelles du plan n'est pas dépassée avant création.
-    """
-    plan = effective_plan(sub)
-    feats = features_for(plan)
-    max_p = feats["max_parcelles"]
-
-    if max_p is None and not getattr(user, "is_beta", False):
-        return user  # illimité (plan payant, non-bêta)
-
-    # Bêta-testeurs : limite stricte définie sur le compte
-    if getattr(user, "is_beta", False):
-        max_p = user.beta_max_parcelles or 1
-
-    from app.models.champ import Parcelle, StatutParcelle
-    count = db.query(Parcelle).filter(
-        Parcelle.org_id == user.org_id,
-        Parcelle.statut != StatutParcelle.ARCHIVE,
-    ).count()
-    if count >= max_p:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail=(f"Limite atteinte : {max_p} parcelle(s) sur le plan gratuit. "
-                    f"Passez au plan Premium pour créer plus de parcelles."),
-        )
-    return user
-
-
-def increment_daily_ai(db: Session, org_id: int):
-    """Incrémente le compteur IA journalier après une analyse réussie."""
-    uc = get_usage(db, org_id)
-    today = _today_str()
-    if uc.daily_ai_date != today:
-        uc.daily_ai_count = 0
-        uc.daily_ai_date = today
-    uc.daily_ai_count += 1
-    uc.analyses_count += 1   # legacy compat
-    db.commit()
-
-
-def increment_weekly_satellite(db: Session, org_id: int):
-    """Incrémente le compteur satellite hebdomadaire après une analyse réussie."""
-    uc = get_usage(db, org_id)
-    week = _current_week_str()
-    if uc.weekly_period != week:
-        uc.weekly_satellite_count = 0
-        uc.weekly_period = week
-    uc.weekly_satellite_count += 1
-    db.commit()
 
 
 def require_feature(feature_key: str):
-    """Fabrique de dépendance : exige qu'une fonctionnalité soit incluse dans le plan."""
+    """
+    Fabrique de dépendance : exige qu'une fonctionnalité soit incluse dans le plan.
+    Ex : Depends(require_feature('pdf_reports'))
+    """
     def checker(sub: Subscription = Depends(current_subscription)) -> Subscription:
-        plan = effective_plan(sub)
-        feats = features_for(plan)
+        feats = features_for(sub.plan)
         if not feats.get(feature_key):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -230,22 +117,9 @@ def require_feature(feature_key: str):
 
 
 def require_role(*roles: UserRole):
-    """Exige que l'utilisateur ait l'un des rôles indiqués."""
+    """Exige que l'utilisateur ait l'un des rôles indiqués (ex : owner/admin)."""
     def checker(user: User = Depends(current_user)) -> User:
         if user.role not in roles:
             raise HTTPException(status_code=403, detail="Droits insuffisants.")
-        return user
-    return checker
-
-
-def require_profil(*profils: str):
-    """Exige que l'utilisateur ait l'un des profils indiqués."""
-    def checker(user: User = Depends(current_user)) -> User:
-        user_profil = getattr(user, "profil", "producteur")
-        if user_profil not in profils:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Accès réservé au profil : {', '.join(profils)}.",
-            )
         return user
     return checker

@@ -12,8 +12,6 @@ les cultures) et adaptées au contexte sénégalais (urée, DAP/phosphate de Thi
 """
 from typing import Dict, List, Any
 
-from app.services.infos_cultures import info_culture, AVERTISSEMENT
-
 PARAMS = ["Température", "Humidité", "CE", "pH", "Azote", "Phosphore", "Potassium", "Salinité"]
 
 # ----------------------------------------------------------------------------
@@ -138,16 +136,7 @@ def diagnose(culture: str, measurements: Dict[str, float], advanced: bool = Fals
         detail.append(row)
 
     verdict = _verdict(score, filled)
-    resultat = {"score": score, "filled": filled, "verdict": verdict, "detail": detail}
-
-    # Fiche agronomique enrichie (cycle, semis, maladies, eau, conseil)
-    # — données INDICATIVES, à valider par un agronome (voir AVERTISSEMENT).
-    fiche = info_culture(culture)
-    if fiche:
-        resultat["fiche_culture"] = fiche
-        resultat["fiche_avertissement"] = AVERTISSEMENT
-
-    return resultat
+    return {"score": score, "filled": filled, "verdict": verdict, "detail": detail}
 
 
 def cultures_disponibles() -> List[str]:

@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.deps import current_user, current_subscription, enforce_analysis_quota, get_usage, effective_plan
+from app.core.deps import current_user, current_subscription, enforce_analysis_quota, get_usage
 from app.models import User, Subscription, Analysis
 from app.schemas import FertiliteIn
 from app.services.plans import features_for
@@ -60,7 +60,7 @@ def interpreter(
     uc.analyses_count += 1
     db.commit()
 
-    feats = features_for(effective_plan(sub))
+    feats = features_for(sub.plan)
     if not feats["advanced_reco"]:
         # Version allégée pour le plan gratuit.
         return {

@@ -47,15 +47,10 @@ class SubStatus(str, enum.Enum):
 
 
 class UserRole(str, enum.Enum):
-    SUPER_ADMIN = "super_admin"    # administrateur plateforme
-    OWNER = "owner"                # propriétaire organisation (facturation)
-    ADMIN = "admin"                # gère membres et exploitations
-    CONSEILLER = "conseiller"      # conseiller agricole
-    PRODUCTEUR = "producteur"      # agriculteur / producteur
-    TECHNICIEN = "technicien"      # technicien terrain
-    LABORATOIRE = "laboratoire"    # technicien laboratoire
-    MEMBER = "member"              # membre générique
-    VIEWER = "viewer"              # lecture seule
+    OWNER = "owner"          # propriétaire de l'organisation (facturation)
+    ADMIN = "admin"          # gère les membres et exploitations
+    MEMBER = "member"        # technicien / agriculteur membre
+    VIEWER = "viewer"        # lecture seule (ex : bailleur, ONG)
 
 
 # --------- Tables ---------
@@ -78,28 +73,12 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     full_name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=True)   # facultatif
-    phone = Column(String, index=True)           # identifiant principal obligatoire
+    email = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String)                       # numéro WhatsApp
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.OWNER)
-    profil = Column(String, nullable=False, default="producteur")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=now_utc)
-    # Reset mot de passe
-    reset_token = Column(String(128), nullable=True)
-    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
-    # Vérification email
-    email_verified = Column(Boolean, default=False)
-    email_verification_token = Column(String(128), nullable=True)
-    # Vérification téléphone / OTP
-    phone_verified = Column(Boolean, default=False)
-    phone_otp = Column(String(8), nullable=True)
-    phone_otp_expires = Column(DateTime(timezone=True), nullable=True)
-    # Bêta-testeurs terrain
-    is_beta = Column(Boolean, default=False)
-    beta_badge = Column(String(64), nullable=True)
-    beta_permissions = Column(JSON, nullable=True)
-    beta_max_parcelles = Column(Integer, nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     analyses = relationship("Analysis", back_populates="user")
@@ -115,8 +94,6 @@ class Subscription(Base):
     current_period_end = Column(DateTime)        # date d'échéance de la période payée
     seats = Column(Integer, default=1)           # nb de membres autorisés (coopérative)
     auto_renew = Column(Boolean, default=True)
-    # Coopérative : "monthly" | "annual"
-    campaign_billing = Column(String, default="monthly", nullable=True)
 
     organization = relationship("Organization", back_populates="subscription")
     payments = relationship("Payment", back_populates="subscription", cascade="all, delete-orphan")
@@ -180,55 +157,3 @@ class UsageCounter(Base):
     org_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     period = Column(String, index=True)          # ex : "2026-05"
     analyses_count = Column(Integer, default=0)
-    # Limites plan gratuit : IA quotidienne + satellite hebdomadaire
-    daily_ai_count = Column(Integer, default=0)
-    daily_ai_date = Column(String, nullable=True)    # "2026-06-12"
-    weekly_satellite_count = Column(Integer, default=0)
-    weekly_period = Column(String, nullable=True)    # "2026-W24"
-
-
-# Importer les modèles agronomiques pour que Base.metadata les découvre.
-from app.models.agronomie import (  # noqa: F401, E402
-    Culture, Variete, ParametreClimatique, BesoinEau, BesoinNutritionnel,
-    StadePhenologique, CalendrierCultural, RendementReference,
-    Maladie, CultureMaladie, Ravageur, CultureRavageur, RecommandationCulture,
-)
-
-# Module Mon Champ
-from app.models.champ import (  # noqa: F401, E402
-    Parcelle, Parcelle as ChampParcelle, Cartographie, AnalyseSol,
-    Infrastructure, SourceEau,
-)
-
-# Module Santé des Cultures
-from app.models.sante import (  # noqa: F401, E402
-    Consultation, Observation, PhotoConsultation,
-    Diagnostic, Traitement, Suivi, RapportSante,
-)
-
-# Module Gestion de Ferme
-from app.models.ferme import (  # noqa: F401, E402
-    Activite, Preuve, Cout, MainOeuvre, JournalEntree,
-)
-
-# Module Météo & Alertes Intelligentes
-from app.models.meteo import (  # noqa: F401, E402
-    ConditionMeteo, Prevision, Alerte, ConfigAlertes, RecommandationPlan,
-)
-
-# Module IA Agricole
-from app.models.ia import (  # noqa: F401, E402
-    Conversation, MessageIA, RecommandationIA, FeedbackIA, ConfigIA,
-)
-
-# Module Satellite — Sentinel Hub
-from app.models.satellite import (  # noqa: F401, E402
-    SatelliteProduct, SatelliteJob, SatelliteConfig, SatelliteMetrics,
-    SensorType, JobStatus, JobType,
-)
-
-# OTP SMS — stockage sécurisé des codes OTP
-from app.models.otp import OTPRecord  # noqa: F401, E402
-
-# Bêta-testeurs — journalisation actions terrain
-from app.models.beta import BetaLog  # noqa: F401, E402

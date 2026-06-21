@@ -4,7 +4,7 @@ Séparer les schémas des modèles SQL est une bonne pratique (sécurité + clar
 """
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from app.models import PlanType, SubStatus, UserRole
 
@@ -12,16 +12,15 @@ from app.models import PlanType, SubStatus, UserRole
 # ---------- Authentification ----------
 class RegisterIn(BaseModel):
     full_name: str
-    phone: str                             # obligatoire — identifiant principal
-    email: Optional[EmailStr] = None       # facultatif
+    email: EmailStr
+    phone: Optional[str] = None
     password: str = Field(min_length=6)
-    org_name: Optional[str] = None
+    org_name: Optional[str] = None        # nom de la coopérative (sinon compte individuel)
     is_cooperative: bool = False
-    profil: Optional[str] = "producteur"
 
 
 class LoginIn(BaseModel):
-    username: str                          # email OU téléphone
+    email: EmailStr
     password: str
 
 
@@ -34,20 +33,13 @@ class TokenOut(BaseModel):
 class UserOut(BaseModel):
     id: int
     full_name: str
-    email: Optional[str] = None   # facultatif — certains comptes n'ont qu'un téléphone
-    phone: Optional[str] = None
+    email: EmailStr
+    phone: Optional[str]
     role: UserRole
-    profil: str = "producteur"
     org_id: int
-    email_verified: bool = False
-    phone_verified: bool = False
-    is_active: bool = True
-    is_beta: bool = False
-    beta_badge: Optional[str] = None
-    beta_permissions: Optional[List[str]] = None
-    beta_max_parcelles: Optional[int] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class InviteMemberIn(BaseModel):
@@ -72,7 +64,8 @@ class FarmOut(FarmIn):
     id: int
     org_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 # ---------- Analyses ----------
@@ -94,7 +87,8 @@ class AnalysisOut(BaseModel):
     diagnostic: Optional[List[Dict[str, Any]]] = None   # détail par paramètre (calculé)
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 # ---------- Abonnements ----------
@@ -104,30 +98,21 @@ class SubscriptionOut(BaseModel):
     seats: int
     current_period_end: Optional[datetime]
     auto_renew: bool
-    campaign_billing: Optional[str] = "monthly"
-    remaining_days: Optional[int] = None  # calculé dynamiquement
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class ChangePlanIn(BaseModel):
     plan: PlanType
     seats: int = 1                        # nb de membres pour la coopérative
-    billing: str = "monthly"              # "monthly" | "annual" (coopérative)
 
 
 class UsageOut(BaseModel):
     period: str
-    # IA : quotidien (plan gratuit) ou None (illimité)
-    daily_ai_used: int = 0
-    daily_ai_limit: Optional[int] = None
-    # Satellite : hebdomadaire (plan gratuit) ou None (illimité)
-    weekly_satellite_used: int = 0
-    weekly_satellite_limit: Optional[int] = None
-    # Legacy
-    analyses_used: int = 0
-    analyses_limit: Optional[int] = None
-    history_days: Optional[int] = None
+    analyses_used: int
+    analyses_limit: Optional[int]         # None = illimité
+    history_days: Optional[int]           # None = illimité
     plan: PlanType
 
 
